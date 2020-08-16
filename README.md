@@ -1,12 +1,10 @@
 # ColoringSolver
 
-A solver for the Graph Coloring Problem
+A solver for the Graph Coloring Problem.
 
 ## Implemented algorithms
 
-The greedy algorithms are described in "ColPack: Software for graph coloring and related problems in scientific computing" (Gebremedhin et al., 2013).
-
-* Greedy algorithms:
+* Greedy algorithms, see "ColPack: Software for graph coloring and related problems in scientific computing" (Gebremedhin et al., 2013) for their descriptions:
   * Largest first `-a greedy_largestfirst`
   * Incidence degree `-a greedy_incidencedegree`
   * Smallest last `-a greedy_smallestlast`

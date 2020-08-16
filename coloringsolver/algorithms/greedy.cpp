@@ -2,8 +2,6 @@
 
 #include "optimizationtools/indexed_binary_heap.hpp"
 
-#include <queue>
-
 using namespace coloringsolver;
 
 Output coloringsolver::greedy_largestfirst(const Instance& instance, Info info)
