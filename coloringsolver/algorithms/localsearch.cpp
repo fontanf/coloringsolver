@@ -17,7 +17,6 @@ LocalSearchOutput& LocalSearchOutput::algorithm_end(Info& info)
 struct LocalSearchVertex
 {
     Counter timestamp = -1;
-    ColorId previous_color = -1;
 };
 
 void localsearch_worker(
@@ -106,13 +105,8 @@ void localsearch_worker(
         }
 
         // Draw randomly a conflicting edge.
-        std::uniform_int_distribution<EdgeId> d_e(
-                0, solution.conflict_number() - 1);
+        std::uniform_int_distribution<EdgeId> d_e(0, solution.conflict_number() - 1);
         EdgeId e = *(solution.conflicts().begin() + d_e(generator));
-        //std::cout << "it " << output.iterations
-            //<< " e " << e
-            //<< " s " << instance.element(e).sets.size()
-            //<< std::endl;
 
         // Find the best swap move.
         VertexId v_best = -1;
@@ -121,8 +115,7 @@ void localsearch_worker(
         for (VertexId v: {instance.edge(e).v1, instance.edge(e).v2}) {
             for (auto it_c = solution.map().values_begin(); it_c != solution.map().values_end(); ++it_c) {
                 ColorId c = *it_c;
-                if (c == solution.color(v)
-                        || c == vertices[v].previous_color)
+                if (c == solution.color(v))
                     continue;
                 Penalty p = solution.penalty();
                 for (const auto& edge: instance.vertex(v).edges) {
@@ -138,16 +131,8 @@ void localsearch_worker(
                 }
             }
         }
-        vertices[v_best].previous_color = solution.color(v_best);
         vertices[v_best].timestamp = iterations;
         solution.set(v_best, c_best);
-        //std::cout << "it " << component.iterations
-            //<< " s1_best " << s1_best
-            //<< " s2_best " << s2_best
-            //<< " p " << solution.penalty()
-            //<< " e " << instance.element_number() - solution.element_number() << "/" << instance.element_number()
-            //<< " s " << solution.set_number()
-            //<< std::endl;
 
         // Update penalties: we increment the penalty of each uncovered element.
         // "reduce" becomes true if we divide by 2 all penalties to avoid
