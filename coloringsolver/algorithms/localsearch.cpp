@@ -57,14 +57,11 @@ void localsearch_worker(
             // Update statistics
             iterations_without_improvment = 0;
 
-            // Compute colors and positions.
-            std::vector<ColorId> colors(solution.color_number(), -1);
+            // Compute positions.
             std::vector<ColorPos> positions(instance.degree_max(), -1);
-            ColorPos c_pos = 0;
-            for (auto it_c = solution.map().values_begin(); it_c != solution.map().values_end(); ++it_c) {
-                colors[c_pos] = *it_c;
-                positions[*it_c] = c_pos;
-                c_pos++;
+            for (ColorPos c_pos = 0; c_pos < solution.color_number(); ++c_pos) {
+                ColorId c = *(solution.colors_begin() + c_pos);
+                positions[c] = c_pos;
             }
 
             // Initialize penalty structure.
@@ -83,7 +80,7 @@ void localsearch_worker(
                 ColorPos i1 = std::min(c1_pos, c2_pos);
                 ColorPos i2 = std::max(c1_pos, c2_pos) - i1 - 1;
                 assert(c1 != c2);
-                penalties[i1][i2]++;
+                penalties[i1][i2] += solution.penalty(e);
             }
 
             // Find best color combination.
@@ -101,8 +98,8 @@ void localsearch_worker(
             }
 
             // Apply color merge.
-            ColorId c1_best = colors[c1_pos_best];
-            ColorId c2_best = colors[c2_pos_best];
+            ColorId c1_best = *(solution.colors_begin() + c1_pos_best);
+            ColorId c2_best = *(solution.colors_begin() + c2_pos_best);
             for (VertexId v = 0; v < instance.vertex_number(); ++v)
                 if (solution.color(v) == c2_best)
                     solution.set(v, c1_best);
@@ -120,7 +117,7 @@ void localsearch_worker(
             std::fill(penalties.begin(), penalties.end(), 0);
             for (const auto& edge: instance.vertex(v).edges)
                 penalties[solution.color(edge.v)] += solution.penalty(edge.e);
-            for (auto it_c = solution.map().values_begin(); it_c != solution.map().values_end(); ++it_c) {
+            for (auto it_c = solution.colors_begin(); it_c != solution.colors_end(); ++it_c) {
                 ColorId c = *it_c;
                 if (c == solution.color(v))
                     continue;

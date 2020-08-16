@@ -29,6 +29,8 @@ public:
     Penalty penalty(EdgeId e) const { return penalties_[e]; }
     Penalty penalty() const { return penalty_; }
     EdgePos conflict_number() const { return conflicts_.size(); }
+    std::vector<ColorId>::const_iterator colors_begin() const { return map().values_begin(); }
+    std::vector<ColorId>::const_iterator colors_end()   const { return map().values_end(); }
 
     const optimizationtools::DoublyIndexedMap& map() const { return map_; }
     const optimizationtools::IndexedSet& conflicts() const { return conflicts_; }
