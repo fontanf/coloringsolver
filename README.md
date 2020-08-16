@@ -10,6 +10,7 @@ A solver for the Graph Coloring Problem.
   * Smallest last `-a greedy_smallestlast`
   * Dynamic Largest First `-a greedy_dynamiclargestfirst`
   * DSATUR `-a greedy_dsatur`
+* Row weighting local search `-a localsearch`
 * Branch-and-cut (CPLEX) `-a branchandcut_cplex`
 
 ## Usage (command line)

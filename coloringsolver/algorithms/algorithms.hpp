@@ -3,6 +3,7 @@
 #include "coloringsolver/solution.hpp"
 
 #include "coloringsolver/algorithms/greedy.hpp"
+#include "coloringsolver/algorithms/localsearch.hpp"
 #include "coloringsolver/algorithms/branchandcut_cplex.hpp"
 
 namespace coloringsolver

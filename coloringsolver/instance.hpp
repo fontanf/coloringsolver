@@ -21,6 +21,7 @@ typedef int64_t EdgeId; // e
 typedef int64_t EdgePos; // e_pos
 typedef int64_t ComponentId; // c
 typedef int64_t ColorId; // c
+typedef int64_t ColorPos; // c_pos
 typedef int64_t Penalty; // p
 typedef int64_t Counter;
 typedef int64_t Seed;

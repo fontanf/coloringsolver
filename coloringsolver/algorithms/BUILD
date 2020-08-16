@@ -5,11 +5,13 @@ cc_library(
         name = "algorithms",
         hdrs = [
                 "greedy.hpp",
+                "localsearch.hpp",
                 "branchandcut_cplex.hpp",
                 "algorithms.hpp",
         ],
         srcs = [
                 "greedy.cpp",
+                "localsearch.cpp",
                 "branchandcut_cplex.cpp",
                 "algorithms.cpp",
         ],

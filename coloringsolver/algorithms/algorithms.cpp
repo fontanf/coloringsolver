@@ -5,10 +5,27 @@
 using namespace coloringsolver;
 namespace po = boost::program_options;
 
+LocalSearchOptionalParameters read_localsearch_args(const std::vector<char*>& argv)
+{
+    LocalSearchOptionalParameters parameters;
+    po::options_description desc("Allowed options");
+    desc.add_options()
+        ("threads,t", po::value<Counter>(&parameters.thread_number), "")
+        ;
+    po::variables_map vm;
+    po::store(po::parse_command_line((Counter)argv.size(), argv.data(), desc), vm);
+    try {
+        po::notify(vm);
+    } catch (po::required_option e) {
+        std::cout << desc << std::endl;;
+        throw "";
+    }
+    return parameters;
+}
+
 Output coloringsolver::run(
         std::string algorithm, const Instance& instance, std::mt19937_64& generator, Info info)
 {
-    (void)generator;
     std::vector<std::string> algorithm_args = po::split_unix(algorithm);
     std::vector<char*> algorithm_argv;
     for (Counter i = 0; i < (Counter)algorithm_args.size(); ++i)
@@ -28,6 +45,10 @@ Output coloringsolver::run(
         return greedy_dynamiclargestfirst(instance, info);
     } else if (algorithm_args[0] == "greedy_dsatur") {
         return greedy_dsatur(instance, info);
+    } else if (algorithm_args[0] == "localsearch") {
+        auto parameters = read_localsearch_args(algorithm_argv);
+        parameters.info = info;
+        return localsearch(instance, generator, parameters);
 #if CPLEX_FOUND
     } else if (algorithm_args[0] == "branchandcut_cplex") {
         BranchAndCutCplexOptionalParameters parameters;

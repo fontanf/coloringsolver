@@ -26,8 +26,12 @@ public:
     ColorId color(VertexId v) const { return map_[v]; }
     VertexPos vertex_number() const { return map_.element_number(); }
     VertexPos vertex_number(ColorId c) const { return map_.element_number(c); }
+    Penalty penalty(EdgeId e) const { return penalties_[e]; }
+    Penalty penalty() const { return penalty_; }
+    EdgePos conflict_number() const { return conflicts_.size(); }
 
     const optimizationtools::DoublyIndexedMap& map() const { return map_; }
+    const optimizationtools::IndexedSet& conflicts() const { return conflicts_; }
 
     inline void set(VertexId v, ColorId c);
 
@@ -51,14 +55,14 @@ std::ostream& operator<<(std::ostream& os, const Solution& solution);
 void Solution::set(VertexId v, ColorId c)
 {
     // Update conflicts_.
-    for (const auto& vn: instance().vertex(v).edges) {
-        if (color(v) == color(vn.v)) {
-            conflicts_.remove(vn.e);
-            penalty_ -= penalties_[vn.e];
+    for (const auto& edge: instance().vertex(v).edges) {
+        if (color(edge.v) == color(v)) {
+            conflicts_.remove(edge.e);
+            penalty_ -= penalties_[edge.e];
         }
-        if (color(v) == c) {
-            conflicts_.add(vn.e);
-            penalty_ += penalties_[vn.e];
+        if (color(edge.v) == c) {
+            conflicts_.add(edge.e);
+            penalty_ += penalties_[edge.e];
         }
     }
     map_.set(v, c);
