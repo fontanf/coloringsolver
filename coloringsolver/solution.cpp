@@ -138,7 +138,10 @@ void Output::update_solution(
 
     if (solution_new.feasible()
             && (!solution.feasible() || solution.color_number() > solution_new.color_number())) {
-        solution = solution_new;
+        // Update solution
+        for (VertexId v = 0; v < solution.instance().vertex_number(); ++v)
+            if (solution.color(v) != solution_new.color(v))
+                solution.set(v, solution_new.color(v));
         print(info, s);
 
         info.output->sol_number++;

@@ -37,6 +37,9 @@ void localsearch_worker(
     std::vector<Penalty> penalties(instance.degree_max(), 0);
 
     for (Counter iterations = 1; parameters.info.check_time(); ++iterations) {
+        // Check iteration limit.
+        if (parameters.iteration_limit != -1 && iterations > parameters.iteration_limit)
+            break;
 
         // If the solution is feasible, we merge two colors.
         // We choose the two merged colors to minimize the penalty of the new
