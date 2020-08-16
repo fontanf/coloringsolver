@@ -84,9 +84,8 @@ void Solution::write(std::string filepath) const
         return;
     }
 
-    cert << color_number() << std::endl;
     for (VertexId v = 0; v < instance().vertex_number(); ++v)
-        cert << color(v) << " ";
+        cert << color(v) << std::endl;
     cert.close();
 }
 

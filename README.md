@@ -10,10 +10,14 @@ A solver for the Graph Coloring Problem.
   * Smallest last `-a greedy_smallestlast`
   * Dynamic Largest First `-a greedy_dynamiclargestfirst`
   * DSATUR `-a greedy_dsatur`
-* Row weighting local search `-a localsearch`
+* Row weighting local search `-a "localsearch --threads 3"`
 * Branch-and-cut (CPLEX) `-a branchandcut_cplex`
 
 ## Usage (command line)
+
+Download and uncompress the instances in the `data/` folder:
+
+https://drive.google.com/file/d/1ZT2dSIleWN__MZIscsc3kAqGRVU91CDw/view?usp=sharing
 
 Compile:
 ```shell
@@ -22,7 +26,8 @@ bazel build -- //...
 
 Run:
 ```shell
-./bazel-bin/coloringsolver/main -v -i "data/1-FullIns_3.col" -a greedy_dsatur -c solution.txt
-./bazel-bin/coloringsolver/main -v -i "data/1-FullIns_3.col" -a branchandcut_cplex -t 60 -c solution.txt
+./bazel-bin/coloringsolver/main -v -i "data/graphcoloring/1-FullIns_3.col" -a greedy_dsatur -c solution.txt
+./bazel-bin/coloringsolver/main -v -i "data/graphcoloring/r1000.5.col" -a "localsearch --threads 3"
+./bazel-bin/coloringsolver/main -v -i "data/graphcoloring/1-FullIns_3.col" -a branchandcut_cplex -t 60 -c solution.txt
 ```
 
