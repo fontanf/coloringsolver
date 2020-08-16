@@ -18,6 +18,10 @@ Output coloringsolver::run(
         std::cerr << "\033[32m" << "ERROR, missing algorithm." << "\033[0m" << std::endl;
         return Output(instance, info);
 
+    } else if (algorithm_args[0] == "greedy_largestfirst") {
+        return greedy_largestfirst(instance, info);
+    } else if (algorithm_args[0] == "greedy_smallestlast") {
+        return greedy_smallestlast(instance, info);
     } else if (algorithm_args[0] == "greedy_dsatur") {
         return greedy_dsatur(instance, info);
 #if CPLEX_FOUND

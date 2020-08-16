@@ -67,6 +67,7 @@ public:
     inline EdgeId      edge_number() const { return edges_.size(); }
     inline const Vertex& vertex(VertexId id) const { return vertices_[id]; }
     inline const Edge&       edge(EdgeId id) const { return edges_[id]; }
+    inline VertexId degree(VertexId v) const { return vertices_[v].edges.size(); }
     inline VertexId degree_max() const { return degree_max_; }
 
     /** Export. */

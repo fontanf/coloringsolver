@@ -4,6 +4,8 @@ A solver for the Graph Coloring Problem
 
 ## Implemented algorithms
 
+* Greedy Largest First `-a greedy_largestfirst`
+* Greedy Smallest Last `-a greedy_smallestlast`
 * Greedy DSATUR `-a greedy_dsatur`
 * Branch-and-cut (CPLEX) `-a branchandcut_cplex`
 

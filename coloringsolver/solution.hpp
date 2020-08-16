@@ -74,7 +74,7 @@ struct Output
     double time = -1;
 
     bool optimal() const { return solution.feasible() && solution.color_number() == lower_bound; }
-    ColorId upper_bound() const { return (solution.feasible())? solution.color_number(): solution.instance().vertex_number(); }
+    ColorId upper_bound() const { return (solution.feasible())? solution.color_number(): solution.instance().degree_max() + 1; }
     double gap() const;
     void print(Info& info, const std::stringstream& s) const;
 

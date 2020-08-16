@@ -6,7 +6,7 @@ using namespace coloringsolver;
 
 Solution::Solution(const Instance& instance):
     instance_(instance),
-    map_(instance.vertex_number(), instance.vertex_number()),
+    map_(instance.vertex_number(), instance.degree_max()),
     conflicts_(instance.edge_number()),
     penalties_(instance.edge_number(), 1),
     penalty_(instance.edge_number())

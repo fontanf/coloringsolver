@@ -32,6 +32,11 @@ Instance::Instance(VertexId vertex_number):
 
 void Instance::add_edge(VertexId v1, VertexId v2)
 {
+    if (v1 == v2) {
+        std::cerr << "\033[33m" << "WARNING, loop (" << v1 << ", " << v2 << ") ignored." << "\033[0m" << std::endl;
+        return;
+    }
+
     Edge e;
     e.id = edges_.size();
     e.v1 = v1;
