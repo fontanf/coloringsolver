@@ -4,9 +4,14 @@ A solver for the Graph Coloring Problem
 
 ## Implemented algorithms
 
-* Greedy Largest First `-a greedy_largestfirst`
-* Greedy Smallest Last `-a greedy_smallestlast`
-* Greedy DSATUR `-a greedy_dsatur`
+The greedy algorithms are described in "ColPack: Software for graph coloring and related problems in scientific computing" (Gebremedhin et al., 2013).
+
+* Greedy algorithms:
+  * Largest first `-a greedy_largestfirst`
+  * Incidence degree `-a greedy_incidencedegree`
+  * Smallest last `-a greedy_smallestlast`
+  * Dynamic Largest First `-a greedy_dynamiclargestfirst`
+  * DSATUR `-a greedy_dsatur`
 * Branch-and-cut (CPLEX) `-a branchandcut_cplex`
 
 ## Usage (command line)

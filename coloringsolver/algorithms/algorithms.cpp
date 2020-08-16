@@ -20,8 +20,12 @@ Output coloringsolver::run(
 
     } else if (algorithm_args[0] == "greedy_largestfirst") {
         return greedy_largestfirst(instance, info);
+    } else if (algorithm_args[0] == "greedy_incidencedegree") {
+        return greedy_incidencedegree(instance, info);
     } else if (algorithm_args[0] == "greedy_smallestlast") {
         return greedy_smallestlast(instance, info);
+    } else if (algorithm_args[0] == "greedy_dynamiclargestfirst") {
+        return greedy_dynamiclargestfirst(instance, info);
     } else if (algorithm_args[0] == "greedy_dsatur") {
         return greedy_dsatur(instance, info);
 #if CPLEX_FOUND
