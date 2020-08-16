@@ -161,7 +161,7 @@ LocalSearchOutput coloringsolver::localsearch(
 
     // Compute initial greedy solution.
     LocalSearchOutput output(instance, parameters.info);
-    Solution solution = greedy_dsatur(instance).solution;
+    Solution solution = greedy_largestfirst(instance).solution;
     std::stringstream ss;
     ss << "initial solution";
     output.update_solution(solution, ss, parameters.info);
