@@ -34,6 +34,7 @@ void localsearch_worker(
     // Initialize local search structures.
     std::vector<LocalSearchVertex> vertices(instance.vertex_number());
     Counter iterations_without_improvment = 0;
+    std::vector<Penalty> penalties(instance.degree_max(), 0);
 
     for (Counter iterations = 1; parameters.info.check_time(); ++iterations) {
 
@@ -113,21 +114,17 @@ void localsearch_worker(
         ColorId  c_best = -1;
         Penalty  p_best = -1;
         for (VertexId v: {instance.edge(e).v1, instance.edge(e).v2}) {
+            std::fill(penalties.begin(), penalties.end(), 0);
+            for (const auto& edge: instance.vertex(v).edges)
+                penalties[solution.color(edge.v)] += solution.penalty(edge.e);
             for (auto it_c = solution.map().values_begin(); it_c != solution.map().values_end(); ++it_c) {
                 ColorId c = *it_c;
                 if (c == solution.color(v))
                     continue;
-                Penalty p = solution.penalty();
-                for (const auto& edge: instance.vertex(v).edges) {
-                    if (solution.color(edge.v) == solution.color(v))
-                        p -= solution.penalty(edge.e);
-                    if (solution.color(edge.v) == c)
-                        p += solution.penalty(edge.e);
-                }
-                if (p_best == -1 || p_best > p) {
+                if (p_best == -1 || p_best > penalties[c]) {
                     v_best = v;
                     c_best = c;
-                    p_best = p;
+                    p_best = penalties[c];
                 }
             }
         }
