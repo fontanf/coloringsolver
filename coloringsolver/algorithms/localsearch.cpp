@@ -114,7 +114,8 @@ void localsearch_worker(
         ColorId  c_best = -1;
         Penalty  p_best = -1;
         for (VertexId v: {instance.edge(e).v1, instance.edge(e).v2}) {
-            std::fill(penalties.begin(), penalties.end(), 0);
+            for (auto it_c = solution.colors_begin(); it_c != solution.colors_end(); ++it_c)
+                penalties[*it_c] = 0;
             for (const auto& edge: instance.vertex(v).edges)
                 penalties[solution.color(edge.v)] += solution.penalty(edge.e);
             for (auto it_c = solution.colors_begin(); it_c != solution.colors_end(); ++it_c) {
