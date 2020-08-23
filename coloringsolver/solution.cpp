@@ -6,7 +6,7 @@ using namespace coloringsolver;
 
 Solution::Solution(const Instance& instance):
     instance_(instance),
-    map_(instance.vertex_number(), instance.degree_max()),
+    map_(instance.vertex_number(), std::max(instance.degree_max(), instance.vertex_number())),
     conflicts_(instance.edge_number()),
     penalties_(instance.edge_number(), 1),
     penalty_(instance.edge_number())
@@ -15,7 +15,7 @@ Solution::Solution(const Instance& instance):
 
 Solution::Solution(const Instance& instance, std::string filepath):
     instance_(instance),
-    map_(instance.vertex_number(), instance.vertex_number()),
+    map_(instance.vertex_number(), std::max(instance.degree_max(), instance.vertex_number())),
     conflicts_(instance.edge_number()),
     penalties_(instance.edge_number(), 1),
     penalty_(instance.edge_number())

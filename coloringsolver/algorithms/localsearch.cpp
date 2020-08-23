@@ -36,9 +36,13 @@ void localsearch_worker(
     Counter iterations_without_improvment = 0;
     std::vector<Penalty> penalties(instance.degree_max(), 0);
 
-    for (Counter iterations = 1; parameters.info.check_time(); ++iterations) {
-        // Check iteration limit.
-        if (parameters.iteration_limit != -1 && iterations > parameters.iteration_limit)
+    for (Counter iterations = 1; parameters.info.check_time(); ++iterations, iterations_without_improvment++) {
+        // Check stop criteria.
+        if (parameters.iteration_limit != -1
+                && iterations > parameters.iteration_limit)
+            break;
+        if (parameters.iteration_without_improvment_limit != -1
+                && iterations_without_improvment > parameters.iteration_without_improvment_limit)
             break;
 
         // If the solution is feasible, we merge two colors.
@@ -146,10 +150,6 @@ void localsearch_worker(
             for (EdgeId e = 0; e < instance.edge_number(); ++e)
                 solution.set_penalty(e, (solution.penalty(e) - 1) / 2 + 1);
         }
-
-        // Update component.iterations and component.iterations_without_improvment.
-        iterations++;
-        iterations_without_improvment++;
     }
 }
 

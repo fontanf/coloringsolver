@@ -5,6 +5,42 @@
 using namespace coloringsolver;
 namespace po = boost::program_options;
 
+BranchAndCutAssignmentCplexOptionalParameters read_branchandcut_assignment_cplex_args(const std::vector<char*>& argv)
+{
+    BranchAndCutAssignmentCplexOptionalParameters parameters;
+    po::options_description desc("Allowed options");
+    desc.add_options()
+        ("break-symmetries,s", po::value<bool>(&parameters.break_symmetries), "")
+        ;
+    po::variables_map vm;
+    po::store(po::parse_command_line((Counter)argv.size(), argv.data(), desc), vm);
+    try {
+        po::notify(vm);
+    } catch (po::required_option e) {
+        std::cout << desc << std::endl;;
+        throw "";
+    }
+    return parameters;
+}
+
+BranchAndCutRepresentativesCplexOptionalParameters read_branchandcut_representatives_cplex_args(const std::vector<char*>& argv)
+{
+    BranchAndCutRepresentativesCplexOptionalParameters parameters;
+    po::options_description desc("Allowed options");
+    desc.add_options()
+        ("break-symmetries,s", po::value<bool>(&parameters.break_symmetries), "")
+        ;
+    po::variables_map vm;
+    po::store(po::parse_command_line((Counter)argv.size(), argv.data(), desc), vm);
+    try {
+        po::notify(vm);
+    } catch (po::required_option e) {
+        std::cout << desc << std::endl;;
+        throw "";
+    }
+    return parameters;
+}
+
 LocalSearchOptionalParameters read_localsearch_args(const std::vector<char*>& argv)
 {
     LocalSearchOptionalParameters parameters;
@@ -12,6 +48,7 @@ LocalSearchOptionalParameters read_localsearch_args(const std::vector<char*>& ar
     desc.add_options()
         ("threads,t", po::value<Counter>(&parameters.thread_number), "")
         ("iterations,i", po::value<Counter>(&parameters.iteration_limit), "")
+        ("iterations-without-improvment,w", po::value<Counter>(&parameters.iteration_without_improvment_limit), "")
         ;
     po::variables_map vm;
     po::store(po::parse_command_line((Counter)argv.size(), argv.data(), desc), vm);
@@ -46,16 +83,28 @@ Output coloringsolver::run(
         return greedy_dynamiclargestfirst(instance, info);
     } else if (algorithm_args[0] == "greedy_dsatur") {
         return greedy_dsatur(instance, info);
+#if CPLEX_FOUND
+    } else if (algorithm_args[0] == "branchandcut_assignment_cplex") {
+        auto parameters = read_branchandcut_assignment_cplex_args(algorithm_argv);
+        parameters.info = info;
+        return branchandcut_assignment_cplex(instance, parameters);
+    } else if (algorithm_args[0] == "branchandcut_representatives_cplex") {
+        auto parameters = read_branchandcut_representatives_cplex_args(algorithm_argv);
+        parameters.info = info;
+        return branchandcut_representatives_cplex(instance, parameters);
+    } else if (algorithm_args[0] == "branchandcut_partialordering_cplex") {
+        BranchAndCutPartialOrderingCplexOptionalParameters parameters;
+        parameters.info = info;
+        return branchandcut_partialordering_cplex(instance, parameters);
+    } else if (algorithm_args[0] == "branchandcut_partialordering2_cplex") {
+        BranchAndCutPartialOrdering2CplexOptionalParameters parameters;
+        parameters.info = info;
+        return branchandcut_partialordering2_cplex(instance, parameters);
+#endif
     } else if (algorithm_args[0] == "localsearch") {
         auto parameters = read_localsearch_args(algorithm_argv);
         parameters.info = info;
         return localsearch(instance, generator, parameters);
-#if CPLEX_FOUND
-    } else if (algorithm_args[0] == "branchandcut_cplex") {
-        BranchAndCutCplexOptionalParameters parameters;
-        parameters.info = info;
-        return branchandcut_cplex(instance, parameters);
-#endif
 
     } else {
         std::cerr << "\033[31m" << "ERROR, unknown algorithm: " << algorithm_argv[0] << "\033[0m" << std::endl;
