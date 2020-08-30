@@ -23,24 +23,6 @@ BranchAndCutAssignmentCplexOptionalParameters read_branchandcut_assignment_cplex
     return parameters;
 }
 
-BranchAndCutRepresentativesCplexOptionalParameters read_branchandcut_representatives_cplex_args(const std::vector<char*>& argv)
-{
-    BranchAndCutRepresentativesCplexOptionalParameters parameters;
-    po::options_description desc("Allowed options");
-    desc.add_options()
-        ("break-symmetries,s", po::value<bool>(&parameters.break_symmetries), "")
-        ;
-    po::variables_map vm;
-    po::store(po::parse_command_line((Counter)argv.size(), argv.data(), desc), vm);
-    try {
-        po::notify(vm);
-    } catch (po::required_option e) {
-        std::cout << desc << std::endl;;
-        throw "";
-    }
-    return parameters;
-}
-
 LocalSearchOptionalParameters read_localsearch_args(const std::vector<char*>& argv)
 {
     LocalSearchOptionalParameters parameters;
@@ -89,7 +71,7 @@ Output coloringsolver::run(
         parameters.info = info;
         return branchandcut_assignment_cplex(instance, parameters);
     } else if (algorithm_args[0] == "branchandcut_representatives_cplex") {
-        auto parameters = read_branchandcut_representatives_cplex_args(algorithm_argv);
+        BranchAndCutRepresentativesCplexOptionalParameters parameters;
         parameters.info = info;
         return branchandcut_representatives_cplex(instance, parameters);
     } else if (algorithm_args[0] == "branchandcut_partialordering_cplex") {

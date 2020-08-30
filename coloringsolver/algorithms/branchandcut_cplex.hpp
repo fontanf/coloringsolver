@@ -33,7 +33,6 @@ struct BranchAndCutRepresentativesCplexOptionalParameters
     Info info = Info();
 
     const Solution* initial_solution = NULL;
-    bool break_symmetries = true;
 };
 
 struct BranchAndCutRepresentativesCplexOutput: Output

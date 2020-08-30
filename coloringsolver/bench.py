@@ -162,7 +162,7 @@ if __name__ == "__main__":
         os.makedirs(directory_out)
 
     results_file = open(os.path.join(directory_out, "results.csv"), "w")
-    results_file.write("Instance,Value,Time to best,Time to end\n")
+    results_file.write("Instance,Value,Time to best,Bound,Time to end\n")
 
     main_exec = os.path.join(".", "bazel-bin", "coloringsolver", "main")
     for instance_name in datas[data]:
@@ -193,6 +193,7 @@ if __name__ == "__main__":
         results_file.write(instance_name \
                 + "," + str(d["Solution"]["Value"]) \
                 + "," + str(d["Solution" + str(k)]["Time"]) \
+                + "," + str(d["Bound"]["Value"]) \
                 + "," + str(d["Solution"]["Time"]) \
                 + "\n")
 

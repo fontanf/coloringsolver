@@ -193,7 +193,7 @@ ILOMIPINFOCALLBACK5(loggingCallbackRepresentatives,
 BranchAndCutRepresentativesCplexOutput coloringsolver::branchandcut_representatives_cplex(
         const Instance& instance, BranchAndCutRepresentativesCplexOptionalParameters parameters)
 {
-    VER(parameters.info, "*** branchandcut_representatives_cplex --break-symmetries " << parameters.break_symmetries << " ***" << std::endl);
+    VER(parameters.info, "*** branchandcut_representatives_cplex ***" << std::endl);
 
     BranchAndCutRepresentativesCplexOutput output(instance, parameters.info);
 
@@ -207,23 +207,18 @@ BranchAndCutRepresentativesCplexOutput coloringsolver::branchandcut_representati
         neighbors.clear();
         for (const auto& vn: instance.vertex(v).edges)
             neighbors.add(vn.v);
-        for (auto it = neighbors.out_begin(); it != neighbors.out_end(); ++it) {
-            if (*it >= v)
-                continue;
-            complementary_edges.push_back({(EdgeId)complementary_edges.size(), v, *it});
-        }
+        for (auto it = neighbors.out_begin(); it != neighbors.out_end(); ++it)
+            if (instance.degree(v) > instance.degree(*it)
+                    || (instance.degree(v) == instance.degree(*it) && v < *it))
+                complementary_edges.push_back({(EdgeId)complementary_edges.size(), v, *it});
     }
     std::vector<std::vector<VertexNeighbor>> complementary_graph(instance.vertex_number());
     for (EdgeId e = 0; e < (EdgeId)complementary_edges.size(); ++e) {
         const Edge& edge = complementary_edges[e];
-        VertexNeighbor vn1;
-        vn1.e = e;
-        vn1.v = edge.v2;
-        complementary_graph[edge.v1].push_back(vn1);
-        VertexNeighbor vn2;
-        vn2.e = e;
-        vn2.v = edge.v1;
-        complementary_graph[edge.v2].push_back(vn2);
+        VertexNeighbor vn;
+        vn.e = e;
+        vn.v = edge.v1;
+        complementary_graph[edge.v2].push_back(vn);
     }
 
     // Variables
@@ -244,8 +239,7 @@ BranchAndCutRepresentativesCplexOutput coloringsolver::branchandcut_representati
         IloExpr expr(env);
         expr += x[v][v];
         for (const auto& vn: complementary_graph[v])
-            if (!parameters.break_symmetries || vn.v < v)
-                expr += x[vn.v][v];
+            expr += x[vn.v][v];
         model.add(expr >= 1);
     }
 
