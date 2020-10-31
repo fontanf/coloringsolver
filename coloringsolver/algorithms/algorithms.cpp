@@ -29,8 +29,8 @@ LocalSearchOptionalParameters read_localsearch_args(const std::vector<char*>& ar
     po::options_description desc("Allowed options");
     desc.add_options()
         ("threads,t", po::value<Counter>(&parameters.thread_number), "")
-        ("iterations,i", po::value<Counter>(&parameters.iteration_limit), "")
-        ("iterations-without-improvment,w", po::value<Counter>(&parameters.iteration_without_improvment_limit), "")
+        ("iteration-limit,i", po::value<Counter>(&parameters.iteration_limit), "")
+        ("iteration-without-improvment-limit,w", po::value<Counter>(&parameters.iteration_without_improvment_limit), "")
         ;
     po::variables_map vm;
     po::store(po::parse_command_line((Counter)argv.size(), argv.data(), desc), vm);
