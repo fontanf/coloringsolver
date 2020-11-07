@@ -17,6 +17,8 @@ Instance::Instance(std::string filepath, std::string format)
 
     if (format == "dimacs") {
         read_dimacs(file);
+    } else if (format == "matrixmarket") {
+        read_matrixmarket(file);
     } else {
         std::cerr << "\033[31m" << "ERROR, unknown instance format: \"" << format << "\"" << "\033[0m" << std::endl;
         assert(false);
@@ -30,12 +32,19 @@ Instance::Instance(VertexId vertex_number):
         vertices_[v].id = v;
 }
 
-void Instance::add_edge(VertexId v1, VertexId v2)
+void Instance::add_edge(VertexId v1, VertexId v2, bool check_duplicate)
 {
+    assert(v1 < vertex_number());
+    assert(v2 < vertex_number());
     if (v1 == v2) {
-        std::cerr << "\033[33m" << "WARNING, loop (" << v1 << ", " << v2 << ") ignored." << "\033[0m" << std::endl;
+        //std::cerr << "\033[33m" << "WARNING, loop (" << v1 << ", " << v2 << ") ignored." << "\033[0m" << std::endl;
         return;
     }
+
+    if (check_duplicate)
+        for (const auto& edge: vertex(v1).edges)
+            if (edge.v == v2)
+                return;
 
     Edge e;
     e.id = edges_.size();
@@ -79,6 +88,25 @@ void Instance::read_dimacs(std::ifstream& file)
             VertexId v2 = stol(line[2]) - 1;
             add_edge(v1, v2);
         }
+    }
+}
+
+void Instance::read_matrixmarket(std::ifstream& file)
+{
+    std::string tmp;
+    std::vector<std::string> line;
+    do {
+        getline(file, tmp);
+    } while (tmp[0] == '%');
+    line = optimizationtools::split(tmp, ' ');
+    VertexId n = stol(line[0]);
+    vertices_.resize(n);
+
+    while (getline(file, tmp)) {
+        line = optimizationtools::split(tmp, ' ');
+        VertexId v1 = stol(line[0]) - 1;
+        VertexId v2 = stol(line[1]) - 1;
+        add_edge(v1, v2);
     }
 }
 

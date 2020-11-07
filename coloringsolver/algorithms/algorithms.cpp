@@ -5,6 +5,26 @@
 using namespace coloringsolver;
 namespace po = boost::program_options;
 
+GreedyOptionalParameters read_greedy_args(const std::vector<char*>& argv)
+{
+    GreedyOptionalParameters parameters;
+    po::options_description desc("Allowed options");
+    desc.add_options()
+        ("ordering,o", po::value<Ordering>(&parameters.ordering), "")
+        ("reverse,r", "")
+        ;
+    po::variables_map vm;
+    po::store(po::parse_command_line((Counter)argv.size(), argv.data(), desc), vm);
+    try {
+        po::notify(vm);
+    } catch (po::required_option e) {
+        std::cout << desc << std::endl;;
+        throw "";
+    }
+    parameters.reverse = vm.count("reverse");
+    return parameters;
+}
+
 BranchAndCutAssignmentCplexOptionalParameters read_branchandcut_assignment_cplex_args(const std::vector<char*>& argv)
 {
     BranchAndCutAssignmentCplexOptionalParameters parameters;
@@ -55,14 +75,10 @@ Output coloringsolver::run(
         std::cerr << "\033[32m" << "ERROR, missing algorithm." << "\033[0m" << std::endl;
         return Output(instance, info);
 
-    } else if (algorithm_args[0] == "greedy_largestfirst") {
-        return greedy_largestfirst(instance, info);
-    } else if (algorithm_args[0] == "greedy_incidencedegree") {
-        return greedy_incidencedegree(instance, info);
-    } else if (algorithm_args[0] == "greedy_smallestlast") {
-        return greedy_smallestlast(instance, info);
-    } else if (algorithm_args[0] == "greedy_dynamiclargestfirst") {
-        return greedy_dynamiclargestfirst(instance, info);
+    } else if (algorithm_args[0] == "greedy") {
+        auto parameters = read_greedy_args(algorithm_argv);
+        parameters.info = info;
+        return greedy(instance, parameters);
     } else if (algorithm_args[0] == "greedy_dsatur") {
         return greedy_dsatur(instance, info);
 #if CPLEX_FOUND

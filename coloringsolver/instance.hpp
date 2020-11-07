@@ -59,7 +59,7 @@ public:
     /** Manual constructor. */
     Instance(VertexId vertex_number);
     void set_name(std::string name) { name_ = name; }
-    void add_edge(VertexId v1, VertexId v2);
+    void add_edge(VertexId v1, VertexId v2, bool check_duplicate = true);
 
     /** Getters. */
     inline std::string name() const { return name_; }
@@ -89,6 +89,7 @@ private:
      */
 
     void read_dimacs(std::ifstream& file);
+    void read_matrixmarket(std::ifstream& file);
 
 };
 

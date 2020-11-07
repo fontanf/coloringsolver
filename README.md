@@ -2,17 +2,17 @@
 
 A solver for the Graph Coloring Problem.
 
-![knapsack](graphcoloring.png?raw=true "graphcoloring")
+![graphcoloring](img/graphcoloring.png?raw=true "graphcoloring")
 
 [image source](https://commons.wikimedia.org/wiki/File:Petersen_graph_3-coloring.svg)
 
 ## Implemented algorithms
 
 * Greedy algorithms, see "ColPack: Software for graph coloring and related problems in scientific computing" (Gebremedhin et al., 2013) for their descriptions:
-  * Largest first `-a greedy_largestfirst`
-  * Incidence degree `-a greedy_incidencedegree`
-  * Smallest last `-a greedy_smallestlast`
-  * Dynamic largest first `-a greedy_dynamiclargestfirst`
+  * Largest first `-a greedy --ordering largestfirst`
+  * Incidence degree `-a greedy --ordering incidencedegree --reverse`
+  * Smallest last `-a greedy --ordering smallestlast --reverse`
+  * Dynamic largest first `-a greedy --ordering dynamiclargestfirst`
   * DSATUR `-a greedy_dsatur`
 * Branch-and-cut (CPLEX), see "New Integer Linear Programming Models for the Vertex Coloring Problem" (Jabrayilov et Mutzel, 2018) for model descriptions:
   * Assignment-based ILP model `-a branchandcut_assignment_cplex`
@@ -41,15 +41,24 @@ Run:
 
 Benchmarks:
 ```shell
-python3 ../optimizationtools/optimizationtools/bench_run.py --algorithms "greedy_largestfirst"
-python3 ../optimizationtools/optimizationtools/bench_run.py --algorithms "greedy_incidencedegree"
-python3 ../optimizationtools/optimizationtools/bench_run.py --algorithms "greedy_smallestlast"
-python3 ../optimizationtools/optimizationtools/bench_run.py --algorithms "greedy_dynamiclargestfirst"
+python3 ../optimizationtools/optimizationtools/bench_run.py --algorithms "greedy --ordering largestfirst"
+python3 ../optimizationtools/optimizationtools/bench_run.py --algorithms "greedy --ordering largestfirst --reverse"
+python3 ../optimizationtools/optimizationtools/bench_run.py --algorithms "greedy --ordering incidencedegree"
+python3 ../optimizationtools/optimizationtools/bench_run.py --algorithms "greedy --ordering incidencedegree --reverse"
+python3 ../optimizationtools/optimizationtools/bench_run.py --algorithms "greedy --ordering smallestlast"
+python3 ../optimizationtools/optimizationtools/bench_run.py --algorithms "greedy --ordering smallestlast --reverse"
+python3 ../optimizationtools/optimizationtools/bench_run.py --algorithms "greedy --ordering dynamiclargestfirst"
+python3 ../optimizationtools/optimizationtools/bench_run.py --algorithms "greedy --ordering dynamiclargestfirst --reverse"
 python3 ../optimizationtools/optimizationtools/bench_run.py --algorithms "greedy_dsatur"
 python3 ../optimizationtools/optimizationtools/bench_run.py --algorithms "localsearch --iteration-without-improvment-limit 1000"
 python3 ../optimizationtools/optimizationtools/bench_run.py --algorithms "localsearch --iteration-without-improvment-limit 10000"
-python3 ../optimizationtools/optimizationtools/bench_process.py --benchmark heuristicshort --timelimit 1 --labels "greedy_largestfirst" "greedy_incidencedegree" "greedy_smallestlast" "greedy_dynamiclargestfirst" "greedy_dsatur" "localsearch --iteration-without-improvment-limit 1000" "localsearch --iteration-without-improvment-limit 10000"
+python3 ../optimizationtools/optimizationtools/bench_process.py --benchmark heuristicshort --timelimit 2 --labels "greedy --ordering largestfirst" "greedy --ordering largestfirst --reverse" "greedy --ordering incidencedegree" "greedy --ordering incidencedegree --reverse" "greedy --ordering smallestlast" "greedy --ordering smallestlast --reverse" "greedy --ordering dynamiclargestfirst" "greedy --ordering dynamiclargestfirst --reverse"
+python3 ../optimizationtools/optimizationtools/bench_process.py --benchmark heuristicshort --timelimit 6 --labels "greedy --ordering largestfirst" "greedy --ordering incidencedegree --reverse" "greedy --ordering smallestlast --reverse" "greedy --ordering dynamiclargestfirst" "greedy_dsatur" "localsearch --iteration-without-improvment-limit 1000" "localsearch --iteration-without-improvment-limit 10000"
 ```
+
+![heuristicshort1](img/heuristicshort2.png?raw=true "heuristicshort1")
+
+![heuristicshort2](img/heuristicshort2.png?raw=true "heuristicshort2")
 
 ```shell
 python3 ../optimizationtools/optimizationtools/bench_run.py --timelimit 3600 --algorithms "branchandcut_assignment_cplex"

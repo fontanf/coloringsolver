@@ -5,13 +5,26 @@
 namespace coloringsolver
 {
 
-Output greedy_largestfirst(const Instance& instance, Info info = Info());
+enum class Ordering {
+    Default,
+    LargestFirst,
+    IncidenceDegree,
+    SmallestLast,
+    DynamicLargestFirst,
+};
 
-Output greedy_incidencedegree(const Instance& instance, Info info = Info());
+std::istream& operator>>(std::istream& in, Ordering& problem_type);
+std::ostream& operator<<(std::ostream &os, Ordering ordering);
 
-Output greedy_smallestlast(const Instance& instance, Info info = Info());
+struct GreedyOptionalParameters
+{
+    Ordering ordering = Ordering::DynamicLargestFirst;
+    bool reverse = false;
 
-Output greedy_dynamiclargestfirst(const Instance& instance, Info info = Info());
+    Info info = Info();
+};
+
+Output greedy(const Instance& instance, GreedyOptionalParameters = {});
 
 Output greedy_dsatur(const Instance& instance, Info info = Info());
 

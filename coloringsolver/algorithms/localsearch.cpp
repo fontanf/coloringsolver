@@ -27,9 +27,23 @@ void localsearch_worker(
         Counter thread_id)
 {
     std::mt19937_64 generator(seed);
-    parameters.info.output->mutex_sol.lock();
-    Solution solution = output.solution;
-    parameters.info.output->mutex_sol.unlock();
+
+    GreedyOptionalParameters parameters_greedy;
+    if (thread_id % 4 == 0) {
+        parameters_greedy.ordering = Ordering::DynamicLargestFirst;
+    } else if (thread_id % 4 == 1) {
+        parameters_greedy.ordering = Ordering::SmallestLast;
+        parameters_greedy.reverse = true;
+    } else if (thread_id % 4 == 2) {
+        parameters_greedy.ordering = Ordering::IncidenceDegree;
+        parameters_greedy.reverse = true;
+    } else if (thread_id % 4 == 3) {
+        parameters_greedy.ordering = Ordering::LargestFirst;
+    }
+    Solution solution = greedy(instance, parameters_greedy).solution;
+    std::stringstream ss;
+    ss << "thread " << thread_id << " initial solution";
+    output.update_solution(solution, ss, parameters.info);
 
     // Initialize local search structures.
     std::vector<LocalSearchVertex> vertices(instance.vertex_number());
@@ -162,10 +176,6 @@ LocalSearchOutput coloringsolver::localsearch(
 
     // Compute initial greedy solution.
     LocalSearchOutput output(instance, parameters.info);
-    Solution solution = greedy_largestfirst(instance).solution;
-    std::stringstream ss;
-    ss << "initial solution";
-    output.update_solution(solution, ss, parameters.info);
 
     auto seeds = optimizationtools::bob_floyd(parameters.thread_number, std::numeric_limits<Seed>::max(), generator);
     std::vector<std::thread> threads;
