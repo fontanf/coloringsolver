@@ -56,7 +56,7 @@ python3 ../optimizationtools/optimizationtools/bench_process.py --benchmark heur
 python3 ../optimizationtools/optimizationtools/bench_process.py --benchmark heuristicshort --timelimit 6 --labels "greedy --ordering largestfirst" "greedy --ordering incidencedegree --reverse" "greedy --ordering smallestlast --reverse" "greedy --ordering dynamiclargestfirst" "greedy_dsatur" "localsearch --iteration-without-improvment-limit 1000" "localsearch --iteration-without-improvment-limit 10000"
 ```
 
-![heuristicshort1](img/heuristicshort2.png?raw=true "heuristicshort1")
+![heuristicshort1](img/heuristicshort1.png?raw=true "heuristicshort1")
 
 ![heuristicshort2](img/heuristicshort2.png?raw=true "heuristicshort2")
 
