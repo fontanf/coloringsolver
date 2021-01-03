@@ -34,13 +34,37 @@ cc_library(
 git_repository(
     name = "optimizationtools",
     remote = "https://github.com/fontanf/optimizationtools.git",
-    commit = "f9bc0445f03069b2108603ccbe9d7a6028249e4a",
-    shallow_since = "1597557178 +0200",
+    commit = "b51d64c7428acfde1ad8798404b1be9b413a1248",
+    shallow_since = "1609062649 +0100",
 )
 
 local_repository(
     name = "optimizationtools_",
     path = "/home/florian/Dev/optimizationtools/",
+)
+
+git_repository(
+    name = "columngenerationsolver",
+    remote = "https://github.com/fontanf/columngenerationsolver.git",
+    commit = "ddf6da508b5565ab890313936fb418cd442f2108",
+    shallow_since = "1609672269 +0100",
+)
+
+local_repository(
+    name = "columngenerationsolver_",
+    path = "../columngenerationsolver/",
+)
+
+git_repository(
+    name = "stablesolver",
+    remote = "https://github.com/fontanf/stablesolver.git",
+    commit = "a0f667460b4cac1d9acfc901cf1014d9c8ad9cc8",
+    shallow_since = "1609063299 +0100",
+)
+
+local_repository(
+    name = "stablesolver_",
+    path = "../stablesolver/",
 )
 
 new_local_repository(

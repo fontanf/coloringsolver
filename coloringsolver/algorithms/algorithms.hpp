@@ -5,6 +5,7 @@
 #include "coloringsolver/algorithms/greedy.hpp"
 #include "coloringsolver/algorithms/localsearch.hpp"
 #include "coloringsolver/algorithms/branchandcut_cplex.hpp"
+#include "coloringsolver/algorithms/columngeneration.hpp"
 
 namespace coloringsolver
 {

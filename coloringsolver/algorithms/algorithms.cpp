@@ -17,7 +17,7 @@ GreedyOptionalParameters read_greedy_args(const std::vector<char*>& argv)
     po::store(po::parse_command_line((Counter)argv.size(), argv.data(), desc), vm);
     try {
         po::notify(vm);
-    } catch (po::required_option e) {
+    } catch (const po::required_option& e) {
         std::cout << desc << std::endl;;
         throw "";
     }
@@ -36,7 +36,7 @@ BranchAndCutAssignmentCplexOptionalParameters read_branchandcut_assignment_cplex
     po::store(po::parse_command_line((Counter)argv.size(), argv.data(), desc), vm);
     try {
         po::notify(vm);
-    } catch (po::required_option e) {
+    } catch (const po::required_option& e) {
         std::cout << desc << std::endl;;
         throw "";
     }
@@ -56,7 +56,25 @@ LocalSearchOptionalParameters read_localsearch_args(const std::vector<char*>& ar
     po::store(po::parse_command_line((Counter)argv.size(), argv.data(), desc), vm);
     try {
         po::notify(vm);
-    } catch (po::required_option e) {
+    } catch (const po::required_option& e) {
+        std::cout << desc << std::endl;;
+        throw "";
+    }
+    return parameters;
+}
+
+ColumnGenerationOptionalParameters read_columngeneration_args(const std::vector<char*>& argv)
+{
+    ColumnGenerationOptionalParameters parameters;
+    po::options_description desc("Allowed options");
+    desc.add_options()
+        ("linear-programming-solver,s", po::value<columngenerationsolver::LinearProgrammingSolver>(&parameters.linear_programming_solver), "")
+        ;
+    po::variables_map vm;
+    po::store(po::parse_command_line((Counter)argv.size(), argv.data(), desc), vm);
+    try {
+        po::notify(vm);
+    } catch (const po::required_option& e) {
         std::cout << desc << std::endl;;
         throw "";
     }
@@ -103,6 +121,14 @@ Output coloringsolver::run(
         auto parameters = read_localsearch_args(algorithm_argv);
         parameters.info = info;
         return localsearch(instance, generator, parameters);
+    } else if (algorithm_args[0] == "columngenerationheuristic_greedy") {
+        ColumnGenerationOptionalParameters parameters = read_columngeneration_args(algorithm_argv);
+        parameters.info = info;
+        return columngenerationheuristic_greedy(instance, parameters);
+    } else if (algorithm_args[0] == "columngenerationheuristic_limiteddiscrepancysearch") {
+        ColumnGenerationOptionalParameters parameters = read_columngeneration_args(algorithm_argv);
+        parameters.info = info;
+        return columngenerationheuristic_limiteddiscrepancysearch(instance, parameters);
 
     } else {
         std::cerr << "\033[31m" << "ERROR, unknown algorithm: " << algorithm_argv[0] << "\033[0m" << std::endl;

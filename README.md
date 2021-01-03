@@ -20,6 +20,9 @@ A solver for the Graph Coloring Problem.
   * Partial-ordering based ILP model `-a branchandcut_partialordering_cplex`
   * Partial-ordering based ILP model 2 `-a branchandcut_partialordering2_cplex`
 * Row weighting local search `-a "localsearch --threads 3 --iteration-limit 100000 --iteration-without-improvment-limit 10000"`
+* Column generation heuristics:
+  * Greedy `columngenerationheuristic_greedy`
+  * Limited discrepancy search `columngenerationheuristic_limiteddiscrepancysearch`
 
 ## Usage (command line)
 
