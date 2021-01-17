@@ -1,10 +1,14 @@
 #include "coloringsolver/algorithms/columngeneration.hpp"
 
-using namespace coloringsolver;
+#include "columngenerationsolver/algorithms/column_generation.hpp"
+#include "columngenerationsolver/algorithms/greedy.hpp"
+#include "columngenerationsolver/algorithms/limited_discrepancy_search.hpp"
+
+#include "stablesolver/algorithms/largeneighborhoodsearch.hpp"
 
 /**
- * The linear programming formulation of the Graph Coloring Problem based on
- * Dantzig–Wolfe decomposition is written as follows:
+ * The linear programming formulation of the problem based on Dantzig–Wolfe
+ * decomposition is written as follows:
  *
  * Variables:
  * - yᵏ ∈ {0, 1} representing a stable set.
@@ -27,6 +31,13 @@ using namespace coloringsolver;
  * a Maximum-Weight Independent Set Problem with vertices with weight vᵥ.
  *
  */
+
+using namespace coloringsolver;
+
+typedef columngenerationsolver::RowIdx RowIdx;
+typedef columngenerationsolver::ColIdx ColIdx;
+typedef columngenerationsolver::Value Value;
+typedef columngenerationsolver::Column Column;
 
 ColumnGenerationHeuristicGreedyOutput& ColumnGenerationHeuristicGreedyOutput::algorithm_end(Info& info)
 {
@@ -51,7 +62,7 @@ public:
         coloring2mwis_(instance.vertex_number())
     {  }
 
-    virtual void initialize_pricing(
+    virtual std::vector<ColIdx> initialize_pricing(
             const std::vector<Column>& columns,
             const std::vector<std::pair<ColIdx, Value>>& fixed_columns);
 
@@ -70,9 +81,7 @@ private:
 
 };
 
-columngenerationsolver::Parameters get_parameters(
-        const Instance& instance,
-        columngenerationsolver::LinearProgrammingSolver linear_programming_solver)
+columngenerationsolver::Parameters get_parameters(const Instance& instance)
 {
     VertexId n = instance.vertex_number();
     columngenerationsolver::Parameters p(n);
@@ -93,23 +102,20 @@ columngenerationsolver::Parameters get_parameters(
     // Pricing solver.
     p.pricing_solver = std::unique_ptr<columngenerationsolver::PricingSolver>(
             new PricingSolver(instance));
-    p.linear_programming_solver = linear_programming_solver;
     return p;
 }
 
 Solution columns2solution(
         const Instance& instance,
-        const std::vector<Column>& columns,
-        const std::vector<std::pair<ColIdx, Value>>& column_solution)
+        const std::vector<std::pair<Column, Value>>& columns)
 {
     Solution solution(instance);
     ColorId color = 0;
-    for (auto pair: column_solution) {
-        ColIdx col_idx = pair.first;
+    for (auto pair: columns) {
         Value value = pair.second;
         if (value < 0.5)
             continue;
-        const Column& column = columns[col_idx];
+        const Column& column = pair.first;
         for (RowIdx row_pos = 0; row_pos < (RowIdx)column.row_indices.size(); ++row_pos)
             if (column.row_coefficients[row_pos] > 0.5)
                 solution.set(column.row_indices[row_pos], color);
@@ -118,7 +124,7 @@ Solution columns2solution(
     return solution;
 }
 
-void PricingSolver::initialize_pricing(
+std::vector<ColIdx> PricingSolver::initialize_pricing(
             const std::vector<Column>& columns,
             const std::vector<std::pair<ColIdx, Value>>& fixed_columns)
 {
@@ -136,6 +142,7 @@ void PricingSolver::initialize_pricing(
             fixed_vertices_[row_index] = 1;
         }
     }
+    return {};
 }
 
 std::vector<Column> PricingSolver::solve_pricing(
@@ -145,7 +152,7 @@ std::vector<Column> PricingSolver::solve_pricing(
     std::vector<Column> columns;
     stablesolver::Weight mult = 10000;
 
-    // Build Maximum-Weight Independent Set instance.
+    // Build subproblem instance.
     std::fill(coloring2mwis_.begin(), coloring2mwis_.end(), -1);
     mwis2coloring_.clear();
     weights_.clear();
@@ -173,7 +180,7 @@ std::vector<Column> PricingSolver::solve_pricing(
     }
     instance_mwis.compute_components();
 
-    // Solve Maximum-Weight Independent Set instance.
+    // Solve subproblem instance.
     stablesolver::LargeNeighborhoodSearchOptionalParameters parameters_mwis;
     parameters_mwis.iteration_without_improvment_limit = 1000;
     //parameters_mwis.info.set_verbose(true);
@@ -201,10 +208,11 @@ ColumnGenerationHeuristicGreedyOutput coloringsolver::columngenerationheuristic_
             << " ***" << std::endl);
     ColumnGenerationHeuristicGreedyOutput output(instance, parameters.info);
 
-    columngenerationsolver::Parameters p = get_parameters(
-            instance, parameters.linear_programming_solver);
+    columngenerationsolver::Parameters p = get_parameters(instance);
     columngenerationsolver::GreedyOptionalParameters op;
     op.info.set_timelimit(parameters.info.remaining_time());
+    op.columngeneration_parameters.linear_programming_solver
+        = columngenerationsolver::s2lps(parameters.linear_programming_solver);
     // Self-ajusting Wentges smoothing and automatic directional smoothing do
     // not work well on the Graph Coloring Problem as shown in "Automation and
     // Combination of Linear-Programming Based Stabilization Techniques in
@@ -222,7 +230,7 @@ ColumnGenerationHeuristicGreedyOutput coloringsolver::columngenerationheuristic_
     //        parameters.info);
     if (output_greedy.solution.size() > 0)
         output.update_solution(
-                columns2solution(instance, p.columns, output_greedy.solution),
+                columns2solution(instance, output_greedy.solution),
                 std::stringstream(""),
                 parameters.info);
     return output.algorithm_end(parameters.info);
@@ -236,10 +244,11 @@ ColumnGenerationHeuristicLimitedDiscrepancySearchOutput coloringsolver::columnge
             << " ***" << std::endl);
     ColumnGenerationHeuristicLimitedDiscrepancySearchOutput output(instance, parameters.info);
 
-    columngenerationsolver::Parameters p = get_parameters(
-            instance, parameters.linear_programming_solver);
+    columngenerationsolver::Parameters p = get_parameters(instance);
     columngenerationsolver::LimitedDiscrepancySearchOptionalParameters op;
-    op.new_bound_callback = [&instance, &parameters, &p, &output](
+    op.columngeneration_parameters.linear_programming_solver
+        = columngenerationsolver::s2lps(parameters.linear_programming_solver);
+    op.new_bound_callback = [&instance, &parameters, &output](
                 const columngenerationsolver::LimitedDiscrepancySearchOutput& o)
         {
             std::stringstream ss;
@@ -247,7 +256,7 @@ ColumnGenerationHeuristicLimitedDiscrepancySearchOutput coloringsolver::columnge
             if (o.solution.size() > 0) {
                 ss << " discrepancy " << o.solution_discrepancy;
                 output.update_solution(
-                        columns2solution(instance, p.columns, o.solution),
+                        columns2solution(instance, o.solution),
                         ss,
                         parameters.info);
             }
