@@ -1,6 +1,6 @@
 #if CPLEX_FOUND
 
-#include "coloringsolver/algorithms/branchandcut_cplex.hpp"
+#include "coloringsolver/algorithms/milp_cplex.hpp"
 
 #include <ilcplex/ilocplex.h>
 
@@ -10,7 +10,7 @@ ILOSTLBEGIN
 
 /************************* Assignment-based ILP model *************************/
 
-BranchAndCutAssignmentCplexOutput& BranchAndCutAssignmentCplexOutput::algorithm_end(Info& info)
+MilpAssignmentCplexOutput& MilpAssignmentCplexOutput::algorithm_end(optimizationtools::Info& info)
 {
     //PUT(info, "Algorithm", "Iterations", it);
     Output::algorithm_end(info);
@@ -20,8 +20,8 @@ BranchAndCutAssignmentCplexOutput& BranchAndCutAssignmentCplexOutput::algorithm_
 
 ILOMIPINFOCALLBACK5(loggingCallbackAssignment,
                     const Instance&, instance,
-                    BranchAndCutAssignmentCplexOptionalParameters&, parameters,
-                    BranchAndCutAssignmentCplexOutput&, output,
+                    MilpAssignmentCplexOptionalParameters&, parameters,
+                    MilpAssignmentCplexOutput&, output,
                     ColorId, upper_bound,
                     std::vector<IloNumVarArray>&, x)
 {
@@ -31,9 +31,9 @@ ILOMIPINFOCALLBACK5(loggingCallbackAssignment,
     if (!hasIncumbent())
         return;
 
-    if (!output.solution.feasible() || output.solution.color_number() > getIncumbentObjValue() + 0.5) {
+    if (!output.solution.feasible() || output.solution.number_of_colors() > getIncumbentObjValue() + 0.5) {
         Solution solution(instance);
-        for (VertexId v = 0; v < instance.vertex_number(); ++v) {
+        for (VertexId v = 0; v < instance.number_of_vertices(); ++v) {
             IloNumArray val(x[v].getEnv());
             getIncumbentValues(val, x[v]);
             for (ColorId c = 0; c < upper_bound; ++c)
@@ -44,22 +44,22 @@ ILOMIPINFOCALLBACK5(loggingCallbackAssignment,
     }
 }
 
-BranchAndCutAssignmentCplexOutput coloringsolver::branchandcut_assignment_cplex(
-        const Instance& instance, BranchAndCutAssignmentCplexOptionalParameters parameters)
+MilpAssignmentCplexOutput coloringsolver::milp_assignment_cplex(
+        const Instance& instance, MilpAssignmentCplexOptionalParameters parameters)
 {
-    VER(parameters.info, "*** branchandcut_assignment_cplex ***" << std::endl);
+    VER(parameters.info, "*** milp_assignment_cplex ***" << std::endl);
 
-    BranchAndCutAssignmentCplexOutput output(instance, parameters.info);
+    MilpAssignmentCplexOutput output(instance, parameters.info);
 
     IloEnv env;
     IloModel model(env);
 
-    ColorId upper_bound = instance.degree_max() + 1;
+    ColorId upper_bound = instance.maximum_degree() + 1;
 
     // Variables
     // x[v][c] == 1 iff vertex v has color c.
     std::vector<IloNumVarArray> x;
-    for (VertexId v = 0; v < instance.vertex_number(); ++v)
+    for (VertexId v = 0; v < instance.number_of_vertices(); ++v)
         x.push_back(IloNumVarArray(env, upper_bound, 0, 1, ILOBOOL));
     // y[c] == 1 iff color c is used.
     IloNumVarArray y(env, upper_bound, 0, 1, ILOBOOL);
@@ -72,7 +72,7 @@ BranchAndCutAssignmentCplexOutput coloringsolver::branchandcut_assignment_cplex(
     model.add(obj);
 
     // Edge constraints
-    for (EdgeId e = 0; e < instance.edge_number(); ++e) {
+    for (EdgeId e = 0; e < instance.number_of_edges(); ++e) {
         for (ColorId c = 0; c < upper_bound; ++c) {
             IloExpr expr(env);
             expr += x[instance.edge(e).v1][c];
@@ -83,7 +83,7 @@ BranchAndCutAssignmentCplexOutput coloringsolver::branchandcut_assignment_cplex(
     }
 
     // Each vertex must have a color.
-    for (VertexId v = 0; v < instance.vertex_number(); ++v) {
+    for (VertexId v = 0; v < instance.number_of_vertices(); ++v) {
         IloExpr expr(env);
         for (ColorId c = 0; c < upper_bound; ++c)
             expr += x[v][c];
@@ -94,7 +94,7 @@ BranchAndCutAssignmentCplexOutput coloringsolver::branchandcut_assignment_cplex(
         for (ColorId c = 0; c < upper_bound; ++c) {
             IloExpr expr(env);
             expr += y[c];
-            for (VertexId v = 0; v < instance.vertex_number(); ++v)
+            for (VertexId v = 0; v < instance.number_of_vertices(); ++v)
                 expr -= x[v][c];
             model.add(expr <= 0);
         }
@@ -112,7 +112,7 @@ BranchAndCutAssignmentCplexOutput coloringsolver::branchandcut_assignment_cplex(
     cplex.setParam(IloCplex::Param::MIP::Strategy::File, 2); // Avoid running out of memory
 
     // Time limit
-    if (parameters.info.timelimit != std::numeric_limits<double>::infinity())
+    if (parameters.info.time_limit != std::numeric_limits<double>::infinity())
         cplex.setParam(IloCplex::TiLim, parameters.info.remaining_time());
 
     // Callback
@@ -123,19 +123,19 @@ BranchAndCutAssignmentCplexOutput coloringsolver::branchandcut_assignment_cplex(
 
     if (cplex.getStatus() == IloAlgorithm::Infeasible) {
     } else if (cplex.getStatus() == IloAlgorithm::Optimal) {
-        if (!output.solution.feasible() || output.solution.color_number() > cplex.getObjValue() + 0.5) {
+        if (!output.solution.feasible() || output.solution.number_of_colors() > cplex.getObjValue() + 0.5) {
             Solution solution(instance);
-            for (VertexId v = 0; v < instance.vertex_number(); ++v)
+            for (VertexId v = 0; v < instance.number_of_vertices(); ++v)
                 for (ColorId c = 0; c < upper_bound; ++c)
                     if (cplex.getValue(x[v][c]) > 0.5)
                         solution.set(v, c);
             output.update_solution(solution, std::stringstream(""), parameters.info);
         }
-        output.update_lower_bound(output.solution.color_number(), std::stringstream(""), parameters.info);
+        output.update_lower_bound(output.solution.number_of_colors(), std::stringstream(""), parameters.info);
     } else if (cplex.isPrimalFeasible()) {
-        if (!output.solution.feasible() || output.solution.color_number() > cplex.getObjValue() + 0.5) {
+        if (!output.solution.feasible() || output.solution.number_of_colors() > cplex.getObjValue() + 0.5) {
             Solution solution(instance);
-            for (VertexId v = 0; v < instance.vertex_number(); ++v)
+            for (VertexId v = 0; v < instance.number_of_vertices(); ++v)
                 for (ColorId c = 0; c < upper_bound; ++c)
                     if (cplex.getValue(x[v][c]) > 0.5)
                         solution.set(v, c);
@@ -155,7 +155,8 @@ BranchAndCutAssignmentCplexOutput coloringsolver::branchandcut_assignment_cplex(
 
 /************************* Representatives ILP model **************************/
 
-BranchAndCutRepresentativesCplexOutput& BranchAndCutRepresentativesCplexOutput::algorithm_end(Info& info)
+MilpRepresentativesCplexOutput& MilpRepresentativesCplexOutput::algorithm_end(
+        optimizationtools::Info& info)
 {
     //PUT(info, "Algorithm", "Iterations", it);
     Output::algorithm_end(info);
@@ -165,8 +166,8 @@ BranchAndCutRepresentativesCplexOutput& BranchAndCutRepresentativesCplexOutput::
 
 ILOMIPINFOCALLBACK5(loggingCallbackRepresentatives,
                     const Instance&, instance,
-                    BranchAndCutRepresentativesCplexOptionalParameters&, parameters,
-                    BranchAndCutRepresentativesCplexOutput&, output,
+                    MilpRepresentativesCplexOptionalParameters&, parameters,
+                    MilpRepresentativesCplexOutput&, output,
                     const std::vector<Edge>&, complementary_edges,
                     std::vector<IloNumVarArray>&, x)
 {
@@ -176,10 +177,10 @@ ILOMIPINFOCALLBACK5(loggingCallbackRepresentatives,
     if (!hasIncumbent())
         return;
 
-    if (!output.solution.feasible() || output.solution.color_number() > getIncumbentObjValue() + 0.5) {
+    if (!output.solution.feasible() || output.solution.number_of_colors() > getIncumbentObjValue() + 0.5) {
         Solution solution(instance);
-        for (VertexId v1 = 0; v1 < instance.vertex_number(); ++v1) {
-            for (VertexId v2 = 0; v2 < instance.vertex_number(); ++v2) {
+        for (VertexId v1 = 0; v1 < instance.number_of_vertices(); ++v1) {
+            for (VertexId v2 = 0; v2 < instance.number_of_vertices(); ++v2) {
                 if (getIncumbentValue(x[v2][v1]) > 0.5) {
                     solution.set(v1, v2);
                     break;
@@ -190,20 +191,20 @@ ILOMIPINFOCALLBACK5(loggingCallbackRepresentatives,
     }
 }
 
-BranchAndCutRepresentativesCplexOutput coloringsolver::branchandcut_representatives_cplex(
-        const Instance& instance, BranchAndCutRepresentativesCplexOptionalParameters parameters)
+MilpRepresentativesCplexOutput coloringsolver::milp_representatives_cplex(
+        const Instance& instance, MilpRepresentativesCplexOptionalParameters parameters)
 {
-    VER(parameters.info, "*** branchandcut_representatives_cplex ***" << std::endl);
+    VER(parameters.info, "*** milp_representatives_cplex ***" << std::endl);
 
-    BranchAndCutRepresentativesCplexOutput output(instance, parameters.info);
+    MilpRepresentativesCplexOutput output(instance, parameters.info);
 
     IloEnv env;
     IloModel model(env);
 
     // Build complementary graph.
     std::vector<Edge> complementary_edges;
-    optimizationtools::IndexedSet neighbors(instance.vertex_number());
-    for (VertexId v = 0; v < instance.vertex_number(); ++v) {
+    optimizationtools::IndexedSet neighbors(instance.number_of_vertices());
+    for (VertexId v = 0; v < instance.number_of_vertices(); ++v) {
         neighbors.clear();
         for (const auto& vn: instance.vertex(v).edges)
             neighbors.add(vn.v);
@@ -212,7 +213,7 @@ BranchAndCutRepresentativesCplexOutput coloringsolver::branchandcut_representati
                     || (instance.degree(v) == instance.degree(*it) && v < *it))
                 complementary_edges.push_back({(EdgeId)complementary_edges.size(), v, *it});
     }
-    std::vector<std::vector<VertexNeighbor>> complementary_graph(instance.vertex_number());
+    std::vector<std::vector<VertexNeighbor>> complementary_graph(instance.number_of_vertices());
     for (EdgeId e = 0; e < (EdgeId)complementary_edges.size(); ++e) {
         const Edge& edge = complementary_edges[e];
         VertexNeighbor vn;
@@ -223,19 +224,19 @@ BranchAndCutRepresentativesCplexOutput coloringsolver::branchandcut_representati
 
     // Variables
     // x[u][v] == 1 iff vertex v is represented by u.
-    std::vector<IloNumVarArray> x(instance.vertex_number());
-    for (VertexId v = 0; v < instance.vertex_number(); ++v)
-        x[v] = IloNumVarArray(env, instance.vertex_number(), 0, 1, ILOBOOL);
+    std::vector<IloNumVarArray> x(instance.number_of_vertices());
+    for (VertexId v = 0; v < instance.number_of_vertices(); ++v)
+        x[v] = IloNumVarArray(env, instance.number_of_vertices(), 0, 1, ILOBOOL);
 
     // Objective
     IloExpr expr(env);
-    for (VertexId v = 0; v < instance.vertex_number(); ++v)
+    for (VertexId v = 0; v < instance.number_of_vertices(); ++v)
         expr += x[v][v];
     IloObjective obj = IloMinimize(env, expr);
     model.add(obj);
 
     // Every vertex v must have a representative (possibly v itself).
-    for (VertexId v = 0; v < instance.vertex_number(); ++v) {
+    for (VertexId v = 0; v < instance.number_of_vertices(); ++v) {
         IloExpr expr(env);
         expr += x[v][v];
         for (const auto& vn: complementary_graph[v])
@@ -244,9 +245,9 @@ BranchAndCutRepresentativesCplexOutput coloringsolver::branchandcut_representati
     }
 
     // A representative can not represent both endpoints of an edge.
-    for (EdgeId e = 0; e < instance.edge_number(); ++e) {
+    for (EdgeId e = 0; e < instance.number_of_edges(); ++e) {
         const Edge& edge = instance.edge(e);
-        for (VertexId v = 0; v < instance.vertex_number(); ++v)
+        for (VertexId v = 0; v < instance.number_of_vertices(); ++v)
             model.add(x[v][edge.v1] + x[v][edge.v2] <= x[v][v]);
     }
 
@@ -260,7 +261,7 @@ BranchAndCutRepresentativesCplexOutput coloringsolver::branchandcut_representati
     cplex.setParam(IloCplex::Param::MIP::Strategy::File, 2); // Avoid running out of memory
 
     // Time limit
-    if (parameters.info.timelimit != std::numeric_limits<double>::infinity())
+    if (parameters.info.time_limit != std::numeric_limits<double>::infinity())
         cplex.setParam(IloCplex::TiLim, parameters.info.remaining_time());
 
     // Callback
@@ -271,10 +272,10 @@ BranchAndCutRepresentativesCplexOutput coloringsolver::branchandcut_representati
 
     if (cplex.getStatus() == IloAlgorithm::Infeasible) {
     } else if (cplex.getStatus() == IloAlgorithm::Optimal) {
-        if (!output.solution.feasible() || output.solution.color_number() > cplex.getObjValue() + 0.5) {
+        if (!output.solution.feasible() || output.solution.number_of_colors() > cplex.getObjValue() + 0.5) {
             Solution solution(instance);
-            for (VertexId v1 = 0; v1 < instance.vertex_number(); ++v1) {
-                for (VertexId v2 = 0; v2 < instance.vertex_number(); ++v2) {
+            for (VertexId v1 = 0; v1 < instance.number_of_vertices(); ++v1) {
+                for (VertexId v2 = 0; v2 < instance.number_of_vertices(); ++v2) {
                     if (cplex.getValue(x[v2][v1]) > 0.5) {
                         solution.set(v1, v2);
                         break;
@@ -283,12 +284,12 @@ BranchAndCutRepresentativesCplexOutput coloringsolver::branchandcut_representati
             }
             output.update_solution(solution, std::stringstream(""), parameters.info);
         }
-        output.update_lower_bound(output.solution.color_number(), std::stringstream(""), parameters.info);
+        output.update_lower_bound(output.solution.number_of_colors(), std::stringstream(""), parameters.info);
     } else if (cplex.isPrimalFeasible()) {
-        if (!output.solution.feasible() || output.solution.color_number() > cplex.getObjValue() + 0.5) {
+        if (!output.solution.feasible() || output.solution.number_of_colors() > cplex.getObjValue() + 0.5) {
             Solution solution(instance);
-            for (VertexId v1 = 0; v1 < instance.vertex_number(); ++v1) {
-                for (VertexId v2 = 0; v2 < instance.vertex_number(); ++v2) {
+            for (VertexId v1 = 0; v1 < instance.number_of_vertices(); ++v1) {
+                for (VertexId v2 = 0; v2 < instance.number_of_vertices(); ++v2) {
                     if (cplex.getValue(x[v2][v1]) > 0.5) {
                         solution.set(v1, v2);
                         break;
@@ -311,7 +312,8 @@ BranchAndCutRepresentativesCplexOutput coloringsolver::branchandcut_representati
 
 /********************** Partial-ordering based ILP model **********************/
 
-BranchAndCutPartialOrderingCplexOutput& BranchAndCutPartialOrderingCplexOutput::algorithm_end(Info& info)
+MilpPartialOrderingCplexOutput& MilpPartialOrderingCplexOutput::algorithm_end(
+        optimizationtools::Info& info)
 {
     //PUT(info, "Algorithm", "Iterations", it);
     Output::algorithm_end(info);
@@ -321,8 +323,8 @@ BranchAndCutPartialOrderingCplexOutput& BranchAndCutPartialOrderingCplexOutput::
 
 ILOMIPINFOCALLBACK6(loggingCallbackPartialOrdering,
                     const Instance&, instance,
-                    BranchAndCutPartialOrderingCplexOptionalParameters&, parameters,
-                    BranchAndCutPartialOrderingCplexOutput&, output,
+                    MilpPartialOrderingCplexOptionalParameters&, parameters,
+                    MilpPartialOrderingCplexOutput&, output,
                     ColorId, upper_bound,
                     std::vector<IloNumVarArray>&, y,
                     std::vector<IloNumVarArray>&, z)
@@ -333,9 +335,9 @@ ILOMIPINFOCALLBACK6(loggingCallbackPartialOrdering,
     if (!hasIncumbent())
         return;
 
-    if (!output.solution.feasible() || output.solution.color_number() > getIncumbentObjValue() + 0.5) {
+    if (!output.solution.feasible() || output.solution.number_of_colors() > getIncumbentObjValue() + 0.5) {
         Solution solution(instance);
-        for (VertexId v = 0; v < instance.vertex_number(); ++v) {
+        for (VertexId v = 0; v < instance.number_of_vertices(); ++v) {
             IloNumArray val_y(y[v].getEnv());
             IloNumArray val_z(z[v].getEnv());
             getIncumbentValues(val_y, y[v]);
@@ -348,26 +350,26 @@ ILOMIPINFOCALLBACK6(loggingCallbackPartialOrdering,
     }
 }
 
-BranchAndCutPartialOrderingCplexOutput coloringsolver::branchandcut_partialordering_cplex(
-        const Instance& instance, BranchAndCutPartialOrderingCplexOptionalParameters parameters)
+MilpPartialOrderingCplexOutput coloringsolver::milp_partialordering_cplex(
+        const Instance& instance, MilpPartialOrderingCplexOptionalParameters parameters)
 {
-    VER(parameters.info, "*** branchandcut_partialordering_cplex ***" << std::endl);
+    VER(parameters.info, "*** milp_partialordering_cplex ***" << std::endl);
 
-    BranchAndCutPartialOrderingCplexOutput output(instance, parameters.info);
+    MilpPartialOrderingCplexOutput output(instance, parameters.info);
 
     IloEnv env;
     IloModel model(env);
 
-    ColorId upper_bound = instance.degree_max() + 1;
+    ColorId upper_bound = instance.maximum_degree() + 1;
 
     // Variables
     // y[v][c] == 1 iff vertex v has color > c.
     // z[v][c] == 1 iff vertex v has color < c.
     std::vector<IloNumVarArray> y;
-    for (VertexId v = 0; v < instance.vertex_number(); ++v)
+    for (VertexId v = 0; v < instance.number_of_vertices(); ++v)
         y.push_back(IloNumVarArray(env, upper_bound, 0, 1, ILOBOOL));
     std::vector<IloNumVarArray> z;
-    for (VertexId v = 0; v < instance.vertex_number(); ++v)
+    for (VertexId v = 0; v < instance.number_of_vertices(); ++v)
         z.push_back(IloNumVarArray(env, upper_bound, 0, 1, ILOBOOL));
 
     // Objective
@@ -379,29 +381,29 @@ BranchAndCutPartialOrderingCplexOutput coloringsolver::branchandcut_partialorder
     model.add(obj);
 
     // y and z extreme values
-    for (VertexId v = 0; v < instance.vertex_number(); ++v) {
+    for (VertexId v = 0; v < instance.number_of_vertices(); ++v) {
         model.add(y[v][upper_bound - 1] == 0);
         model.add(z[v][0]               == 0);
     }
 
     // If the color of v is > c + 1, then it is > c.
-    for (VertexId v = 0; v < instance.vertex_number(); ++v)
+    for (VertexId v = 0; v < instance.number_of_vertices(); ++v)
         for (ColorId c = 0; c < upper_bound - 1; ++c)
             model.add(y[v][c + 1] <= y[v][c]);
 
     // A vertex has a color either > c or < c + 1
-    for (VertexId v = 0; v < instance.vertex_number(); ++v)
+    for (VertexId v = 0; v < instance.number_of_vertices(); ++v)
         for (ColorId c = 0; c < upper_bound - 1; ++c)
             model.add(y[v][c] + z[v][c + 1] == 1);
 
     // Prevent assigning the same color to two adjacent vertices.
-    for (EdgeId e = 0; e < instance.edge_number(); ++e) {
+    for (EdgeId e = 0; e < instance.number_of_edges(); ++e) {
         const Edge& edge = instance.edge(e);
         for (ColorId c = 0; c < upper_bound; ++c)
             model.add(y[edge.v1][c] + z[edge.v1][c] + y[edge.v2][c] + z[edge.v2][c] >= 1);
     }
 
-    for (VertexId v = 0; v < instance.vertex_number(); ++v)
+    for (VertexId v = 0; v < instance.number_of_vertices(); ++v)
         for (ColorId c = 0; c < upper_bound - 1; ++c)
             model.add(y[0][c] - y[v][c] >= 0);
 
@@ -415,7 +417,7 @@ BranchAndCutPartialOrderingCplexOutput coloringsolver::branchandcut_partialorder
     cplex.setParam(IloCplex::Param::MIP::Strategy::File, 2); // Avoid running out of memory
 
     // Time limit
-    if (parameters.info.timelimit != std::numeric_limits<double>::infinity())
+    if (parameters.info.time_limit != std::numeric_limits<double>::infinity())
         cplex.setParam(IloCplex::TiLim, parameters.info.remaining_time());
 
     // Callback
@@ -426,19 +428,19 @@ BranchAndCutPartialOrderingCplexOutput coloringsolver::branchandcut_partialorder
 
     if (cplex.getStatus() == IloAlgorithm::Infeasible) {
     } else if (cplex.getStatus() == IloAlgorithm::Optimal) {
-        if (!output.solution.feasible() || output.solution.color_number() > cplex.getObjValue() + 0.5) {
+        if (!output.solution.feasible() || output.solution.number_of_colors() > cplex.getObjValue() + 0.5) {
             Solution solution(instance);
-            for (VertexId v = 0; v < instance.vertex_number(); ++v)
+            for (VertexId v = 0; v < instance.number_of_vertices(); ++v)
                 for (ColorId c = 0; c < upper_bound; ++c)
                     if (cplex.getValue(y[v][c]) + cplex.getValue(z[v][c]) < 0.5)
                         solution.set(v, c);
             output.update_solution(solution, std::stringstream(""), parameters.info);
         }
-        output.update_lower_bound(output.solution.color_number(), std::stringstream(""), parameters.info);
+        output.update_lower_bound(output.solution.number_of_colors(), std::stringstream(""), parameters.info);
     } else if (cplex.isPrimalFeasible()) {
-        if (!output.solution.feasible() || output.solution.color_number() > cplex.getObjValue() + 0.5) {
+        if (!output.solution.feasible() || output.solution.number_of_colors() > cplex.getObjValue() + 0.5) {
             Solution solution(instance);
-            for (VertexId v = 0; v < instance.vertex_number(); ++v)
+            for (VertexId v = 0; v < instance.number_of_vertices(); ++v)
                 for (ColorId c = 0; c < upper_bound; ++c)
                     if (cplex.getValue(y[v][c]) + cplex.getValue(z[v][c]) < 0.5)
                         solution.set(v, c);
@@ -458,7 +460,8 @@ BranchAndCutPartialOrderingCplexOutput coloringsolver::branchandcut_partialorder
 
 /********************* Partial-ordering based ILP model 2 *********************/
 
-BranchAndCutPartialOrdering2CplexOutput& BranchAndCutPartialOrdering2CplexOutput::algorithm_end(Info& info)
+MilpPartialOrdering2CplexOutput& MilpPartialOrdering2CplexOutput::algorithm_end(
+        optimizationtools::Info& info)
 {
     //PUT(info, "Algorithm", "Iterations", it);
     Output::algorithm_end(info);
@@ -468,8 +471,8 @@ BranchAndCutPartialOrdering2CplexOutput& BranchAndCutPartialOrdering2CplexOutput
 
 ILOMIPINFOCALLBACK6(loggingCallbackPartialOrdering2,
                     const Instance&, instance,
-                    BranchAndCutPartialOrdering2CplexOptionalParameters&, parameters,
-                    BranchAndCutPartialOrdering2CplexOutput&, output,
+                    MilpPartialOrdering2CplexOptionalParameters&, parameters,
+                    MilpPartialOrdering2CplexOutput&, output,
                     ColorId, upper_bound,
                     std::vector<IloNumVarArray>&, y,
                     std::vector<IloNumVarArray>&, z)
@@ -480,9 +483,9 @@ ILOMIPINFOCALLBACK6(loggingCallbackPartialOrdering2,
     if (!hasIncumbent())
         return;
 
-    if (!output.solution.feasible() || output.solution.color_number() > getIncumbentObjValue() + 0.5) {
+    if (!output.solution.feasible() || output.solution.number_of_colors() > getIncumbentObjValue() + 0.5) {
         Solution solution(instance);
-        for (VertexId v = 0; v < instance.vertex_number(); ++v) {
+        for (VertexId v = 0; v < instance.number_of_vertices(); ++v) {
             IloNumArray val_y(y[v].getEnv());
             IloNumArray val_z(z[v].getEnv());
             getIncumbentValues(val_y, y[v]);
@@ -495,30 +498,30 @@ ILOMIPINFOCALLBACK6(loggingCallbackPartialOrdering2,
     }
 }
 
-BranchAndCutPartialOrdering2CplexOutput coloringsolver::branchandcut_partialordering2_cplex(
-        const Instance& instance, BranchAndCutPartialOrdering2CplexOptionalParameters parameters)
+MilpPartialOrdering2CplexOutput coloringsolver::milp_partialordering2_cplex(
+        const Instance& instance, MilpPartialOrdering2CplexOptionalParameters parameters)
 {
-    VER(parameters.info, "*** branchandcut_partialordering2_cplex ***" << std::endl);
+    VER(parameters.info, "*** milp_partialordering2_cplex ***" << std::endl);
 
-    BranchAndCutPartialOrdering2CplexOutput output(instance, parameters.info);
+    MilpPartialOrdering2CplexOutput output(instance, parameters.info);
 
     IloEnv env;
     IloModel model(env);
 
-    ColorId upper_bound = instance.degree_max() + 1;
+    ColorId upper_bound = instance.maximum_degree() + 1;
 
     // Variables
     // x[v][c] == 1 iff vertex v has color c.
     std::vector<IloNumVarArray> x;
-    for (VertexId v = 0; v < instance.vertex_number(); ++v)
+    for (VertexId v = 0; v < instance.number_of_vertices(); ++v)
         x.push_back(IloNumVarArray(env, upper_bound, 0, 1, ILOBOOL));
     // y[v][c] == 1 iff vertex v has color > c.
     // z[v][c] == 1 iff vertex v has color < c.
     std::vector<IloNumVarArray> y;
-    for (VertexId v = 0; v < instance.vertex_number(); ++v)
+    for (VertexId v = 0; v < instance.number_of_vertices(); ++v)
         y.push_back(IloNumVarArray(env, upper_bound, 0, 1, ILOBOOL));
     std::vector<IloNumVarArray> z;
-    for (VertexId v = 0; v < instance.vertex_number(); ++v)
+    for (VertexId v = 0; v < instance.number_of_vertices(); ++v)
         z.push_back(IloNumVarArray(env, upper_bound, 0, 1, ILOBOOL));
 
     // Objective
@@ -530,34 +533,34 @@ BranchAndCutPartialOrdering2CplexOutput coloringsolver::branchandcut_partialorde
     model.add(obj);
 
     // y and z extreme values
-    for (VertexId v = 0; v < instance.vertex_number(); ++v) {
+    for (VertexId v = 0; v < instance.number_of_vertices(); ++v) {
         model.add(y[v][upper_bound - 1] == 0);
         model.add(z[v][0]               == 0);
     }
 
     // If the color of v is > c + 1, then it is > c.
-    for (VertexId v = 0; v < instance.vertex_number(); ++v)
+    for (VertexId v = 0; v < instance.number_of_vertices(); ++v)
         for (ColorId c = 0; c < upper_bound - 1; ++c)
             model.add(y[v][c + 1] <= y[v][c]);
 
     // A vertex has a color either > c or < c + 1
-    for (VertexId v = 0; v < instance.vertex_number(); ++v)
+    for (VertexId v = 0; v < instance.number_of_vertices(); ++v)
         for (ColorId c = 0; c < upper_bound - 1; ++c)
             model.add(y[v][c] + z[v][c + 1] == 1);
 
     // Link x with y and z.
-    for (VertexId v = 0; v < instance.vertex_number(); ++v)
+    for (VertexId v = 0; v < instance.number_of_vertices(); ++v)
         for (ColorId c = 0; c < upper_bound; ++c)
             model.add(x[v][c] + y[v][c] + z[v][c] == 1);
 
     // Prevent assigning the same color to two adjacent vertices.
-    for (EdgeId e = 0; e < instance.edge_number(); ++e) {
+    for (EdgeId e = 0; e < instance.number_of_edges(); ++e) {
         const Edge& edge = instance.edge(e);
         for (ColorId c = 0; c < upper_bound; ++c)
             model.add(x[edge.v1][c] + x[edge.v2][c] <= 1);
     }
 
-    for (VertexId v = 0; v < instance.vertex_number(); ++v)
+    for (VertexId v = 0; v < instance.number_of_vertices(); ++v)
         for (ColorId c = 0; c < upper_bound - 1; ++c)
             model.add(y[0][c] - y[v][c] >= 0);
 
@@ -571,7 +574,7 @@ BranchAndCutPartialOrdering2CplexOutput coloringsolver::branchandcut_partialorde
     cplex.setParam(IloCplex::Param::MIP::Strategy::File, 2); // Avoid running out of memory
 
     // Time limit
-    if (parameters.info.timelimit != std::numeric_limits<double>::infinity())
+    if (parameters.info.time_limit != std::numeric_limits<double>::infinity())
         cplex.setParam(IloCplex::TiLim, parameters.info.remaining_time());
 
     // Callback
@@ -582,19 +585,19 @@ BranchAndCutPartialOrdering2CplexOutput coloringsolver::branchandcut_partialorde
 
     if (cplex.getStatus() == IloAlgorithm::Infeasible) {
     } else if (cplex.getStatus() == IloAlgorithm::Optimal) {
-        if (!output.solution.feasible() || output.solution.color_number() > cplex.getObjValue() + 0.5) {
+        if (!output.solution.feasible() || output.solution.number_of_colors() > cplex.getObjValue() + 0.5) {
             Solution solution(instance);
-            for (VertexId v = 0; v < instance.vertex_number(); ++v)
+            for (VertexId v = 0; v < instance.number_of_vertices(); ++v)
                 for (ColorId c = 0; c < upper_bound; ++c)
                     if (cplex.getValue(y[v][c]) + cplex.getValue(z[v][c]) < 0.5)
                         solution.set(v, c);
             output.update_solution(solution, std::stringstream(""), parameters.info);
         }
-        output.update_lower_bound(output.solution.color_number(), std::stringstream(""), parameters.info);
+        output.update_lower_bound(output.solution.number_of_colors(), std::stringstream(""), parameters.info);
     } else if (cplex.isPrimalFeasible()) {
-        if (!output.solution.feasible() || output.solution.color_number() > cplex.getObjValue() + 0.5) {
+        if (!output.solution.feasible() || output.solution.number_of_colors() > cplex.getObjValue() + 0.5) {
             Solution solution(instance);
-            for (VertexId v = 0; v < instance.vertex_number(); ++v)
+            for (VertexId v = 0; v < instance.number_of_vertices(); ++v)
                 for (ColorId c = 0; c < upper_bound; ++c)
                     if (cplex.getValue(y[v][c]) + cplex.getValue(z[v][c]) < 0.5)
                         solution.set(v, c);

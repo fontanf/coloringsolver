@@ -10,13 +10,18 @@ struct LocalSearchOptionalParameters
     Counter thread_number = 3;
     Counter iteration_limit = -1;
     Counter iteration_without_improvment_limit = -1;
-    Info info = Info();
+    optimizationtools::Info info = optimizationtools::Info();
 };
 
 struct LocalSearchOutput: Output
 {
-    LocalSearchOutput(const Instance& instance, Info& info): Output(instance, info) { }
-    LocalSearchOutput& algorithm_end(Info& info);
+    LocalSearchOutput(
+            const Instance& instance,
+            optimizationtools::Info& info):
+        Output(instance, info) { }
+
+    LocalSearchOutput& algorithm_end(
+            optimizationtools::Info& info);
 };
 
 LocalSearchOutput localsearch(

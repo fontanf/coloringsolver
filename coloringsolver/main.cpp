@@ -54,21 +54,21 @@ int main(int argc, char *argv[])
 
     Instance instance(instance_path, format);
 
-    Info info = Info()
+    optimizationtools::Info info = optimizationtools::Info()
         .set_verbose(vm.count("verbose"))
-        .set_timelimit(time_limit)
-        .set_certfile(certificate_path)
-        .set_outputfile(output_path)
-        .set_onlywriteattheend(false)
-        .set_logfile(log_path)
+        .set_time_limit(time_limit)
+        .set_certificate_path(certificate_path)
+        .set_json_output_path(output_path)
+        .set_only_write_at_the_end(false)
+        .set_log_path(log_path)
         .set_log2stderr(vm.count("log2stderr"))
-        .set_loglevelmax(loglevelmax)
+        .set_maximum_log_level(loglevelmax)
         ;
 
-    VER(info, "Instance:    " << instance.name() << std::endl);
-    VER(info, "Vertices:    " << instance.vertex_number() << std::endl);
-    VER(info, "Edges:       " << instance.edge_number() << std::endl);
-    VER(info, "Degree max:  " << instance.degree_max() << std::endl);
+    VER(info, "Instance:            " << instance.name() << std::endl);
+    VER(info, "Number of vertices:  " << instance.number_of_vertices() << std::endl);
+    VER(info, "Number of edges:     " << instance.number_of_edges() << std::endl);
+    VER(info, "Maximum degree:      " << instance.maximum_degree() << std::endl);
 
     std::mt19937_64 generator(seed);
     Solution solution(instance, initial_solution_path);

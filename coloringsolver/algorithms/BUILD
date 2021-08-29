@@ -6,14 +6,14 @@ cc_library(
         hdrs = [
                 "greedy.hpp",
                 "localsearch.hpp",
-                "branchandcut_cplex.hpp",
+                "milp_cplex.hpp",
                 "columngeneration.hpp",
                 "algorithms.hpp",
         ],
         srcs = [
                 "greedy.cpp",
                 "localsearch.cpp",
-                "branchandcut_cplex.cpp",
+                "milp_cplex.cpp",
                 "columngeneration.cpp",
                 "algorithms.cpp",
         ],

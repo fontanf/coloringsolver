@@ -21,12 +21,16 @@ struct GreedyOptionalParameters
     Ordering ordering = Ordering::DynamicLargestFirst;
     bool reverse = false;
 
-    Info info = Info();
+    optimizationtools::Info info = optimizationtools::Info();
 };
 
-Output greedy(const Instance& instance, GreedyOptionalParameters = {});
+Output greedy(
+        const Instance& instance,
+        GreedyOptionalParameters = {});
 
-Output greedy_dsatur(const Instance& instance, Info info = Info());
+Output greedy_dsatur(
+        const Instance& instance,
+        optimizationtools::Info info = optimizationtools::Info());
 
 }
 

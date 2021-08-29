@@ -49,13 +49,13 @@ std::ostream& coloringsolver::operator<<(std::ostream &os, Ordering ordering)
 
 std::vector<VertexId> largestfirst(const Instance& instance)
 {
-    std::vector<VertexId> ordered_vertices(instance.vertex_number());
-    std::vector<std::vector<VertexId>> vertices(instance.degree_max() + 1);
-    for (VertexId v = 0; v < instance.vertex_number(); ++v)
+    std::vector<VertexId> ordered_vertices(instance.number_of_vertices());
+    std::vector<std::vector<VertexId>> vertices(instance.maximum_degree() + 1);
+    for (VertexId v = 0; v < instance.number_of_vertices(); ++v)
         vertices[instance.degree(v)].push_back(v);
 
-    VertexId d_cur = instance.degree_max();
-    for (VertexPos v_pos = 0; v_pos < instance.vertex_number(); ++v_pos) {
+    VertexId d_cur = instance.maximum_degree();
+    for (VertexPos v_pos = 0; v_pos < instance.number_of_vertices(); ++v_pos) {
         while (vertices[d_cur].empty())
             d_cur--;
         VertexId v = vertices[d_cur].back();
@@ -67,24 +67,24 @@ std::vector<VertexId> largestfirst(const Instance& instance)
 
 std::vector<VertexId> incidencedegree(const Instance& instance)
 {
-    std::vector<VertexId> ordered_vertices(instance.vertex_number());
-    std::vector<uint8_t> added(instance.vertex_number(), 0);
-    std::vector<std::vector<VertexId>> vertices(instance.degree_max() + 1);
-    std::vector<std::pair<VertexId, VertexPos>> positions(instance.vertex_number(), {-1, -1});
+    std::vector<VertexId> ordered_vertices(instance.number_of_vertices());
+    std::vector<uint8_t> added(instance.number_of_vertices(), 0);
+    std::vector<std::vector<VertexId>> vertices(instance.maximum_degree() + 1);
+    std::vector<std::pair<VertexId, VertexPos>> positions(instance.number_of_vertices(), {-1, -1});
     VertexId v_best = -1;
-    for (VertexId v = 0; v < instance.vertex_number(); ++v) {
+    for (VertexId v = 0; v < instance.number_of_vertices(); ++v) {
         positions[v] = {0, v};
         vertices[0].push_back(v);
         if (v_best == -1 || instance.degree(v_best) < instance.degree(v))
             v_best = v;
     }
-    vertices[0][instance.vertex_number() - 1] = v_best;
-    vertices[0][v_best] = instance.vertex_number() - 1;
-    positions[v_best].second = instance.vertex_number() - 1;
-    positions[instance.vertex_number() - 1].second = v_best;
+    vertices[0][instance.number_of_vertices() - 1] = v_best;
+    vertices[0][v_best] = instance.number_of_vertices() - 1;
+    positions[v_best].second = instance.number_of_vertices() - 1;
+    positions[instance.number_of_vertices() - 1].second = v_best;
 
     VertexId d_cur = 0;
-    for (VertexPos v_pos = 0; v_pos < instance.vertex_number(); ++v_pos) {
+    for (VertexPos v_pos = 0; v_pos < instance.number_of_vertices(); ++v_pos) {
         while (vertices[d_cur].empty())
             d_cur++;
         VertexId v = vertices[d_cur].back();
@@ -108,19 +108,19 @@ std::vector<VertexId> incidencedegree(const Instance& instance)
 
 std::vector<VertexId> smallestlast(const Instance& instance)
 {
-    std::vector<VertexId> ordered_vertices(instance.vertex_number());
-    std::vector<uint8_t> added(instance.vertex_number(), 0);
+    std::vector<VertexId> ordered_vertices(instance.number_of_vertices());
+    std::vector<uint8_t> added(instance.number_of_vertices(), 0);
 
-    std::vector<std::vector<VertexId>> vertices(instance.degree_max() + 1);
-    std::vector<std::pair<VertexId, VertexPos>> positions(instance.vertex_number(), {-1, -1});
-    for (VertexId v = 0; v < instance.vertex_number(); ++v) {
+    std::vector<std::vector<VertexId>> vertices(instance.maximum_degree() + 1);
+    std::vector<std::pair<VertexId, VertexPos>> positions(instance.number_of_vertices(), {-1, -1});
+    for (VertexId v = 0; v < instance.number_of_vertices(); ++v) {
         VertexId dv = instance.degree(v);
         positions[v] = {dv, vertices[dv].size()};
         vertices[dv].push_back(v);
     }
 
     VertexId d_cur = 0;
-    for (VertexPos v_pos = 0; v_pos < instance.vertex_number(); ++v_pos) {
+    for (VertexPos v_pos = 0; v_pos < instance.number_of_vertices(); ++v_pos) {
         if (d_cur > 0 && !vertices[d_cur - 1].empty())
             d_cur--;
         while (vertices[d_cur].empty())
@@ -146,18 +146,18 @@ std::vector<VertexId> smallestlast(const Instance& instance)
 
 std::vector<VertexId> dynamiclargestfirst(const Instance& instance)
 {
-    std::vector<VertexId> ordered_vertices(instance.vertex_number());
-    std::vector<uint8_t> added(instance.vertex_number(), 0);
-    std::vector<std::vector<VertexId>> vertices(instance.degree_max() + 1);
-    std::vector<std::pair<VertexId, VertexPos>> positions(instance.vertex_number(), {-1, -1});
-    for (VertexId v = 0; v < instance.vertex_number(); ++v) {
+    std::vector<VertexId> ordered_vertices(instance.number_of_vertices());
+    std::vector<uint8_t> added(instance.number_of_vertices(), 0);
+    std::vector<std::vector<VertexId>> vertices(instance.maximum_degree() + 1);
+    std::vector<std::pair<VertexId, VertexPos>> positions(instance.number_of_vertices(), {-1, -1});
+    for (VertexId v = 0; v < instance.number_of_vertices(); ++v) {
         VertexId dv = instance.degree(v);
         positions[v] = {dv, vertices[dv].size()};
         vertices[dv].push_back(v);
     }
 
-    VertexId d_cur = instance.degree_max();
-    for (VertexPos v_pos = 0; v_pos < instance.vertex_number(); ++v_pos) {
+    VertexId d_cur = instance.maximum_degree();
+    for (VertexPos v_pos = 0; v_pos < instance.number_of_vertices(); ++v_pos) {
         while (vertices[d_cur].empty())
             d_cur--;
         VertexId v = vertices[d_cur].back();
@@ -190,7 +190,7 @@ Output coloringsolver::greedy(const Instance& instance, GreedyOptionalParameters
     std::vector<VertexId> ordered_vertices;
     switch (parameters.ordering) {
     case Ordering::Default: {
-        ordered_vertices.resize(instance.vertex_number());
+        ordered_vertices.resize(instance.number_of_vertices());
         std::iota(ordered_vertices.begin(), ordered_vertices.end(), 0);
         break;
     } case Ordering::LargestFirst: {
@@ -209,7 +209,7 @@ Output coloringsolver::greedy(const Instance& instance, GreedyOptionalParameters
     }
     }
 
-    optimizationtools::IndexedSet color_set(instance.degree_max());
+    optimizationtools::IndexedSet color_set(instance.maximum_degree());
     if (!parameters.reverse) {
         for (auto it_v = ordered_vertices.begin(); it_v != ordered_vertices.end(); ++it_v) {
             VertexId v = *it_v;
@@ -218,7 +218,7 @@ Output coloringsolver::greedy(const Instance& instance, GreedyOptionalParameters
                 if (solution.contains(edge.v))
                     color_set.add(solution.color(edge.v));
             ColorId c_best = -1;
-            for (ColorId c = 0; c < instance.vertex_number(); ++c) {
+            for (ColorId c = 0; c < instance.number_of_vertices(); ++c) {
                 if (!color_set.contains(c)) {
                     c_best = c;
                     break;
@@ -234,7 +234,7 @@ Output coloringsolver::greedy(const Instance& instance, GreedyOptionalParameters
                 if (solution.contains(edge.v))
                     color_set.add(solution.color(edge.v));
             ColorId c_best = -1;
-            for (ColorId c = 0; c < instance.vertex_number(); ++c) {
+            for (ColorId c = 0; c < instance.number_of_vertices(); ++c) {
                 if (!color_set.contains(c)) {
                     c_best = c;
                     break;
@@ -248,22 +248,24 @@ Output coloringsolver::greedy(const Instance& instance, GreedyOptionalParameters
     return output.algorithm_end(parameters.info);
 }
 
-Output coloringsolver::greedy_dsatur(const Instance& instance, Info info)
+Output coloringsolver::greedy_dsatur(
+        const Instance& instance,
+        optimizationtools::Info info)
 {
     VER(info, "*** greedy_dsatur ***" << std::endl);
     Output output(instance, info);
     Solution solution(instance);
 
     VertexId v_best = -1;
-    for (VertexId v = 0; v < instance.vertex_number(); ++v)
+    for (VertexId v = 0; v < instance.number_of_vertices(); ++v)
         if (v_best == -1 || instance.vertex(v_best).edges.size() < instance.vertex(v).edges.size())
             v_best = v;
 
     auto f = [](VertexId v) { (void)v; return 0; };
-    optimizationtools::IndexedBinaryHeap<double> heap(instance.vertex_number(), f);
+    optimizationtools::IndexedBinaryHeap<double> heap(instance.number_of_vertices(), f);
     heap.update_key(v_best, -1);
 
-    optimizationtools::IndexedSet color_set(instance.degree_max());
+    optimizationtools::IndexedSet color_set(instance.maximum_degree());
 
     while (!solution.feasible()) {
         auto p = heap.top();
@@ -275,7 +277,7 @@ Output coloringsolver::greedy_dsatur(const Instance& instance, Info info)
                 color_set.add(solution.color(vn.v));
 
         ColorId c_best = -1;
-        for (ColorId c = 0; c < instance.vertex_number(); ++c) {
+        for (ColorId c = 0; c < instance.number_of_vertices(); ++c) {
             if (!color_set.contains(c)) {
                 c_best = c;
                 break;
@@ -291,7 +293,7 @@ Output coloringsolver::greedy_dsatur(const Instance& instance, Info info)
             for (const auto& vn2: instance.vertex(vn1.v).edges)
                 if (solution.contains(vn2.v))
                     color_set.add(solution.color(vn2.v));
-            heap.update_key(vn1.v, - color_set.size() - (double)instance.vertex(vn1.v).edges.size() / (instance.degree_max() + 1));
+            heap.update_key(vn1.v, - color_set.size() - (double)instance.vertex(vn1.v).edges.size() / (instance.maximum_degree() + 1));
         }
     }
 

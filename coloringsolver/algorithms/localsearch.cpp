@@ -6,7 +6,8 @@
 
 using namespace coloringsolver;
 
-LocalSearchOutput& LocalSearchOutput::algorithm_end(Info& info)
+LocalSearchOutput& LocalSearchOutput::algorithm_end(
+        optimizationtools::Info& info)
 {
     //PUT(info, "Algorithm", "Iterations", iterations);
     Output::algorithm_end(info);
@@ -46,9 +47,9 @@ void localsearch_worker(
     output.update_solution(solution, ss, parameters.info);
 
     // Initialize local search structures.
-    std::vector<LocalSearchVertex> vertices(instance.vertex_number());
+    std::vector<LocalSearchVertex> vertices(instance.number_of_vertices());
     Counter iterations_without_improvment = 0;
-    std::vector<Penalty> penalties(instance.degree_max(), 0);
+    std::vector<Penalty> penalties(instance.maximum_degree(), 0);
 
     for (Counter iterations = 1; parameters.info.check_time(); ++iterations, iterations_without_improvment++) {
         // Check stop criteria.
@@ -64,7 +65,7 @@ void localsearch_worker(
         // solution.
         while (solution.feasible()) {
             // Update best solution
-            if (output.solution.color_number() > solution.color_number()) {
+            if (output.solution.number_of_colors() > solution.number_of_colors()) {
                 std::stringstream ss;
                 ss << "thread " << thread_id
                     << ", it " << iterations
@@ -76,19 +77,19 @@ void localsearch_worker(
             iterations_without_improvment = 0;
 
             // Compute positions.
-            std::vector<ColorPos> positions(instance.degree_max(), -1);
-            for (ColorPos c_pos = 0; c_pos < solution.color_number(); ++c_pos) {
+            std::vector<ColorPos> positions(instance.maximum_degree(), -1);
+            for (ColorPos c_pos = 0; c_pos < solution.number_of_colors(); ++c_pos) {
                 ColorId c = *(solution.colors_begin() + c_pos);
                 positions[c] = c_pos;
             }
 
             // Initialize penalty structure.
-            std::vector<std::vector<Penalty>> penalties(solution.color_number());
-            for (ColorPos c_pos = 0; c_pos < solution.color_number(); ++c_pos)
-                penalties[c_pos].resize(solution.color_number() - c_pos - 1);
+            std::vector<std::vector<Penalty>> penalties(solution.number_of_colors());
+            for (ColorPos c_pos = 0; c_pos < solution.number_of_colors(); ++c_pos)
+                penalties[c_pos].resize(solution.number_of_colors() - c_pos - 1);
 
             // Compute penalties.
-            for (EdgeId e = 0; e < instance.edge_number(); ++e) {
+            for (EdgeId e = 0; e < instance.number_of_edges(); ++e) {
                 VertexId v1 = instance.edge(e).v1;
                 VertexId v2 = instance.edge(e).v2;
                 ColorId c1 = solution.color(v1);
@@ -105,8 +106,8 @@ void localsearch_worker(
             ColorPos c1_pos_best = -1;
             ColorPos c2_pos_best = -1;
             Penalty p_best = -1;
-            for (ColorPos c1_pos = 0; c1_pos < solution.color_number(); ++c1_pos) {
-                for (ColorPos c2_pos = c1_pos + 1; c2_pos < solution.color_number(); ++c2_pos) {
+            for (ColorPos c1_pos = 0; c1_pos < solution.number_of_colors(); ++c1_pos) {
+                for (ColorPos c2_pos = c1_pos + 1; c2_pos < solution.number_of_colors(); ++c2_pos) {
                     if (p_best == -1 || p_best > penalties[c1_pos][c2_pos - c1_pos - 1]) {
                         c1_pos_best = c1_pos;
                         c2_pos_best = c2_pos;
@@ -118,13 +119,13 @@ void localsearch_worker(
             // Apply color merge.
             ColorId c1_best = *(solution.colors_begin() + c1_pos_best);
             ColorId c2_best = *(solution.colors_begin() + c2_pos_best);
-            for (VertexId v = 0; v < instance.vertex_number(); ++v)
+            for (VertexId v = 0; v < instance.number_of_vertices(); ++v)
                 if (solution.color(v) == c2_best)
                     solution.set(v, c1_best);
         }
 
         // Draw randomly a conflicting edge.
-        std::uniform_int_distribution<EdgeId> d_e(0, solution.conflict_number() - 1);
+        std::uniform_int_distribution<EdgeId> d_e(0, solution.number_of_conflicts() - 1);
         EdgeId e = *(solution.conflicts().begin() + d_e(generator));
 
         // Find the best swap move.
@@ -156,12 +157,12 @@ void localsearch_worker(
         bool reduce = false;
         for (auto it_e = solution.conflicts().begin(); it_e != solution.conflicts().end(); ++it_e) {
             solution.increment_penalty(*it_e);
-            if (solution.penalty(*it_e) > std::numeric_limits<Penalty>::max() / instance.edge_number())
+            if (solution.penalty(*it_e) > std::numeric_limits<Penalty>::max() / instance.number_of_edges())
                 reduce = true;
         }
         if (reduce) {
             //std::cout << "reduce" << std::endl;
-            for (EdgeId e = 0; e < instance.edge_number(); ++e)
+            for (EdgeId e = 0; e < instance.number_of_edges(); ++e)
                 solution.set_penalty(e, (solution.penalty(e) - 1) / 2 + 1);
         }
     }

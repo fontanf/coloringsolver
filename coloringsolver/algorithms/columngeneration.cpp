@@ -4,7 +4,7 @@
 #include "columngenerationsolver/algorithms/greedy.hpp"
 #include "columngenerationsolver/algorithms/limited_discrepancy_search.hpp"
 
-#include "stablesolver/algorithms/largeneighborhoodsearch.hpp"
+#include "stablesolver/algorithms/localsearch.hpp"
 
 /**
  * The linear programming formulation of the problem based on Dantzig–Wolfe
@@ -39,13 +39,15 @@ typedef columngenerationsolver::ColIdx ColIdx;
 typedef columngenerationsolver::Value Value;
 typedef columngenerationsolver::Column Column;
 
-ColumnGenerationHeuristicGreedyOutput& ColumnGenerationHeuristicGreedyOutput::algorithm_end(Info& info)
+ColumnGenerationHeuristicGreedyOutput& ColumnGenerationHeuristicGreedyOutput::algorithm_end(
+        optimizationtools::Info& info)
 {
     Output::algorithm_end(info);
     return *this;
 }
 
-ColumnGenerationHeuristicLimitedDiscrepancySearchOutput& ColumnGenerationHeuristicLimitedDiscrepancySearchOutput::algorithm_end(Info& info)
+ColumnGenerationHeuristicLimitedDiscrepancySearchOutput& ColumnGenerationHeuristicLimitedDiscrepancySearchOutput::algorithm_end(
+        optimizationtools::Info& info)
 {
     Output::algorithm_end(info);
     return *this;
@@ -58,8 +60,8 @@ public:
 
     PricingSolver(const Instance& instance):
         instance_(instance),
-        fixed_vertices_(instance.vertex_number()),
-        coloring2mwis_(instance.vertex_number())
+        fixed_vertices_(instance.number_of_vertices()),
+        coloring2mwis_(instance.number_of_vertices())
     {  }
 
     virtual std::vector<ColIdx> initialize_pricing(
@@ -83,7 +85,7 @@ private:
 
 columngenerationsolver::Parameters get_parameters(const Instance& instance)
 {
-    VertexId n = instance.vertex_number();
+    VertexId n = instance.number_of_vertices();
     columngenerationsolver::Parameters p(n);
 
     p.objective_sense = columngenerationsolver::ObjectiveSense::Min;
@@ -98,7 +100,7 @@ columngenerationsolver::Parameters get_parameters(const Instance& instance)
     // Row coefficent upper bounds.
     std::fill(p.row_coefficient_upper_bounds.begin(), p.row_coefficient_upper_bounds.end(), 1);
     // Dummy column objective coefficient.
-    p.dummy_column_objective_coefficient = instance.degree_max();
+    p.dummy_column_objective_coefficient = instance.maximum_degree();
     // Pricing solver.
     p.pricing_solver = std::unique_ptr<columngenerationsolver::PricingSolver>(
             new PricingSolver(instance));
@@ -148,7 +150,7 @@ std::vector<ColIdx> PricingSolver::initialize_pricing(
 std::vector<Column> PricingSolver::solve_pricing(
             const std::vector<Value>& duals)
 {
-    VertexId n = instance_.vertex_number();
+    VertexId n = instance_.number_of_vertices();
     std::vector<Column> columns;
     stablesolver::Weight mult = 10000;
 
@@ -167,7 +169,7 @@ std::vector<Column> PricingSolver::solve_pricing(
         weights_.push_back(weight);
     }
     stablesolver::Instance instance_mwis(mwis2coloring_.size());
-    for (stablesolver::VertexId v1 = 0; v1 < instance_mwis.vertex_number(); ++v1) {
+    for (stablesolver::VertexId v1 = 0; v1 < instance_mwis.number_of_vertices(); ++v1) {
         // Set weight.
         instance_mwis.set_weight(v1, weights_[v1]);
         // Add edges.
@@ -181,14 +183,15 @@ std::vector<Column> PricingSolver::solve_pricing(
     instance_mwis.compute_components();
 
     // Solve subproblem instance.
-    stablesolver::LargeNeighborhoodSearchOptionalParameters parameters_mwis;
-    parameters_mwis.iteration_without_improvment_limit = 1000;
+    stablesolver::LocalSearchOptionalParameters parameters_mwis;
+    parameters_mwis.maximum_number_of_nodes = 1000;
     //parameters_mwis.info.set_verbose(true);
-    auto output_mwis = stablesolver::largeneighborhoodsearch(instance_mwis, parameters_mwis);
+    std::mt19937_64 generator(0);
+    auto output_mwis = stablesolver::localsearch(instance_mwis, generator, parameters_mwis);
 
     // Retrieve column.
     Column column;
-    for (stablesolver::VertexId v = 0; v < instance_mwis.vertex_number(); ++v) {
+    for (stablesolver::VertexId v = 0; v < instance_mwis.number_of_vertices(); ++v) {
         if (output_mwis.solution.contains(v)) {
             column.row_indices.push_back(mwis2coloring_[v]);
             column.row_coefficients.push_back(1);
@@ -210,7 +213,7 @@ ColumnGenerationHeuristicGreedyOutput coloringsolver::columngenerationheuristic_
 
     columngenerationsolver::Parameters p = get_parameters(instance);
     columngenerationsolver::GreedyOptionalParameters op;
-    op.info.set_timelimit(parameters.info.remaining_time());
+    op.info.set_time_limit(parameters.info.remaining_time());
     op.columngeneration_parameters.linear_programming_solver
         = columngenerationsolver::s2lps(parameters.linear_programming_solver);
     // Self-ajusting Wentges smoothing and automatic directional smoothing do
@@ -252,7 +255,7 @@ ColumnGenerationHeuristicLimitedDiscrepancySearchOutput coloringsolver::columnge
                 const columngenerationsolver::LimitedDiscrepancySearchOutput& o)
         {
             std::stringstream ss;
-            ss << "node " << o.node_number;
+            ss << "node " << o.number_of_nodes;
             if (o.solution.size() > 0) {
                 ss << " discrepancy " << o.solution_discrepancy;
                 output.update_solution(
@@ -269,7 +272,7 @@ ColumnGenerationHeuristicLimitedDiscrepancySearchOutput coloringsolver::columnge
     op.columngeneration_parameters.static_directional_smoothing_parameter = 0.0;
     op.columngeneration_parameters.self_adjusting_wentges_smoothing = false;
     op.columngeneration_parameters.automatic_directional_smoothing = false;
-    op.info.set_timelimit(parameters.info.remaining_time());
+    op.info.set_time_limit(parameters.info.remaining_time());
 
     auto output_limiteddiscrepancysearch = columngenerationsolver::limiteddiscrepancysearch( p, op);
     return output.algorithm_end(parameters.info);

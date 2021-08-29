@@ -6,32 +6,31 @@ using namespace coloringsolver;
 
 Solution::Solution(const Instance& instance):
     instance_(instance),
-    map_(instance.vertex_number(), std::max(instance.degree_max(), instance.vertex_number())),
-    conflicts_(instance.edge_number()),
-    penalties_(instance.edge_number(), 1),
-    penalty_(instance.edge_number())
+    map_(instance.number_of_vertices(), std::max(instance.maximum_degree(), instance.number_of_vertices())),
+    conflicts_(instance.number_of_edges()),
+    penalties_(instance.number_of_edges(), 1),
+    penalty_(instance.number_of_edges())
 {
 }
 
-Solution::Solution(const Instance& instance, std::string filepath):
+Solution::Solution(const Instance& instance, std::string certificate_path):
     instance_(instance),
-    map_(instance.vertex_number(), std::max(instance.degree_max(), instance.vertex_number())),
-    conflicts_(instance.edge_number()),
-    penalties_(instance.edge_number(), 1),
-    penalty_(instance.edge_number())
+    map_(instance.number_of_vertices(), std::max(instance.maximum_degree(), instance.number_of_vertices())),
+    conflicts_(instance.number_of_edges()),
+    penalties_(instance.number_of_edges(), 1),
+    penalty_(instance.number_of_edges())
 {
-    if (filepath.empty())
+    if (certificate_path.empty())
         return;
-    std::ifstream file(filepath);
-    if (!file.good()) {
-        std::cerr << "\033[31m" << "ERROR, unable to open file \"" << filepath << "\"" << "\033[0m" << std::endl;
-        return;
-    }
+    std::ifstream file(certificate_path);
+    if (!file.good())
+        throw std::runtime_error(
+                "Unable to open file \"" + certificate_path + "\".");
 
-    ColorId color_number;
+    ColorId number_of_colors;
     ColorId c;
-    file >> color_number;
-    for (VertexId v = 0; v < instance.vertex_number(); ++v) {
+    file >> number_of_colors;
+    for (VertexId v = 0; v < instance.number_of_vertices(); ++v) {
         file >> c;
         set(v, c);
     }
@@ -73,33 +72,31 @@ void Solution::increment_penalty(EdgeId e, Penalty p)
         penalty_ += p;
 }
 
-void Solution::write(std::string filepath) const 
+void Solution::write(std::string certificate_path) const 
 {
-    if (filepath.empty())
+    if (certificate_path.empty())
         return;
-    std::ofstream cert(filepath);
-    if (!cert.good()) {
-        std::cerr << "\033[31m" << "ERROR, unable to open file \"" << filepath << "\"" << "\033[0m" << std::endl;
-        assert(false);
-        return;
-    }
+    std::ofstream file(certificate_path);
+    if (!file.good())
+        throw std::runtime_error(
+                "Unable to open file \"" + certificate_path + "\".");
 
-    for (VertexId v = 0; v < instance().vertex_number(); ++v)
-        cert << color(v) << std::endl;
-    cert.close();
+    for (VertexId v = 0; v < instance().number_of_vertices(); ++v)
+        file << color(v) << std::endl;
+    file.close();
 }
 
 std::ostream& coloringsolver::operator<<(std::ostream& os, const Solution& solution)
 {
-    os << solution.color_number() << std::endl;
-    for (VertexId v = 0; v < solution.instance().vertex_number(); ++v)
+    os << solution.number_of_colors() << std::endl;
+    for (VertexId v = 0; v < solution.instance().number_of_vertices(); ++v)
         os << v << "|" << solution.color(v) << " ";
     return os;
 }
 
 /*********************************** Output ***********************************/
 
-Output::Output(const Instance& instance, Info& info): solution(instance)
+Output::Output(const Instance& instance, optimizationtools::Info& info): solution(instance)
 {
     VER(info, std::left << std::setw(12) << "T (s)");
     VER(info, std::left << std::setw(12) << "UB");
@@ -111,7 +108,7 @@ Output::Output(const Instance& instance, Info& info): solution(instance)
     print(info, std::stringstream(""));
 }
 
-void Output::print(Info& info, const std::stringstream& s) const
+void Output::print(optimizationtools::Info& info, const std::stringstream& s) const
 {
     double gap = (lower_bound == 0)?
         std::numeric_limits<double>::infinity():
@@ -125,65 +122,68 @@ void Output::print(Info& info, const std::stringstream& s) const
     VER(info, std::left << std::setw(12) << gap);
     VER(info, s.str() << std::endl);
 
-    if (!info.output->onlywriteattheend)
-        info.write_ini();
+    if (!info.output->only_write_at_the_end)
+        info.write_json_output();
 }
 
 void Output::update_solution(
         const Solution& solution_new,
         const std::stringstream& s,
-        Info& info)
+        optimizationtools::Info& info)
 {
-    info.output->mutex_sol.lock();
+    info.output->mutex_solutions.lock();
 
     if (solution_new.feasible()
-            && (!solution.feasible() || solution.color_number() > solution_new.color_number())) {
+            && (!solution.feasible() || solution.number_of_colors() > solution_new.number_of_colors())) {
         // Update solution
-        for (VertexId v = 0; v < solution.instance().vertex_number(); ++v)
+        for (VertexId v = 0; v < solution.instance().number_of_vertices(); ++v)
             if (solution.color(v) != solution_new.color(v))
                 solution.set(v, solution_new.color(v));
         print(info, s);
 
-        info.output->sol_number++;
+        info.output->number_of_solutions++;
         double t = round(info.elapsed_time() * 10000) / 10000;
-        std::string sol_str = "Solution" + std::to_string(info.output->sol_number);
-        PUT(info, sol_str, "Value", solution.color_number());
+        std::string sol_str = "Solution" + std::to_string(info.output->number_of_solutions);
+        PUT(info, sol_str, "Value", solution.number_of_colors());
         PUT(info, sol_str, "Time", t);
         PUT(info, sol_str, "String", s.str());
-        if (!info.output->onlywriteattheend) {
-            info.write_ini();
-            solution.write(info.output->certfile);
+        if (!info.output->only_write_at_the_end) {
+            info.write_json_output();
+            solution.write(info.output->certificate_path);
         }
     }
 
-    info.output->mutex_sol.unlock();
+    info.output->mutex_solutions.unlock();
 }
 
-void Output::update_lower_bound(ColorId lower_bound_new, const std::stringstream& s, Info& info)
+void Output::update_lower_bound(
+        ColorId lower_bound_new,
+        const std::stringstream& s,
+        optimizationtools::Info& info)
 {
     if (lower_bound >= lower_bound_new)
         return;
 
-    info.output->mutex_sol.lock();
+    info.output->mutex_solutions.lock();
 
     if (lower_bound < lower_bound_new) {
         lower_bound = lower_bound_new;
         print(info, s);
 
-        info.output->bnd_number++;
+        info.output->number_of_bounds++;
         double t = round(info.elapsed_time() * 10000) / 10000;
-        std::string sol_str = "Bound" + std::to_string(info.output->bnd_number);
+        std::string sol_str = "Bound" + std::to_string(info.output->number_of_bounds);
         PUT(info, sol_str, "Bound", lower_bound);
         PUT(info, sol_str, "Time", t);
         PUT(info, sol_str, "String", s.str());
-        if (!info.output->onlywriteattheend)
-            solution.write(info.output->certfile);
+        if (!info.output->only_write_at_the_end)
+            info.write_json_output();
     }
 
-    info.output->mutex_sol.unlock();
+    info.output->mutex_solutions.unlock();
 }
 
-Output& Output::algorithm_end(Info& info)
+Output& Output::algorithm_end(optimizationtools::Info& info)
 {
     double t = round(info.elapsed_time() * 10000) / 10000;
     double gap = (lower_bound == 0)?
@@ -200,12 +200,14 @@ Output& Output::algorithm_end(Info& info)
             << "Gap (%): " << gap << std::endl
             << "Time (s): " << t << std::endl);
 
-    info.write_ini();
-    solution.write(info.output->certfile);
+    info.write_json_output();
+    solution.write(info.output->certificate_path);
     return *this;
 }
 
-ColorId coloringsolver::algorithm_end(ColorId lower_bound, Info& info)
+ColorId coloringsolver::algorithm_end(
+        ColorId lower_bound,
+        optimizationtools::Info& info)
 {
     double t = round(info.elapsed_time() * 10000) / 10000;
     PUT(info, "Bound", "Value", lower_bound);
@@ -214,7 +216,7 @@ ColorId coloringsolver::algorithm_end(ColorId lower_bound, Info& info)
             << "Bound: " << lower_bound << std::endl
             << "Time (s): " << t << std::endl);
 
-    info.write_ini();
+    info.write_json_output();
     return lower_bound;
 }
 

@@ -6,36 +6,45 @@
 
 using namespace coloringsolver;
 
-Instance::Instance(std::string filepath, std::string format)
+Instance::Instance(std::string instance_path, std::string format)
 {
-    std::ifstream file(filepath);
-    if (!file.good()) {
-        std::cerr << "\033[31m" << "ERROR, unable to open file \"" << filepath << "\"" << "\033[0m" << std::endl;
-        assert(false);
-        return;
-    }
+    std::ifstream file(instance_path);
+    if (!file.good())
+        throw std::runtime_error(
+                "Unable to open file \"" + instance_path + "\".");
 
     if (format == "dimacs") {
         read_dimacs(file);
     } else if (format == "matrixmarket") {
         read_matrixmarket(file);
     } else {
-        std::cerr << "\033[31m" << "ERROR, unknown instance format: \"" << format << "\"" << "\033[0m" << std::endl;
-        assert(false);
+        throw std::invalid_argument(
+                "Unknown instance format \"" + format + "\".");
     }
 }
 
-Instance::Instance(VertexId vertex_number):
-    vertices_(vertex_number)
+Instance::Instance(VertexId number_of_vertices):
+    vertices_(number_of_vertices)
 {
-    for (VertexId v = 0; v < vertex_number; ++v)
+    for (VertexId v = 0; v < number_of_vertices; ++v)
         vertices_[v].id = v;
 }
 
 void Instance::add_edge(VertexId v1, VertexId v2, bool check_duplicate)
 {
-    assert(v1 < vertex_number());
-    assert(v2 < vertex_number());
+    // Check the range of v1.
+    if (v1 < 0 || v1 >= number_of_vertices())
+        throw std::out_of_range(
+                "Invalid set index: \"" + std::to_string(v1) + "\"."
+                + " Set indices should belong to [0, "
+                + std::to_string(number_of_vertices() - 1) + "].");
+    // Check the range of v2.
+    if (v2 < 0 || v2 >= number_of_vertices())
+        throw std::out_of_range(
+                "Invalid set index: \"" + std::to_string(v2) + "\"."
+                + " Set indices should belong to [0, "
+                + std::to_string(number_of_vertices() - 1) + "].");
+
     if (v1 == v2) {
         //std::cerr << "\033[33m" << "WARNING, loop (" << v1 << ", " << v2 << ") ignored." << "\033[0m" << std::endl;
         return;
@@ -56,15 +65,15 @@ void Instance::add_edge(VertexId v1, VertexId v2, bool check_duplicate)
     vn1.e = e.id;
     vn1.v = v2;
     vertices_[v1].edges.push_back(vn1);
-    if (degree_max_ < (VertexId)vertices_[v1].edges.size())
-        degree_max_ = vertices_[v1].edges.size();
+    if (maximum_degree_ < (VertexId)vertices_[v1].edges.size())
+        maximum_degree_ = vertices_[v1].edges.size();
 
     VertexNeighbor vn2;
     vn2.e = e.id;
     vn2.v = v1;
     vertices_[v2].edges.push_back(vn2);
-    if (degree_max_ < (VertexId)vertices_[v2].edges.size())
-        degree_max_ = vertices_[v2].edges.size();
+    if (maximum_degree_ < (VertexId)vertices_[v2].edges.size())
+        maximum_degree_ = vertices_[v2].edges.size();
 }
 
 void Instance::read_dimacs(std::ifstream& file)
@@ -79,9 +88,9 @@ void Instance::read_dimacs(std::ifstream& file)
             if (name_ == "")
                 name_ = line.back();
         } else if (line[0] == "p") {
-            VertexId vertex_number = stol(line[2]);
-            vertices_.resize(vertex_number);
-            for (VertexId v = 0; v < vertex_number; ++v)
+            VertexId number_of_vertices = stol(line[2]);
+            vertices_.resize(number_of_vertices);
+            for (VertexId v = 0; v < number_of_vertices; ++v)
                 vertices_[v].id = v;
         } else if (line[0] == "e") {
             VertexId v1 = stol(line[1]) - 1;

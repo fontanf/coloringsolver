@@ -25,9 +25,9 @@ GreedyOptionalParameters read_greedy_args(const std::vector<char*>& argv)
     return parameters;
 }
 
-BranchAndCutAssignmentCplexOptionalParameters read_branchandcut_assignment_cplex_args(const std::vector<char*>& argv)
+MilpAssignmentCplexOptionalParameters read_milp_assignment_cplex_args(const std::vector<char*>& argv)
 {
-    BranchAndCutAssignmentCplexOptionalParameters parameters;
+    MilpAssignmentCplexOptionalParameters parameters;
     po::options_description desc("Allowed options");
     desc.add_options()
         ("break-symmetries,s", po::value<bool>(&parameters.break_symmetries), "")
@@ -82,7 +82,10 @@ ColumnGenerationOptionalParameters read_columngeneration_args(const std::vector<
 }
 
 Output coloringsolver::run(
-        std::string algorithm, const Instance& instance, std::mt19937_64& generator, Info info)
+        std::string algorithm,
+        const Instance& instance,
+        std::mt19937_64& generator,
+        optimizationtools::Info info)
 {
     std::vector<std::string> algorithm_args = po::split_unix(algorithm);
     std::vector<char*> algorithm_argv;
@@ -100,22 +103,22 @@ Output coloringsolver::run(
     } else if (algorithm_args[0] == "greedy_dsatur") {
         return greedy_dsatur(instance, info);
 #if CPLEX_FOUND
-    } else if (algorithm_args[0] == "branchandcut_assignment_cplex") {
-        auto parameters = read_branchandcut_assignment_cplex_args(algorithm_argv);
+    } else if (algorithm_args[0] == "milp_assignment_cplex") {
+        auto parameters = read_milp_assignment_cplex_args(algorithm_argv);
         parameters.info = info;
-        return branchandcut_assignment_cplex(instance, parameters);
-    } else if (algorithm_args[0] == "branchandcut_representatives_cplex") {
-        BranchAndCutRepresentativesCplexOptionalParameters parameters;
+        return milp_assignment_cplex(instance, parameters);
+    } else if (algorithm_args[0] == "milp_representatives_cplex") {
+        MilpRepresentativesCplexOptionalParameters parameters;
         parameters.info = info;
-        return branchandcut_representatives_cplex(instance, parameters);
-    } else if (algorithm_args[0] == "branchandcut_partialordering_cplex") {
-        BranchAndCutPartialOrderingCplexOptionalParameters parameters;
+        return milp_representatives_cplex(instance, parameters);
+    } else if (algorithm_args[0] == "milp_partialordering_cplex") {
+        MilpPartialOrderingCplexOptionalParameters parameters;
         parameters.info = info;
-        return branchandcut_partialordering_cplex(instance, parameters);
-    } else if (algorithm_args[0] == "branchandcut_partialordering2_cplex") {
-        BranchAndCutPartialOrdering2CplexOptionalParameters parameters;
+        return milp_partialordering_cplex(instance, parameters);
+    } else if (algorithm_args[0] == "milp_partialordering2_cplex") {
+        MilpPartialOrdering2CplexOptionalParameters parameters;
         parameters.info = info;
-        return branchandcut_partialordering2_cplex(instance, parameters);
+        return milp_partialordering2_cplex(instance, parameters);
 #endif
     } else if (algorithm_args[0] == "localsearch") {
         auto parameters = read_localsearch_args(algorithm_argv);

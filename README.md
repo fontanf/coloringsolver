@@ -15,10 +15,10 @@ A solver for the Graph Coloring Problem.
   * Dynamic largest first `-a greedy --ordering dynamiclargestfirst`
   * DSATUR `-a greedy_dsatur`
 * Branch-and-cut (CPLEX), see "New Integer Linear Programming Models for the Vertex Coloring Problem" (Jabrayilov et Mutzel, 2018) for model descriptions:
-  * Assignment-based ILP model `-a branchandcut_assignment_cplex`
-  * Representatives ILP model `-a branchandcut_representatives_cplex`
-  * Partial-ordering based ILP model `-a branchandcut_partialordering_cplex`
-  * Partial-ordering based ILP model 2 `-a branchandcut_partialordering2_cplex`
+  * Assignment-based ILP model `-a milp_assignment_cplex`
+  * Representatives ILP model `-a milp_representatives_cplex`
+  * Partial-ordering based ILP model `-a milp_partialordering_cplex`
+  * Partial-ordering based ILP model 2 `-a milp_partialordering2_cplex`
 * Row weighting local search `-a "localsearch --threads 3 --iteration-limit 100000 --iteration-without-improvment-limit 10000"`
 * Column generation heuristics:
   * Greedy `columngenerationheuristic_greedy`
@@ -39,7 +39,7 @@ Run:
 ```shell
 ./bazel-bin/coloringsolver/main -v -i "data/graphcoloring/1-FullIns_3.col" -a greedy_dsatur -c solution.txt
 ./bazel-bin/coloringsolver/main -v -i "data/graphcoloring/r1000.5.col" -a "localsearch --threads 3"
-./bazel-bin/coloringsolver/main -v -i "data/graphcoloring/1-FullIns_3.col" -a branchandcut_assignment_cplex -t 60 -c solution.txt
+./bazel-bin/coloringsolver/main -v -i "data/graphcoloring/1-FullIns_3.col" -a milp_assignment_cplex -t 60 -c solution.txt
 ```
 
 Benchmarks:
@@ -64,15 +64,15 @@ python3 ../optimizationtools/optimizationtools/bench_process.py --benchmark heur
 ![heuristicshort2](img/heuristicshort2.png?raw=true "heuristicshort2")
 
 ```shell
-python3 ../optimizationtools/optimizationtools/bench_run.py --timelimit 3600 --algorithms "branchandcut_assignment_cplex"
-python3 ../optimizationtools/optimizationtools/bench_run.py --timelimit 3600 --algorithms "branchandcut_representatives_cplex"
-python3 ../optimizationtools/optimizationtools/bench_run.py --timelimit 3600 --algorithms "branchandcut_partialordering_cplex"
-python3 ../optimizationtools/optimizationtools/bench_run.py --timelimit 3600 --algorithms "branchandcut_partialordering2_cplex"
-python3 ../optimizationtools/optimizationtools/bench_process.py --benchmark exact --timelimit 3600 --labels "branchandcut_assignment_cplex" "branchandcut_representatives_cplex" "branchandcut_partialordering_cplex" "branchandcut_partialordering2_cplex"
+python3 ../optimizationtools/optimizationtools/bench_run.py --timelimit 3600 --algorithms "milp_assignment_cplex"
+python3 ../optimizationtools/optimizationtools/bench_run.py --timelimit 3600 --algorithms "milp_representatives_cplex"
+python3 ../optimizationtools/optimizationtools/bench_run.py --timelimit 3600 --algorithms "milp_partialordering_cplex"
+python3 ../optimizationtools/optimizationtools/bench_run.py --timelimit 3600 --algorithms "milp_partialordering2_cplex"
+python3 ../optimizationtools/optimizationtools/bench_process.py --benchmark exact --timelimit 3600 --labels "milp_assignment_cplex" "milp_representatives_cplex" "milp_partialordering_cplex" "milp_partialordering2_cplex"
 ```
 
 ```shell
 python3 ../optimizationtools/optimizationtools/bench_run.py --timelimit 3600 --algorithms "localsearch"
-python3 ../optimizationtools/optimizationtools/bench_process.py --benchmark heuristiclong --timelimit 3600 --labels "branchandcut_assignment_cplex" "branchandcut_representatives_cplex" "branchandcut_partialordering_cplex" "branchandcut_partialordering2_cplex" "localsearch"
+python3 ../optimizationtools/optimizationtools/bench_process.py --benchmark heuristiclong --timelimit 3600 --labels "milp_assignment_cplex" "milp_representatives_cplex" "milp_partialordering_cplex" "milp_partialordering2_cplex" "localsearch"
 ```
 
