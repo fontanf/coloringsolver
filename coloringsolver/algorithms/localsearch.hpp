@@ -1,5 +1,9 @@
 #pragma once
 
+/**
+ * Local Search:
+ */
+
 #include "coloringsolver/solution.hpp"
 
 namespace coloringsolver
@@ -7,10 +11,16 @@ namespace coloringsolver
 
 struct LocalSearchOptionalParameters
 {
-    Counter thread_number = 3;
-    Counter iteration_limit = -1;
-    Counter iteration_without_improvment_limit = -1;
     optimizationtools::Info info = optimizationtools::Info();
+
+    /** Maximum number of nodes. */
+    Counter maximum_number_of_nodes = -1;
+
+    /** Number of threads. */
+    Counter number_of_threads = 1;
+
+    /** Initial solution (facultative). */
+    const Solution* initial_solution = nullptr;
 };
 
 struct LocalSearchOutput: Output

@@ -3,6 +3,7 @@
 #include "columngenerationsolver/algorithms/column_generation.hpp"
 #include "columngenerationsolver/algorithms/greedy.hpp"
 #include "columngenerationsolver/algorithms/limited_discrepancy_search.hpp"
+#include "columngenerationsolver/algorithms/heuristic_tree_search.hpp"
 
 #include "stablesolver/algorithms/localsearch.hpp"
 
@@ -53,6 +54,13 @@ ColumnGenerationHeuristicLimitedDiscrepancySearchOutput& ColumnGenerationHeurist
     return *this;
 }
 
+ColumnGenerationHeuristicHeuristicTreeSearchOutput& ColumnGenerationHeuristicHeuristicTreeSearchOutput::algorithm_end(
+        optimizationtools::Info& info)
+{
+    Output::algorithm_end(info);
+    return *this;
+}
+
 class PricingSolver: public columngenerationsolver::PricingSolver
 {
 
@@ -85,8 +93,7 @@ private:
 
 columngenerationsolver::Parameters get_parameters(const Instance& instance)
 {
-    VertexId n = instance.number_of_vertices();
-    columngenerationsolver::Parameters p(n);
+    columngenerationsolver::Parameters p(instance.number_of_vertices());
 
     p.objective_sense = columngenerationsolver::ObjectiveSense::Min;
     p.column_lower_bound = 0;
@@ -225,6 +232,7 @@ ColumnGenerationHeuristicGreedyOutput coloringsolver::columngenerationheuristic_
     op.columngeneration_parameters.static_directional_smoothing_parameter = 0.0;
     op.columngeneration_parameters.self_adjusting_wentges_smoothing = false;
     op.columngeneration_parameters.automatic_directional_smoothing = false;
+    //op.columngeneration_parameters.info.set_verbose(true);
     auto output_greedy = columngenerationsolver::greedy(p, op);
 
     //output.update_lower_bound(
@@ -272,8 +280,45 @@ ColumnGenerationHeuristicLimitedDiscrepancySearchOutput coloringsolver::columnge
     op.columngeneration_parameters.static_directional_smoothing_parameter = 0.0;
     op.columngeneration_parameters.self_adjusting_wentges_smoothing = false;
     op.columngeneration_parameters.automatic_directional_smoothing = false;
+    //op.columngeneration_parameters.info.set_verbose(true);
     op.info.set_time_limit(parameters.info.remaining_time());
 
     auto output_limiteddiscrepancysearch = columngenerationsolver::limiteddiscrepancysearch( p, op);
+    return output.algorithm_end(parameters.info);
+}
+
+ColumnGenerationHeuristicHeuristicTreeSearchOutput coloringsolver::columngenerationheuristic_heuristictreesearch(
+        const Instance& instance, ColumnGenerationOptionalParameters parameters)
+{
+    VER(parameters.info, "*** columngenerationheuristic_heuristictreesearch"
+            << " --linear-programming-solver " << parameters.linear_programming_solver
+            << " ***" << std::endl);
+    ColumnGenerationHeuristicHeuristicTreeSearchOutput output(instance, parameters.info);
+
+    columngenerationsolver::Parameters p = get_parameters(instance);
+    columngenerationsolver::HeuristicTreeSearchOptionalParameters op;
+    op.columngeneration_parameters.linear_programming_solver
+        = columngenerationsolver::s2lps(parameters.linear_programming_solver);
+    op.new_bound_callback = [&instance, &parameters, &output](
+                const columngenerationsolver::HeuristicTreeSearchOutput& o)
+        {
+            if (o.solution.size() > 0) {
+                std::stringstream ss;
+                ss << "it " << o.maximum_number_of_iterations;
+                output.update_solution(
+                        columns2solution(instance, o.solution),
+                        ss,
+                        parameters.info);
+            }
+        };
+    op.columngeneration_parameters.static_wentges_smoothing_parameter = 0.0;
+    op.columngeneration_parameters.static_directional_smoothing_parameter = 0.0;
+    op.columngeneration_parameters.self_adjusting_wentges_smoothing = false;
+    op.columngeneration_parameters.automatic_directional_smoothing = false;
+    //op.info.set_verbose(true);
+    //op.columngeneration_parameters.info.set_verbose(true);
+    op.info.set_time_limit(parameters.info.remaining_time());
+
+    auto output_heuristictreesearch = columngenerationsolver::heuristictreesearch( p, op);
     return output.algorithm_end(parameters.info);
 }

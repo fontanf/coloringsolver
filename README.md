@@ -14,13 +14,18 @@ A solver for the Graph Coloring Problem.
   * Smallest last `-a greedy --ordering smallestlast --reverse`
   * Dynamic largest first `-a greedy --ordering dynamiclargestfirst`
   * DSATUR `-a greedy_dsatur`
-* Branch-and-cut (CPLEX), see "New Integer Linear Programming Models for the Vertex Coloring Problem" (Jabrayilov et Mutzel, 2018) for model descriptions:
+
+* MILP (CPLEX), see "New Integer Linear Programming Models for the Vertex Coloring Problem" (Jabrayilov et Mutzel, 2018) for model descriptions:
   * Assignment-based ILP model `-a milp_assignment_cplex`
   * Representatives ILP model `-a milp_representatives_cplex`
   * Partial-ordering based ILP model `-a milp_partialordering_cplex`
   * Partial-ordering based ILP model 2 `-a milp_partialordering2_cplex`
-* Row weighting local search `-a "localsearch --threads 3 --iteration-limit 100000 --iteration-without-improvment-limit 10000"`
-* Column generation heuristics:
+
+* Local search algorithm implemented with [fontanf/localsearchsolver](https://github.com/fontanf/localsearchsolver) `-a "localsearch"`
+
+* Row weighting local search `-a "localsearch_rowweighting --threads 3 --iterations 100000 --iterations-without-improvment 10000"`
+
+* Column generation heuristics implemented with [fontanf/columngenerationsolver](https://github.com/fontanf/columngenerationsolver):
   * Greedy `columngenerationheuristic_greedy`
   * Limited discrepancy search `columngenerationheuristic_limiteddiscrepancysearch`
 
@@ -38,7 +43,7 @@ bazel build -- //...
 Run:
 ```shell
 ./bazel-bin/coloringsolver/main -v -i "data/graphcoloring/1-FullIns_3.col" -a greedy_dsatur -c solution.txt
-./bazel-bin/coloringsolver/main -v -i "data/graphcoloring/r1000.5.col" -a "localsearch --threads 3"
+./bazel-bin/coloringsolver/main -v -i "data/graphcoloring/r1000.5.col" -a "localsearch_rowweighting --threads 3"
 ./bazel-bin/coloringsolver/main -v -i "data/graphcoloring/1-FullIns_3.col" -a milp_assignment_cplex -t 60 -c solution.txt
 ```
 
@@ -53,10 +58,10 @@ python3 ../optimizationtools/optimizationtools/bench_run.py --algorithms "greedy
 python3 ../optimizationtools/optimizationtools/bench_run.py --algorithms "greedy --ordering dynamiclargestfirst"
 python3 ../optimizationtools/optimizationtools/bench_run.py --algorithms "greedy --ordering dynamiclargestfirst --reverse"
 python3 ../optimizationtools/optimizationtools/bench_run.py --algorithms "greedy_dsatur"
-python3 ../optimizationtools/optimizationtools/bench_run.py --algorithms "localsearch --iteration-without-improvment-limit 1000"
-python3 ../optimizationtools/optimizationtools/bench_run.py --algorithms "localsearch --iteration-without-improvment-limit 10000"
+python3 ../optimizationtools/optimizationtools/bench_run.py --algorithms "localsearch_rowweighting --iterations-without-improvment 1000"
+python3 ../optimizationtools/optimizationtools/bench_run.py --algorithms "localsearch_rowweighting --iterations-without-improvment 10000"
 python3 ../optimizationtools/optimizationtools/bench_process.py --benchmark heuristicshort --timelimit 2 --labels "greedy --ordering largestfirst" "greedy --ordering largestfirst --reverse" "greedy --ordering incidencedegree" "greedy --ordering incidencedegree --reverse" "greedy --ordering smallestlast" "greedy --ordering smallestlast --reverse" "greedy --ordering dynamiclargestfirst" "greedy --ordering dynamiclargestfirst --reverse"
-python3 ../optimizationtools/optimizationtools/bench_process.py --benchmark heuristicshort --timelimit 6 --labels "greedy --ordering largestfirst" "greedy --ordering incidencedegree --reverse" "greedy --ordering smallestlast --reverse" "greedy --ordering dynamiclargestfirst" "greedy_dsatur" "localsearch --iteration-without-improvment-limit 1000" "localsearch --iteration-without-improvment-limit 10000"
+python3 ../optimizationtools/optimizationtools/bench_process.py --benchmark heuristicshort --timelimit 6 --labels "greedy --ordering largestfirst" "greedy --ordering incidencedegree --reverse" "greedy --ordering smallestlast --reverse" "greedy --ordering dynamiclargestfirst" "greedy_dsatur" "localsearch_rowweighting --iterations-without-improvement 1000" "localsearch_rowweighting --iterations-without-improvement 10000"
 ```
 
 ![heuristicshort1](img/heuristicshort1.png?raw=true "heuristicshort1")
@@ -72,7 +77,7 @@ python3 ../optimizationtools/optimizationtools/bench_process.py --benchmark exac
 ```
 
 ```shell
-python3 ../optimizationtools/optimizationtools/bench_run.py --timelimit 3600 --algorithms "localsearch"
-python3 ../optimizationtools/optimizationtools/bench_process.py --benchmark heuristiclong --timelimit 3600 --labels "milp_assignment_cplex" "milp_representatives_cplex" "milp_partialordering_cplex" "milp_partialordering2_cplex" "localsearch"
+python3 ../optimizationtools/optimizationtools/bench_run.py --timelimit 3600 --algorithms "localsearch_rowweighting"
+python3 ../optimizationtools/optimizationtools/bench_process.py --benchmark heuristiclong --timelimit 3600 --labels "milp_assignment_cplex" "milp_representatives_cplex" "milp_partialordering_cplex" "milp_partialordering2_cplex" "localsearch_rowweighting"
 ```
 

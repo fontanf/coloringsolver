@@ -25,12 +25,12 @@ GreedyOptionalParameters read_greedy_args(const std::vector<char*>& argv)
     return parameters;
 }
 
-MilpAssignmentCplexOptionalParameters read_milp_assignment_cplex_args(const std::vector<char*>& argv)
+LocalSearchOptionalParameters read_localsearch_args(const std::vector<char*>& argv)
 {
-    MilpAssignmentCplexOptionalParameters parameters;
+    LocalSearchOptionalParameters parameters;
     po::options_description desc("Allowed options");
     desc.add_options()
-        ("break-symmetries,s", po::value<bool>(&parameters.break_symmetries), "")
+        ("threads,t", po::value<Counter>(&parameters.number_of_threads), "")
         ;
     po::variables_map vm;
     po::store(po::parse_command_line((Counter)argv.size(), argv.data(), desc), vm);
@@ -43,14 +43,14 @@ MilpAssignmentCplexOptionalParameters read_milp_assignment_cplex_args(const std:
     return parameters;
 }
 
-LocalSearchOptionalParameters read_localsearch_args(const std::vector<char*>& argv)
+LocalSearchRowWeightingOptionalParameters read_localsearch_rowweighting_args(const std::vector<char*>& argv)
 {
-    LocalSearchOptionalParameters parameters;
+    LocalSearchRowWeightingOptionalParameters parameters;
     po::options_description desc("Allowed options");
     desc.add_options()
-        ("threads,t", po::value<Counter>(&parameters.thread_number), "")
-        ("iteration-limit,i", po::value<Counter>(&parameters.iteration_limit), "")
-        ("iteration-without-improvment-limit,w", po::value<Counter>(&parameters.iteration_without_improvment_limit), "")
+        ("threads,t", po::value<Counter>(&parameters.number_of_threads), "")
+        ("iterations,i", po::value<Counter>(&parameters.maximum_number_of_iterations), "")
+        ("iterations-without-improvement-limit,w", po::value<Counter>(&parameters.maximum_number_of_iterations_without_improvement), "")
         ;
     po::variables_map vm;
     po::store(po::parse_command_line((Counter)argv.size(), argv.data(), desc), vm);
@@ -81,9 +81,30 @@ ColumnGenerationOptionalParameters read_columngeneration_args(const std::vector<
     return parameters;
 }
 
+#if CPLEX_FOUND
+MilpAssignmentCplexOptionalParameters read_milp_assignment_cplex_args(const std::vector<char*>& argv)
+{
+    MilpAssignmentCplexOptionalParameters parameters;
+    po::options_description desc("Allowed options");
+    desc.add_options()
+        ("break-symmetries,s", po::value<bool>(&parameters.break_symmetries), "")
+        ;
+    po::variables_map vm;
+    po::store(po::parse_command_line((Counter)argv.size(), argv.data(), desc), vm);
+    try {
+        po::notify(vm);
+    } catch (const po::required_option& e) {
+        std::cout << desc << std::endl;;
+        throw "";
+    }
+    return parameters;
+}
+#endif
+
 Output coloringsolver::run(
         std::string algorithm,
         const Instance& instance,
+        const Solution& initial_solution,
         std::mt19937_64& generator,
         optimizationtools::Info info)
 {
@@ -93,8 +114,7 @@ Output coloringsolver::run(
         algorithm_argv.push_back(const_cast<char*>(algorithm_args[i].c_str()));
 
     if (algorithm.empty() || algorithm_args[0].empty()) {
-        std::cerr << "\033[32m" << "ERROR, missing algorithm." << "\033[0m" << std::endl;
-        return Output(instance, info);
+        throw std::invalid_argument("Missing algorithm.");
 
     } else if (algorithm_args[0] == "greedy") {
         auto parameters = read_greedy_args(algorithm_argv);
@@ -123,20 +143,28 @@ Output coloringsolver::run(
     } else if (algorithm_args[0] == "localsearch") {
         auto parameters = read_localsearch_args(algorithm_argv);
         parameters.info = info;
+        parameters.initial_solution = &initial_solution;
         return localsearch(instance, generator, parameters);
+    } else if (algorithm_args[0] == "localsearch_rowweighting") {
+        auto parameters = read_localsearch_rowweighting_args(algorithm_argv);
+        parameters.info = info;
+        return localsearch_rowweighting(instance, generator, parameters);
     } else if (algorithm_args[0] == "columngenerationheuristic_greedy") {
-        ColumnGenerationOptionalParameters parameters = read_columngeneration_args(algorithm_argv);
+        auto parameters = read_columngeneration_args(algorithm_argv);
         parameters.info = info;
         return columngenerationheuristic_greedy(instance, parameters);
     } else if (algorithm_args[0] == "columngenerationheuristic_limiteddiscrepancysearch") {
-        ColumnGenerationOptionalParameters parameters = read_columngeneration_args(algorithm_argv);
+        auto parameters = read_columngeneration_args(algorithm_argv);
         parameters.info = info;
         return columngenerationheuristic_limiteddiscrepancysearch(instance, parameters);
+    } else if (algorithm_args[0] == "columngenerationheuristic_heuristictreesearch") {
+        auto parameters = read_columngeneration_args(algorithm_argv);
+        parameters.info = info;
+        return columngenerationheuristic_heuristictreesearch(instance, parameters);
 
     } else {
-        std::cerr << "\033[31m" << "ERROR, unknown algorithm: " << algorithm_argv[0] << "\033[0m" << std::endl;
-        assert(false);
-        return Output(instance, info);
+        throw std::invalid_argument(
+                "Unknown algorithm \"" + algorithm_args[0] + "\".");
     }
 }
 

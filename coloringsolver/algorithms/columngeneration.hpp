@@ -47,5 +47,25 @@ ColumnGenerationHeuristicLimitedDiscrepancySearchOutput columngenerationheuristi
         const Instance& instance,
         ColumnGenerationOptionalParameters parameters = {});
 
+/******************************************************************************/
+
+struct ColumnGenerationHeuristicHeuristicTreeSearchOutput: Output
+{
+    ColumnGenerationHeuristicHeuristicTreeSearchOutput(
+            const Instance& instance,
+            optimizationtools::Info& info):
+        Output(instance, info) { }
+
+    ColumnGenerationHeuristicHeuristicTreeSearchOutput& algorithm_end(
+            optimizationtools::Info& info);
+
+    std::vector<double> solution;
+    std::vector<std::vector<double>> x;
+};
+
+ColumnGenerationHeuristicHeuristicTreeSearchOutput columngenerationheuristic_heuristictreesearch(
+        const Instance& instance,
+        ColumnGenerationOptionalParameters parameters = {});
+
 }
 

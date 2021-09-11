@@ -40,18 +40,28 @@ struct Edge
     VertexId v2;
 };
 
-class Instance 
+class Instance
 {
 
 public:
 
+    /*
+     * Constructors and destructor.
+     */
+
     /** Create an instance from a file. */
     Instance(std::string instance_path, std::string format);
-
     /** Create an instance manually. */
-    Instance(VertexId number_of_vertices);
+    Instance(VertexId number_of_vertices = 0);
+
+    /*
+     * Setters.
+     */
+
     /** Set the name of the instance. */
     void set_name(std::string name) { name_ = name; }
+    /** Add a vertex. */
+    void add_vertex();
     /** Add an edge between vertex v1 and vertex v2. */
     void add_edge(VertexId v1, VertexId v2, bool check_duplicate = true);
 
@@ -74,13 +84,17 @@ public:
     /** Get the maximum degree of the instance. */
     inline VertexId maximum_degree() const { return maximum_degree_; }
 
-    /** Export. */
-    void write(std::string filepath, std::string format);
+    /**
+     * Export.
+     */
+
+    /** Write the instance to a file. */
+    void write(std::string instance_path, std::string format);
 
 private:
 
     /*
-     * Attributes.
+     * Private attributes.
      */
 
     /** Name of the instance. */

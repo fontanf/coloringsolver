@@ -30,6 +30,12 @@ Instance::Instance(VertexId number_of_vertices):
         vertices_[v].id = v;
 }
 
+void Instance::add_vertex()
+{
+    vertices_.push_back({});
+    vertices_.back().id = vertices_.size() - 1;
+}
+
 void Instance::add_edge(VertexId v1, VertexId v2, bool check_duplicate)
 {
     // Check the range of v1.

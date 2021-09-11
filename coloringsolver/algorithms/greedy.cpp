@@ -261,12 +261,14 @@ Output coloringsolver::greedy_dsatur(
         if (v_best == -1 || instance.vertex(v_best).edges.size() < instance.vertex(v).edges.size())
             v_best = v;
 
-    auto f = [](VertexId v) { (void)v; return 0; };
+    auto f = [](VertexId) { return 0; };
     optimizationtools::IndexedBinaryHeap<double> heap(instance.number_of_vertices(), f);
     heap.update_key(v_best, -1);
 
     optimizationtools::IndexedSet color_set(instance.maximum_degree());
 
+    std::vector<std::vector<bool>> is_adjacent;
+    std::vector<ColorId> number_of_adjacent_colors(instance.number_of_vertices(), 0);
     while (!solution.feasible()) {
         auto p = heap.top();
         heap.pop();
@@ -283,17 +285,23 @@ Output coloringsolver::greedy_dsatur(
                 break;
             }
         }
+        if (c_best >= (ColorId)is_adjacent.size()) {
+            is_adjacent.push_back(std::vector<bool>(
+                        instance.number_of_vertices(), false));
+        }
 
         solution.set(p.first, c_best);
 
         for (const auto& vn1: instance.vertex(p.first).edges) {
             if (solution.contains(vn1.v))
                 continue;
-            color_set.clear();
-            for (const auto& vn2: instance.vertex(vn1.v).edges)
-                if (solution.contains(vn2.v))
-                    color_set.add(solution.color(vn2.v));
-            heap.update_key(vn1.v, - color_set.size() - (double)instance.vertex(vn1.v).edges.size() / (instance.maximum_degree() + 1));
+            if (is_adjacent[c_best][vn1.v])
+                continue;
+            is_adjacent[c_best][vn1.v] = true;
+            number_of_adjacent_colors[vn1.v]++;
+            double val = -number_of_adjacent_colors[vn1.v]
+                - (double)instance.vertex(vn1.v).edges.size() / (instance.maximum_degree() + 1);
+            heap.update_key(vn1.v, val);
         }
     }
 

@@ -96,7 +96,10 @@ std::ostream& coloringsolver::operator<<(std::ostream& os, const Solution& solut
 
 /*********************************** Output ***********************************/
 
-Output::Output(const Instance& instance, optimizationtools::Info& info): solution(instance)
+Output::Output(
+        const Instance& instance,
+        optimizationtools::Info& info):
+    solution(instance)
 {
     VER(info, std::left << std::setw(12) << "T (s)");
     VER(info, std::left << std::setw(12) << "UB");

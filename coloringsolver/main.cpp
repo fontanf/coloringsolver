@@ -63,6 +63,7 @@ int main(int argc, char *argv[])
         .set_log_path(log_path)
         .set_log2stderr(vm.count("log2stderr"))
         .set_maximum_log_level(loglevelmax)
+        .set_sigint_handler()
         ;
 
     VER(info, "Instance:            " << instance.name() << std::endl);
@@ -73,7 +74,7 @@ int main(int argc, char *argv[])
     std::mt19937_64 generator(seed);
     Solution solution(instance, initial_solution_path);
 
-    auto output = run(algorithm, instance, generator, info);
+    auto output = run(algorithm, instance, solution, generator, info);
 
     return 0;
 }

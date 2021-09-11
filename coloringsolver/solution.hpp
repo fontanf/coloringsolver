@@ -10,6 +10,10 @@ class Solution
 
 public:
 
+    /*
+     * Constructors and destructor.
+     */
+
     /** Create an empty solution. */
     Solution(const Instance& instance);
     /** Create a solution from a certificate file. */
@@ -21,11 +25,14 @@ public:
     /** Destructor. */
     virtual ~Solution() { }
 
+    /*
+     * Getters.
+     */
+
     /** Get the instance. */
     const Instance& instance() const { return instance_; }
     /** Return 'true' iff the solution is feasible. */
     bool feasible() const { return number_of_vertices() == instance().number_of_vertices() && conflicts_.size() == 0; };
-
     /** Get the number of colors used in the solution. */
     ColorId number_of_colors() const { return map_.number_of_values(); }
     /** Return 'true' iff a color is assigned to vertex v in the solution. */
@@ -38,23 +45,40 @@ public:
     VertexPos number_of_vertices(ColorId c) const { return map_.number_of_elements(c); }
     /** Get the number of conflitcs in the solution. */
     EdgePos number_of_conflicts() const { return conflicts_.size(); }
+    /** Get a begin iterator to the colors. */
+    std::vector<ColorId>::const_iterator colors_begin() const { return map().values_begin(); }
+    /** Get an end iterator to the colors. */
+    std::vector<ColorId>::const_iterator colors_end()   const { return map().values_end(); }
+    /** Get the penalty of edge e. */
+    Penalty penalty(EdgeId e) const { return penalties_[e]; }
+    /** Get the penalty of the solution. */
+    Penalty penalty() const { return penalty_; }
+    const optimizationtools::DoublyIndexedMap& map() const { return map_; }
+    const optimizationtools::IndexedSet& conflicts() const { return conflicts_; }
+
+    /*
+     * Setters.
+     */
 
     /** Set color c to vertex v. */
     inline void set(VertexId v, ColorId c);
-
-    Penalty penalty(EdgeId e) const { return penalties_[e]; }
-    Penalty penalty() const { return penalty_; }
-    std::vector<ColorId>::const_iterator colors_begin() const { return map().values_begin(); }
-    std::vector<ColorId>::const_iterator colors_end()   const { return map().values_end(); }
-    const optimizationtools::DoublyIndexedMap& map() const { return map_; }
-    const optimizationtools::IndexedSet& conflicts() const { return conflicts_; }
+    /** Increment the penalty of edge e. */
     void increment_penalty(EdgeId e, Penalty p = 1);
+    /** Set the penalty of edge e. */
     void set_penalty(EdgeId e, Penalty p);
+
+    /*
+     * Export.
+     */
 
     /** Write the solution to a file. */
     void write(std::string certificate_path) const;
 
 private:
+
+    /*
+     * Private attributes.
+     */
 
     /** Instance. */
     const Instance& instance_;
@@ -62,8 +86,9 @@ private:
     optimizationtools::DoublyIndexedMap map_;
     /** Set of conflicting vertices. */
     optimizationtools::IndexedSet conflicts_;
-
+    /** Penalty of each edge. */
     std::vector<Penalty> penalties_;
+    /** Total penalty of the solution. */
     Penalty penalty_ = 0;
 
 };
@@ -74,15 +99,18 @@ void Solution::set(VertexId v, ColorId c)
 {
     // Update conflicts_.
     for (const auto& edge: instance().vertex(v).edges) {
+        // Remove old conflicts.
         if (color(edge.v) == color(v)) {
             conflicts_.remove(edge.e);
             penalty_ -= penalties_[edge.e];
         }
+        // Add new conflicts.
         if (color(edge.v) == c) {
             conflicts_.add(edge.e);
             penalty_ += penalties_[edge.e];
         }
     }
+    // Update map_.
     map_.set(v, c);
 }
 
