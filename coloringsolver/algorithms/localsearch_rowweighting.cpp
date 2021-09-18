@@ -42,17 +42,23 @@ void localsearch_rowweighting_worker(
 
     // Initialize local search structures.
     std::vector<LocalSearchRowWeightingVertex> vertices(instance.number_of_vertices());
-    Counter iterations_without_improvment = 0;
+    Counter number_of_iterations_without_improvement = 0;
+    Counter number_of_improvements = 0;
     std::vector<Penalty> penalties(instance.maximum_degree(), 0);
 
-    for (Counter iterations = 1; !parameters.info.needs_to_end(); ++iterations, iterations_without_improvment++) {
+    for (Counter number_of_iterations = 1; !parameters.info.needs_to_end(); ++number_of_iterations, number_of_iterations_without_improvement++) {
         // Check stop criteria.
         if (parameters.maximum_number_of_iterations != -1
-                && iterations > parameters.maximum_number_of_iterations)
+                && number_of_iterations > parameters.maximum_number_of_iterations)
             break;
         if (parameters.maximum_number_of_iterations_without_improvement != -1
-                && iterations_without_improvment > parameters.maximum_number_of_iterations_without_improvement)
+                && number_of_iterations_without_improvement > parameters.maximum_number_of_iterations_without_improvement)
             break;
+        if (parameters.maximum_number_of_improvements != -1
+                && number_of_improvements > parameters.maximum_number_of_improvements)
+            break;
+        //if (iterations % 10000 == 0)
+        //    std::cout << "it " << iterations << std::endl;
 
         // If the solution is feasible, we merge two colors.
         // We choose the two merged colors to minimize the penalty of the new
@@ -62,16 +68,17 @@ void localsearch_rowweighting_worker(
             if (output.solution.number_of_colors() > solution.number_of_colors()) {
                 std::stringstream ss;
                 ss << "thread " << thread_id
-                    << ", it " << iterations
-                    << " (" << iterations_without_improvment << ")";
+                    << ", it " << number_of_iterations
+                    << " (" << number_of_iterations_without_improvement << ")";
                 output.update_solution(solution, ss, parameters.info);
                 parameters.info.output->mutex_solutions.lock();
                 parameters.new_solution_callback(output);
                 parameters.info.output->mutex_solutions.unlock();
+                number_of_improvements++;
             }
 
             // Update statistics
-            iterations_without_improvment = 0;
+            number_of_iterations_without_improvement = 0;
 
             // Compute positions.
             std::vector<ColorPos> positions(instance.maximum_degree(), -1);
@@ -145,7 +152,7 @@ void localsearch_rowweighting_worker(
                 }
             }
         }
-        vertices[v_best].timestamp = iterations;
+        vertices[v_best].timestamp = number_of_iterations;
         solution.set(v_best, c_best);
 
         // Update penalties: we increment the penalty of each uncovered element.
