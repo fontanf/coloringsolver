@@ -97,6 +97,14 @@ std::ostream& operator<<(std::ostream& os, const Solution& solution);
 
 void Solution::set(VertexId v, ColorId c)
 {
+    // Checks.
+    instance().check_vertex_index(v);
+    if (c < -1 || c >= instance_.number_of_vertices())
+        throw std::out_of_range(
+                "Invalid color value: \"" + std::to_string(c) + "\"."
+                + " Color values should belong to [-1, "
+                + std::to_string(number_of_vertices() - 1) + "].");
+
     // Update conflicts_.
     for (const auto& edge: instance().vertex(v).edges) {
         // Remove old conflicts.

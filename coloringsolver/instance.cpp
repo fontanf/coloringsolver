@@ -38,18 +38,9 @@ void Instance::add_vertex()
 
 void Instance::add_edge(VertexId v1, VertexId v2, bool check_duplicate)
 {
-    // Check the range of v1.
-    if (v1 < 0 || v1 >= number_of_vertices())
-        throw std::out_of_range(
-                "Invalid set index: \"" + std::to_string(v1) + "\"."
-                + " Set indices should belong to [0, "
-                + std::to_string(number_of_vertices() - 1) + "].");
-    // Check the range of v2.
-    if (v2 < 0 || v2 >= number_of_vertices())
-        throw std::out_of_range(
-                "Invalid set index: \"" + std::to_string(v2) + "\"."
-                + " Set indices should belong to [0, "
-                + std::to_string(number_of_vertices() - 1) + "].");
+    // Checks.
+    check_vertex_index(v1);
+    check_vertex_index(v2);
 
     if (v1 == v2) {
         //std::cerr << "\033[33m" << "WARNING, loop (" << v1 << ", " << v2 << ") ignored." << "\033[0m" << std::endl;

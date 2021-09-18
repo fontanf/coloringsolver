@@ -53,11 +53,6 @@ public:
     Instance(std::string instance_path, std::string format);
     /** Create an instance manually. */
     Instance(VertexId number_of_vertices = 0);
-
-    /*
-     * Setters.
-     */
-
     /** Set the name of the instance. */
     void set_name(std::string name) { name_ = name; }
     /** Add a vertex. */
@@ -84,12 +79,26 @@ public:
     /** Get the maximum degree of the instance. */
     inline VertexId maximum_degree() const { return maximum_degree_; }
 
-    /**
+    /*
      * Export.
      */
 
     /** Write the instance to a file. */
     void write(std::string instance_path, std::string format);
+
+    /*
+     * Checkers.
+     */
+
+    /** Check if vertex index 'v' is within the correct range. */
+    inline void check_vertex_index(VertexId v) const
+    {
+        if (v < 0 || v >= number_of_vertices())
+            throw std::out_of_range(
+                    "Invalid vertex index: \"" + std::to_string(v) + "\"."
+                    + " Vertex indices should belong to [0, "
+                    + std::to_string(number_of_vertices() - 1) + "].");
+    }
 
 private:
 
