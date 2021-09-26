@@ -7,18 +7,14 @@ using namespace coloringsolver;
 Solution::Solution(const Instance& instance):
     instance_(instance),
     map_(instance.number_of_vertices(), std::max(instance.maximum_degree(), instance.number_of_vertices())),
-    conflicts_(instance.number_of_edges()),
-    penalties_(instance.number_of_edges(), 1),
-    penalty_(instance.number_of_edges())
+    conflicts_(instance.number_of_edges())
 {
 }
 
 Solution::Solution(const Instance& instance, std::string certificate_path):
     instance_(instance),
     map_(instance.number_of_vertices(), std::max(instance.maximum_degree(), instance.number_of_vertices())),
-    conflicts_(instance.number_of_edges()),
-    penalties_(instance.number_of_edges(), 1),
-    penalty_(instance.number_of_edges())
+    conflicts_(instance.number_of_edges())
 {
     if (certificate_path.empty())
         return;
@@ -39,9 +35,7 @@ Solution::Solution(const Instance& instance, std::string certificate_path):
 Solution::Solution(const Solution& solution):
     instance_(solution.instance_),
     map_(solution.map_),
-    conflicts_(solution.conflicts_),
-    penalties_(solution.penalties_),
-    penalty_(solution.penalty_)
+    conflicts_(solution.conflicts_)
 { }
 
 Solution& Solution::operator=(const Solution& solution)
@@ -50,26 +44,8 @@ Solution& Solution::operator=(const Solution& solution)
         assert(&instance_ == &solution.instance_);
         map_       = solution.map_;
         conflicts_ = solution.conflicts_;
-        penalties_ = solution.penalties_;
-        penalty_   = solution.penalty_;
     }
     return *this;
-}
-
-void Solution::set_penalty(EdgeId e, Penalty p)
-{
-    if (conflicts_.contains(e))
-        penalty_ -= penalties_[e];
-    penalties_[e] = p;
-    if (conflicts_.contains(e))
-        penalty_ += penalties_[e];
-}
-
-void Solution::increment_penalty(EdgeId e, Penalty p)
-{
-    penalties_[e] += p;
-    if (conflicts_.contains(e))
-        penalty_ += p;
 }
 
 void Solution::write(std::string certificate_path) const 

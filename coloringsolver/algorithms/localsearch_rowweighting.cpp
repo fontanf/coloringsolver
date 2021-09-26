@@ -45,6 +45,7 @@ void localsearch_rowweighting_worker(
     Counter number_of_iterations_without_improvement = 0;
     Counter number_of_improvements = 0;
     std::vector<Penalty> penalties(instance.maximum_degree(), 0);
+    std::vector<Penalty> solution_penalties(instance.number_of_edges(), 1);
 
     for (Counter number_of_iterations = 1; !parameters.info.needs_to_end(); ++number_of_iterations, number_of_iterations_without_improvement++) {
         // Check stop criteria.
@@ -103,7 +104,7 @@ void localsearch_rowweighting_worker(
                 ColorPos i1 = std::min(c1_pos, c2_pos);
                 ColorPos i2 = std::max(c1_pos, c2_pos) - i1 - 1;
                 assert(c1 != c2);
-                penalties[i1][i2] += solution.penalty(e);
+                penalties[i1][i2] += solution_penalties[e];
             }
 
             // Find best color combination.
@@ -140,7 +141,7 @@ void localsearch_rowweighting_worker(
             for (auto it_c = solution.colors_begin(); it_c != solution.colors_end(); ++it_c)
                 penalties[*it_c] = 0;
             for (const auto& edge: instance.vertex(v).edges)
-                penalties[solution.color(edge.v)] += solution.penalty(edge.e);
+                penalties[solution.color(edge.v)] += solution_penalties[edge.e];
             for (auto it_c = solution.colors_begin(); it_c != solution.colors_end(); ++it_c) {
                 ColorId c = *it_c;
                 if (c == solution.color(v))
@@ -160,14 +161,14 @@ void localsearch_rowweighting_worker(
         // integer overflow (this very rarely occur in practice).
         bool reduce = false;
         for (auto it_e = solution.conflicts().begin(); it_e != solution.conflicts().end(); ++it_e) {
-            solution.increment_penalty(*it_e);
-            if (solution.penalty(*it_e) > std::numeric_limits<Penalty>::max() / instance.number_of_edges())
+            solution_penalties[e]++;
+            if (solution_penalties[*it_e] > std::numeric_limits<Penalty>::max() / 2)
                 reduce = true;
         }
         if (reduce) {
             //std::cout << "reduce" << std::endl;
             for (EdgeId e = 0; e < instance.number_of_edges(); ++e)
-                solution.set_penalty(e, (solution.penalty(e) - 1) / 2 + 1);
+                solution_penalties[e] = (solution_penalties[e] - 1) / 2 + 1;
         }
     }
 }

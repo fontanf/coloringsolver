@@ -46,14 +46,10 @@ public:
     /** Get the number of conflitcs in the solution. */
     EdgePos number_of_conflicts() const { return conflicts_.size(); }
     /** Get a begin iterator to the colors. */
-    std::vector<ColorId>::const_iterator colors_begin() const { return map().values_begin(); }
+    std::vector<ColorId>::const_iterator colors_begin() const { return map_.values_begin(); }
     /** Get an end iterator to the colors. */
-    std::vector<ColorId>::const_iterator colors_end()   const { return map().values_end(); }
-    /** Get the penalty of edge e. */
-    Penalty penalty(EdgeId e) const { return penalties_[e]; }
-    /** Get the penalty of the solution. */
-    Penalty penalty() const { return penalty_; }
-    const optimizationtools::DoublyIndexedMap& map() const { return map_; }
+    std::vector<ColorId>::const_iterator colors_end() const { return map_.values_end(); }
+    /** Get the set of conflicting vertices. */
     const optimizationtools::IndexedSet& conflicts() const { return conflicts_; }
 
     /*
@@ -62,10 +58,6 @@ public:
 
     /** Set color c to vertex v. */
     inline void set(VertexId v, ColorId c);
-    /** Increment the penalty of edge e. */
-    void increment_penalty(EdgeId e, Penalty p = 1);
-    /** Set the penalty of edge e. */
-    void set_penalty(EdgeId e, Penalty p);
 
     /*
      * Export.
@@ -84,12 +76,8 @@ private:
     const Instance& instance_;
     /** Map storing the color assigned to each vertex. */
     optimizationtools::DoublyIndexedMap map_;
-    /** Set of conflicting vertices. */
+    /** Set of conflicting edges. */
     optimizationtools::IndexedSet conflicts_;
-    /** Penalty of each edge. */
-    std::vector<Penalty> penalties_;
-    /** Total penalty of the solution. */
-    Penalty penalty_ = 0;
 
 };
 
@@ -99,24 +87,21 @@ void Solution::set(VertexId v, ColorId c)
 {
     // Checks.
     instance().check_vertex_index(v);
-    if (c < -1 || c >= instance_.number_of_vertices())
+    if (c < -1 || c >= instance_.number_of_vertices()) {
         throw std::out_of_range(
                 "Invalid color value: \"" + std::to_string(c) + "\"."
                 + " Color values should belong to [-1, "
                 + std::to_string(number_of_vertices() - 1) + "].");
+    }
 
     // Update conflicts_.
     for (const auto& edge: instance().vertex(v).edges) {
         // Remove old conflicts.
-        if (color(edge.v) == color(v)) {
+        if (color(edge.v) == color(v))
             conflicts_.remove(edge.e);
-            penalty_ -= penalties_[edge.e];
-        }
         // Add new conflicts.
-        if (color(edge.v) == c) {
+        if (color(edge.v) == c)
             conflicts_.add(edge.e);
-            penalty_ += penalties_[edge.e];
-        }
     }
     // Update map_.
     map_.set(v, c);
