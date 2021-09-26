@@ -131,7 +131,7 @@ void localsearch_rowweighting_worker(
 
         // Draw randomly a conflicting edge.
         std::uniform_int_distribution<EdgeId> d_e(0, solution.number_of_conflicts() - 1);
-        EdgeId e = *(solution.conflicts().begin() + d_e(generator));
+        EdgeId e = *std::next(solution.conflicts().begin(), d_e(generator));
 
         // Find the best swap move.
         VertexId v_best = -1;
@@ -158,7 +158,7 @@ void localsearch_rowweighting_worker(
 
         // Update penalties: we increment the penalty of each uncovered element.
         // "reduce" becomes true if we divide by 2 all penalties to avoid
-        // integer overflow (this very rarely occur in practice).
+        // integer overflow (this very rarely occurs in practice).
         bool reduce = false;
         for (auto it_e = solution.conflicts().begin(); it_e != solution.conflicts().end(); ++it_e) {
             solution_penalties[e]++;

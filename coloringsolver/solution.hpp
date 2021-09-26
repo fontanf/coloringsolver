@@ -2,6 +2,8 @@
 
 #include "coloringsolver/instance.hpp"
 
+#include <unordered_set>
+
 namespace coloringsolver
 {
 
@@ -50,7 +52,7 @@ public:
     /** Get an end iterator to the colors. */
     std::vector<ColorId>::const_iterator colors_end() const { return map_.values_end(); }
     /** Get the set of conflicting vertices. */
-    const optimizationtools::IndexedSet& conflicts() const { return conflicts_; }
+    const std::unordered_set<EdgeId>& conflicts() const { return conflicts_; }
 
     /*
      * Setters.
@@ -77,7 +79,7 @@ private:
     /** Map storing the color assigned to each vertex. */
     optimizationtools::DoublyIndexedMap map_;
     /** Set of conflicting edges. */
-    optimizationtools::IndexedSet conflicts_;
+    std::unordered_set<EdgeId> conflicts_;
 
 };
 
@@ -98,10 +100,10 @@ void Solution::set(VertexId v, ColorId c)
     for (const auto& edge: instance().vertex(v).edges) {
         // Remove old conflicts.
         if (color(edge.v) == color(v))
-            conflicts_.remove(edge.e);
+            conflicts_.erase(edge.e);
         // Add new conflicts.
         if (color(edge.v) == c)
-            conflicts_.add(edge.e);
+            conflicts_.insert(edge.e);
     }
     // Update map_.
     map_.set(v, c);

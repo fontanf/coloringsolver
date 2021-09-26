@@ -6,15 +6,13 @@ using namespace coloringsolver;
 
 Solution::Solution(const Instance& instance):
     instance_(instance),
-    map_(instance.number_of_vertices(), std::max(instance.maximum_degree(), instance.number_of_vertices())),
-    conflicts_(instance.number_of_edges())
+    map_(instance.number_of_vertices(), std::max(instance.maximum_degree(), instance.number_of_vertices()))
 {
 }
 
 Solution::Solution(const Instance& instance, std::string certificate_path):
     instance_(instance),
-    map_(instance.number_of_vertices(), std::max(instance.maximum_degree(), instance.number_of_vertices())),
-    conflicts_(instance.number_of_edges())
+    map_(instance.number_of_vertices(), std::max(instance.maximum_degree(), instance.number_of_vertices()))
 {
     if (certificate_path.empty())
         return;
