@@ -141,7 +141,12 @@ void localsearch_rowweighting_worker(
                             + " have the same color "
                             + std::to_string(c1));
                 }
-                penalties[i1][i2] += solution_penalties[e];
+                if (std::numeric_limits<Penalty>::max() - solution_penalties[e]
+                        > penalties[i1][i2]) {
+                    penalties[i1][i2] += solution_penalties[e];
+                } else {
+                    penalties[i1][i2] = std::numeric_limits<Penalty>::max();
+                }
             }
 
             // Find best color combination.
