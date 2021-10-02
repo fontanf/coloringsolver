@@ -23,7 +23,9 @@ A solver for the Graph Coloring Problem.
 
 * Local search algorithm implemented with [fontanf/localsearchsolver](https://github.com/fontanf/localsearchsolver) `-a "localsearch"`
 
-* Row weighting local search `-a "localsearch_rowweighting --threads 3 --iterations 100000 --iterations-without-improvment 10000"`
+* Row weighting local search
+  * Penalize conflicting edges `-a "localsearch_rowweighting --iterations 100000 --iterations-without-improvment 10000"`
+  * Penalize uncolored vertices `-a "localsearch_rowweighting_2 --iterations 100000 --iterations-without-improvment 10000"`
 
 * Column generation heuristics implemented with [fontanf/columngenerationsolver](https://github.com/fontanf/columngenerationsolver):
   * Greedy `columngenerationheuristic_greedy`

@@ -63,6 +63,26 @@ LocalSearchRowWeightingOptionalParameters read_localsearch_rowweighting_args(con
     return parameters;
 }
 
+LocalSearchRowWeighting2OptionalParameters read_localsearch_rowweighting_2_args(const std::vector<char*>& argv)
+{
+    LocalSearchRowWeighting2OptionalParameters parameters;
+    po::options_description desc("Allowed options");
+    desc.add_options()
+        ("iterations,i", po::value<Counter>(&parameters.maximum_number_of_iterations), "")
+        ("iterations-without-improvement-limit,w", po::value<Counter>(&parameters.maximum_number_of_iterations_without_improvement), "")
+        ("core,c", po::value<bool>(&parameters.enable_core_reduction), "")
+        ;
+    po::variables_map vm;
+    po::store(po::parse_command_line((Counter)argv.size(), argv.data(), desc), vm);
+    try {
+        po::notify(vm);
+    } catch (const po::required_option& e) {
+        std::cout << desc << std::endl;;
+        throw "";
+    }
+    return parameters;
+}
+
 ColumnGenerationOptionalParameters read_columngeneration_args(const std::vector<char*>& argv)
 {
     ColumnGenerationOptionalParameters parameters;
@@ -149,6 +169,10 @@ Output coloringsolver::run(
         auto parameters = read_localsearch_rowweighting_args(algorithm_argv);
         parameters.info = info;
         return localsearch_rowweighting(instance, generator, parameters);
+    } else if (algorithm_args[0] == "localsearch_rowweighting_2") {
+        auto parameters = read_localsearch_rowweighting_2_args(algorithm_argv);
+        parameters.info = info;
+        return localsearch_rowweighting_2(instance, generator, parameters);
     } else if (algorithm_args[0] == "columngenerationheuristic_greedy") {
         auto parameters = read_columngeneration_args(algorithm_argv);
         parameters.info = info;
