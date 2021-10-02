@@ -48,7 +48,6 @@ LocalSearchRowWeightingOptionalParameters read_localsearch_rowweighting_args(con
     LocalSearchRowWeightingOptionalParameters parameters;
     po::options_description desc("Allowed options");
     desc.add_options()
-        ("threads,t", po::value<Counter>(&parameters.number_of_threads), "")
         ("iterations,i", po::value<Counter>(&parameters.maximum_number_of_iterations), "")
         ("iterations-without-improvement-limit,w", po::value<Counter>(&parameters.maximum_number_of_iterations_without_improvement), "")
         ("core,c", po::value<bool>(&parameters.enable_core_reduction), "")

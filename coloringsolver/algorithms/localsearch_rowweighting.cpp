@@ -9,9 +9,9 @@ using namespace coloringsolver;
 LocalSearchRowWeightingOutput& LocalSearchRowWeightingOutput::algorithm_end(
         optimizationtools::Info& info)
 {
-    //PUT(info, "Algorithm", "Iterations", iterations);
+    PUT(info, "Algorithm", "NumberOfIterations", number_of_iterations);
     Output::algorithm_end(info);
-    //VER(info, "Iterations: " << iterations << std::endl);
+    VER(info, "Number of iterations: " << number_of_iterations << std::endl);
     return *this;
 }
 
@@ -20,21 +20,23 @@ struct LocalSearchRowWeightingVertex
     Counter timestamp = -1;
 };
 
-void localsearch_rowweighting_worker(
+LocalSearchRowWeightingOutput coloringsolver::localsearch_rowweighting(
         const Instance& instance,
-        Seed seed,
-        LocalSearchRowWeightingOptionalParameters parameters,
-        LocalSearchRowWeightingOutput& output,
-        Counter thread_id)
+        std::mt19937_64& generator,
+        LocalSearchRowWeightingOptionalParameters parameters)
 {
-    std::mt19937_64 generator(seed);
+    VER(parameters.info, "*** localsearch_rowweighting ***" << std::endl);
+
+    // Compute initial greedy solution.
+    LocalSearchRowWeightingOutput output(instance, parameters.info);
 
     // Get initial solution.
     Solution solution = (parameters.initial_solution != nullptr)?
         *parameters.initial_solution:
         greedy_dsatur(instance).solution;
+
     std::stringstream ss;
-    ss << "thread " << thread_id << " initial solution";
+    ss << "initial solution";
     output.update_solution(solution, ss, parameters.info);
     parameters.info.output->mutex_solutions.lock();
     parameters.new_solution_callback(output);
@@ -53,10 +55,10 @@ void localsearch_rowweighting_worker(
     optimizationtools::IndexedSet colors(solution.number_of_colors());
     colors.fill();
 
-    for (Counter number_of_iterations = 1; !parameters.info.needs_to_end(); ++number_of_iterations, number_of_iterations_without_improvement++) {
+    for (output.number_of_iterations = 1; !parameters.info.needs_to_end(); ++output.number_of_iterations, number_of_iterations_without_improvement++) {
         // Check stop criteria.
         if (parameters.maximum_number_of_iterations != -1
-                && number_of_iterations > parameters.maximum_number_of_iterations)
+                && output.number_of_iterations > parameters.maximum_number_of_iterations)
             break;
         if (parameters.maximum_number_of_iterations_without_improvement != -1
                 && number_of_iterations_without_improvement > parameters.maximum_number_of_iterations_without_improvement)
@@ -98,9 +100,7 @@ void localsearch_rowweighting_worker(
             // Update best solution
             if (output.solution.number_of_colors() > solution.number_of_colors()) {
                 std::stringstream ss;
-                ss << "thread " << thread_id
-                    << ", it " << number_of_iterations
-                    << " (" << number_of_iterations_without_improvement << ")";
+                ss << "iteration " << output.number_of_iterations;
                 output.update_solution(solution, ss, parameters.info);
                 parameters.info.output->mutex_solutions.lock();
                 parameters.new_solution_callback(output);
@@ -206,7 +206,7 @@ void localsearch_rowweighting_worker(
                 }
             }
         }
-        vertices[v_best].timestamp = number_of_iterations;
+        vertices[v_best].timestamp = output.number_of_iterations;
         solution.set(v_best, c_best);
 
         //std::cout << solution.number_of_conflicts() << std::endl;
@@ -226,25 +226,6 @@ void localsearch_rowweighting_worker(
                 solution_penalties[e] = (solution_penalties[e] - 1) / 2 + 1;
         }
     }
-}
-
-LocalSearchRowWeightingOutput coloringsolver::localsearch_rowweighting(
-        const Instance& instance,
-        std::mt19937_64& generator,
-        LocalSearchRowWeightingOptionalParameters parameters)
-{
-    VER(parameters.info, "*** localsearch_rowweighting ***" << std::endl);
-
-    // Compute initial greedy solution.
-    LocalSearchRowWeightingOutput output(instance, parameters.info);
-
-    auto seeds = optimizationtools::bob_floyd(parameters.number_of_threads, std::numeric_limits<Seed>::max(), generator);
-    std::vector<std::thread> threads;
-    for (Counter thread_id = 0; thread_id < parameters.number_of_threads; ++thread_id)
-        threads.push_back(std::thread(localsearch_rowweighting_worker, std::ref(instance), seeds[thread_id], parameters, std::ref(output), thread_id));
-
-    for (Counter thread_id = 0; thread_id < parameters.number_of_threads; ++thread_id)
-        threads[thread_id].join();
 
     return output.algorithm_end(parameters.info);
 }

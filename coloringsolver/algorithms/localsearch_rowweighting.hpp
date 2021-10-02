@@ -14,14 +14,14 @@ struct LocalSearchRowWeightingOutput: Output
 
     LocalSearchRowWeightingOutput& algorithm_end(
             optimizationtools::Info& info);
+
+    Counter number_of_iterations = 0;
 };
 
 using LocalSearchRowWeightingCallback = std::function<void(const LocalSearchRowWeightingOutput&)>;
 
 struct LocalSearchRowWeightingOptionalParameters
 {
-    /** Number of threads. */
-    Counter number_of_threads = 3;
     /** Maximum number of iterations. */
     Counter maximum_number_of_iterations = -1;
     /** Maximum number of iterations without improvement. */
