@@ -183,13 +183,13 @@ LocalSearchRowWeightingOutput coloringsolver::localsearch_rowweighting(
 
         // Draw randomly a conflicting edge.
         std::uniform_int_distribution<EdgeId> d_e(0, solution.number_of_conflicts() - 1);
-        EdgeId e = *std::next(solution.conflicts().begin(), d_e(generator));
+        EdgeId e_cur = *std::next(solution.conflicts().begin(), d_e(generator));
 
         // Find the best swap move.
         VertexId v_best = -1;
         ColorId  c_best = -1;
         Penalty  p_best = -1;
-        for (VertexId v: {instance.edge(e).v1, instance.edge(e).v2}) {
+        for (VertexId v: {instance.edge(e_cur).v1, instance.edge(e_cur).v2}) {
             for (auto it_c = solution.colors_begin(); it_c != solution.colors_end(); ++it_c)
                 penalties[*it_c] = 0;
             for (const auto& edge: instance.vertex(v).edges)
@@ -206,20 +206,28 @@ LocalSearchRowWeightingOutput coloringsolver::localsearch_rowweighting(
                 }
             }
         }
+        // Update vertices structure.
         vertices[v_best].timestamp = output.number_of_iterations;
+        // Update penalties.
+        bool reduce = false;
+        for (const auto& edge: instance.vertex(v_best).edges) {
+            if (solution.color(edge.v) == c_best) {
+                solution_penalties[edge.e]++;
+                if (solution_penalties[edge.e] > std::numeric_limits<Penalty>::max() / 2)
+                    reduce = true;
+            }
+        }
+        // Update solution.
         solution.set(v_best, c_best);
 
-        //std::cout << solution.number_of_conflicts() << std::endl;
+        // Update penalties.
+        //bool reduce = false;
+        //for (auto it_e = solution.conflicts().begin(); it_e != solution.conflicts().end(); ++it_e) {
+        //    solution_penalties[*it_e]++;
+        //    if (solution_penalties[*it_e] > std::numeric_limits<Penalty>::max() / 2)
+        //        reduce = true;
+        //}
 
-        // Update penalties: we increment the penalty of each uncovered element.
-        // "reduce" becomes true if we divide by 2 all penalties to avoid
-        // integer overflow (this very rarely occurs in practice).
-        bool reduce = false;
-        for (auto it_e = solution.conflicts().begin(); it_e != solution.conflicts().end(); ++it_e) {
-            solution_penalties[e]++;
-            if (solution_penalties[*it_e] > std::numeric_limits<Penalty>::max() / 2)
-                reduce = true;
-        }
         if (reduce) {
             //std::cout << "reduce" << std::endl;
             for (EdgeId e = 0; e < instance.number_of_edges(); ++e)
