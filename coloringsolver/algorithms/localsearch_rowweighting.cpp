@@ -190,13 +190,12 @@ LocalSearchRowWeightingOutput coloringsolver::localsearch_rowweighting(
         ColorId  c_best = -1;
         Penalty  p_best = -1;
         for (VertexId v: {instance.edge(e_cur).v1, instance.edge(e_cur).v2}) {
-            for (auto it_c = solution.colors_begin(); it_c != solution.colors_end(); ++it_c)
-                penalties[*it_c] = 0;
+            for (ColorId c: colors)
+                penalties[c] = 0;
             for (const auto& edge: instance.vertex(v).edges)
                 if (solution.contains(edge.v))
                     penalties[solution.color(edge.v)] += solution_penalties[edge.e];
-            for (auto it_c = solution.colors_begin(); it_c != solution.colors_end(); ++it_c) {
-                ColorId c = *it_c;
+            for (ColorId c: colors) {
                 if (c == solution.color(v))
                     continue;
                 if (p_best == -1 || p_best > penalties[c]) {
