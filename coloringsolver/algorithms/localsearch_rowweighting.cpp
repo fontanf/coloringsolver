@@ -218,22 +218,13 @@ LocalSearchRowWeightingOutput coloringsolver::localsearch_rowweighting(
                     reduce = true;
             }
         }
-        // Update solution.
-        solution.set(v_best, c_best);
-
-        // Update penalties.
-        //bool reduce = false;
-        //for (auto it_e = solution.conflicts().begin(); it_e != solution.conflicts().end(); ++it_e) {
-        //    solution_penalties[*it_e]++;
-        //    if (solution_penalties[*it_e] > std::numeric_limits<Penalty>::max() / 2)
-        //        reduce = true;
-        //}
-
         if (reduce) {
             //std::cout << "reduce" << std::endl;
             for (EdgeId e = 0; e < instance.number_of_edges(); ++e)
                 solution_penalties[e] = (solution_penalties[e] - 1) / 2 + 1;
         }
+        // Update solution.
+        solution.set(v_best, c_best);
     }
 
     return output.algorithm_end(parameters.info);
@@ -454,6 +445,11 @@ LocalSearchRowWeighting2Output coloringsolver::localsearch_rowweighting_2(
                     reduce = true;
             }
         }
+        if (reduce) {
+            //std::cout << "reduce" << std::endl;
+            for (VertexId v = 0; v < instance.number_of_vertices(); ++v)
+                vertex_penalties[v] = (vertex_penalties[v] - 1) / 2 + 1;
+        }
         // Update solution.
         solution.set(v_cur, c_best);
         uncolored_vertices.remove(v_cur);
@@ -462,12 +458,6 @@ LocalSearchRowWeighting2Output coloringsolver::localsearch_rowweighting_2(
                 solution.set(edge.v, -1);
                 uncolored_vertices.add(edge.v);
             }
-        }
-
-        if (reduce) {
-            //std::cout << "reduce" << std::endl;
-            for (VertexId v = 0; v < instance.number_of_vertices(); ++v)
-                vertex_penalties[v] = (vertex_penalties[v] - 1) / 2 + 1;
         }
     }
 
