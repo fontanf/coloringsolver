@@ -60,6 +60,8 @@ public:
     /** Add an edge between vertex v1 and vertex v2. */
     void add_edge(VertexId v1, VertexId v2, bool check_duplicate = true);
 
+    std::vector<VertexId> compute_core(ColorId k) const;
+
     /*
      * Getters.
      */
@@ -123,6 +125,8 @@ private:
     void read_dimacs(std::ifstream& file);
     /** Read an instance in 'matrixmarket' format. */
     void read_matrixmarket(std::ifstream& file);
+    /** Read an instance in 'snap' format. */
+    void read_snap(std::ifstream& file);
 
 };
 

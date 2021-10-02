@@ -99,14 +99,18 @@ void Solution::set(VertexId v, ColorId c)
     // Update conflicts_.
     for (const auto& edge: instance().vertex(v).edges) {
         // Remove old conflicts.
-        if (color(edge.v) == color(v))
+        if (contains(edge.v) && color(edge.v) == color(v))
             conflicts_.erase(edge.e);
         // Add new conflicts.
-        if (color(edge.v) == c)
+        if (c != -1 && color(edge.v) == c)
             conflicts_.insert(edge.e);
     }
     // Update map_.
-    map_.set(v, c);
+    if (c != -1) {
+        map_.set(v, c);
+    } else {
+        map_.unset(v);
+    }
 }
 
 /*********************************** Output ***********************************/

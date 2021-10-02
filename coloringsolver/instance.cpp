@@ -17,6 +17,8 @@ Instance::Instance(std::string instance_path, std::string format)
         read_dimacs(file);
     } else if (format == "matrixmarket") {
         read_matrixmarket(file);
+    } else if (format == "snap") {
+        read_snap(file);
     } else {
         throw std::invalid_argument(
                 "Unknown instance format \"" + format + "\".");
@@ -114,5 +116,51 @@ void Instance::read_matrixmarket(std::ifstream& file)
         VertexId v2 = stol(line[1]) - 1;
         add_edge(v1, v2);
     }
+}
+
+void Instance::read_snap(std::ifstream& file)
+{
+    std::string tmp;
+    std::vector<std::string> line;
+    VertexId v1 = -1;
+    VertexId v2 = -1;
+    while (getline(file, tmp)) {
+        if (tmp[0] == '#')
+            continue;
+        std::stringstream ss(tmp);
+        ss >> v1 >> v2;
+        if (std::max(v1, v2) >= number_of_vertices())
+            vertices_.resize(std::max(v1, v2) + 1);
+        add_edge(v1, v2);
+    }
+}
+
+std::vector<VertexId> Instance::compute_core(ColorId k) const
+{
+    std::vector<VertexId> removed_vertices;
+    std::vector<VertexPos> vertex_degrees(number_of_vertices(), -1);
+    std::vector<VertexId> vertex_queue;
+    for (VertexId v = 0; v < number_of_vertices(); ++v) {
+        vertex_degrees[v] = degree(v);
+        if (vertex_degrees[v] < k) {
+            vertex_queue.push_back(v);
+            removed_vertices.push_back(v);
+        }
+    }
+    while (!vertex_queue.empty()) {
+        VertexId v = vertex_queue.back();
+        vertex_queue.pop_back();
+        for (const auto& edge: vertex(v).edges) {
+            if (vertex_degrees[edge.v] < k)
+                continue;
+            vertex_degrees[edge.v]--;
+            if (vertex_degrees[edge.v] < k) {
+                vertex_queue.push_back(edge.v);
+                removed_vertices.push_back(edge.v);
+            }
+        }
+    }
+    //std::cout << "k " << k << " removed_vertices.size() " << removed_vertices.size() << std::endl;
+    return removed_vertices;
 }
 

@@ -47,6 +47,12 @@ void localsearch_rowweighting_worker(
     std::vector<Penalty> penalties(instance.maximum_degree(), 0);
     std::vector<Penalty> solution_penalties(instance.number_of_edges(), 1);
 
+    // Structures for the core.
+    std::vector<VertexId> removed_vertices;
+    ColorId k = solution.number_of_colors();
+    optimizationtools::IndexedSet colors(solution.number_of_colors());
+    colors.fill();
+
     for (Counter number_of_iterations = 1; !parameters.info.needs_to_end(); ++number_of_iterations, number_of_iterations_without_improvement++) {
         // Check stop criteria.
         if (parameters.maximum_number_of_iterations != -1
@@ -64,7 +70,31 @@ void localsearch_rowweighting_worker(
         // If the solution is feasible, we merge two colors.
         // We choose the two merged colors to minimize the penalty of the new
         // solution.
-        while (solution.feasible()) {
+        while (solution.number_of_conflicts() == 0) {
+            // Give a color to vertices outside of the core.
+            for (auto it_v = removed_vertices.rbegin();
+                    it_v != removed_vertices.rend(); ++it_v) {
+                VertexId v = *it_v;
+                optimizationtools::IndexedSet available_colors = colors;
+                for (const auto& edge: instance.vertex(v).edges) {
+                    if (solution.contains(edge.v) == 0)
+                        continue;
+                    ColorId c = solution.color(edge.v);
+                    available_colors.remove(c);
+                }
+                if (available_colors.empty()) {
+                    throw std::runtime_error(
+                            "No available color for vertex "
+                            + std::to_string(v)
+                            + ".");
+                }
+                ColorId c = *(available_colors.begin());
+                solution.set(v, c);
+            }
+            if (solution.number_of_conflicts() != 0) {
+                throw std::runtime_error("Solution has conflicts.");
+            }
+
             // Update best solution
             if (output.solution.number_of_colors() > solution.number_of_colors()) {
                 std::stringstream ss;
@@ -103,7 +133,14 @@ void localsearch_rowweighting_worker(
                 ColorPos c2_pos = positions[c2];
                 ColorPos i1 = std::min(c1_pos, c2_pos);
                 ColorPos i2 = std::max(c1_pos, c2_pos) - i1 - 1;
-                assert(c1 != c2);
+                if (c1 == c2) {
+                    throw std::runtime_error(
+                            "Vertex " + std::to_string(v1)
+                            + " and its neighbor vertex "
+                            + std::to_string(v2)
+                            + " have the same color "
+                            + std::to_string(c1));
+                }
                 penalties[i1][i2] += solution_penalties[e];
             }
 
@@ -127,6 +164,16 @@ void localsearch_rowweighting_worker(
             for (VertexId v = 0; v < instance.number_of_vertices(); ++v)
                 if (solution.color(v) == c2_best)
                     solution.set(v, c1_best);
+            colors.remove(c2_best);
+
+            // Compute core.
+            k--;
+            if (parameters.enable_core_reduction) {
+                removed_vertices = instance.compute_core(k);
+                for (VertexId v: removed_vertices)
+                    solution.set(v, -1);
+            }
+
         }
 
         // Draw randomly a conflicting edge.
@@ -141,7 +188,8 @@ void localsearch_rowweighting_worker(
             for (auto it_c = solution.colors_begin(); it_c != solution.colors_end(); ++it_c)
                 penalties[*it_c] = 0;
             for (const auto& edge: instance.vertex(v).edges)
-                penalties[solution.color(edge.v)] += solution_penalties[edge.e];
+                if (solution.contains(edge.v))
+                    penalties[solution.color(edge.v)] += solution_penalties[edge.e];
             for (auto it_c = solution.colors_begin(); it_c != solution.colors_end(); ++it_c) {
                 ColorId c = *it_c;
                 if (c == solution.color(v))
@@ -155,6 +203,8 @@ void localsearch_rowweighting_worker(
         }
         vertices[v_best].timestamp = number_of_iterations;
         solution.set(v_best, c_best);
+
+        //std::cout << solution.number_of_conflicts() << std::endl;
 
         // Update penalties: we increment the penalty of each uncovered element.
         // "reduce" becomes true if we divide by 2 all penalties to avoid
