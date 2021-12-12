@@ -2,7 +2,7 @@
 
 #include "coloringsolver/algorithms/greedy.hpp"
 
-#include "localsearchsolver/a_star_local_search.hpp"
+#include "localsearchsolver/best_first_local_search.hpp"
 
 using namespace coloringsolver;
 using namespace localsearchsolver;
@@ -22,14 +22,6 @@ public:
     inline EdgeId&       number_of_conflicts(GlobalCost& global_cost) { return std::get<1>(global_cost); }
     inline ColorId    number_of_colors(const GlobalCost& global_cost) { return std::get<0>(global_cost); }
     inline EdgeId  number_of_conflicts(const GlobalCost& global_cost) { return std::get<1>(global_cost); }
-
-    static GlobalCost global_cost_worst()
-    {
-        return {
-            std::numeric_limits<ColorId>::max(),
-            std::numeric_limits<EdgeId>::max(),
-        };
-    }
 
     /*
      * Solutions.
@@ -160,6 +152,8 @@ public:
 
     struct Move
     {
+        Move(): v(-1) { }
+
         // If the solution is not feasible, change color of conflicting vertex
         // v to c.
         VertexId v;
@@ -171,8 +165,6 @@ public:
 
         GlobalCost global_cost;
     };
-
-    static Move move_null() { return {-1, -1, -1, -1, global_cost_worst()}; }
 
     struct MoveHasher
     {
@@ -291,7 +283,7 @@ public:
     inline void local_search(
             Solution& solution,
             std::mt19937_64& generator,
-            const Move& tabu = move_null())
+            const Move& tabu = Move())
     {
         //std::cout << "local_search start" << std::endl;
         Counter it = 0;
@@ -451,24 +443,24 @@ LocalSearchOutput coloringsolver::localsearch(
     LocalScheme local_scheme(instance, parameters_local_scheme);
 
     // Run A*.
-    AStarLocalSearchOptionalParameters<LocalScheme> parameters_a_star;
-    //parameters_a_star.info.set_verbose(true);
-    parameters_a_star.info.set_time_limit(parameters.info.remaining_time());
-    parameters_a_star.maximum_number_of_nodes = parameters.maximum_number_of_nodes;
-    parameters_a_star.number_of_threads_1 = 1;
-    parameters_a_star.number_of_threads_2 = parameters.number_of_threads;
-    parameters_a_star.initial_solution_ids = std::vector<Counter>(
-            parameters_a_star.number_of_threads_2, 0);
+    BestFirstLocalSearchOptionalParameters<LocalScheme> parameters_best_first;
+    //parameters_best_first.info.set_verbose(true);
+    parameters_best_first.info.set_time_limit(parameters.info.remaining_time());
+    parameters_best_first.maximum_number_of_nodes = parameters.maximum_number_of_nodes;
+    parameters_best_first.number_of_threads_1 = 1;
+    parameters_best_first.number_of_threads_2 = parameters.number_of_threads;
+    parameters_best_first.initial_solution_ids = std::vector<Counter>(
+            parameters_best_first.number_of_threads_2, 0);
     if (parameters.initial_solution == nullptr
             || !parameters.initial_solution->feasible()) {
-        parameters_a_star.initial_solution_ids = std::vector<Counter>(
-                parameters_a_star.number_of_threads_2, 0);
+        parameters_best_first.initial_solution_ids = std::vector<Counter>(
+                parameters_best_first.number_of_threads_2, 0);
     } else {
         LocalScheme::Solution solution = local_scheme.solution(*parameters.initial_solution, generator);
-        parameters_a_star.initial_solution_ids = {};
-        parameters_a_star.initial_solutions = {solution};
+        parameters_best_first.initial_solution_ids = {};
+        parameters_best_first.initial_solutions = {solution};
     }
-    parameters_a_star.new_solution_callback
+    parameters_best_first.new_solution_callback
         = [&instance, &parameters, &output](
                 const LocalScheme::Solution& solution)
         {
@@ -482,7 +474,7 @@ LocalSearchOutput coloringsolver::localsearch(
             std::stringstream ss;
             output.update_solution(sol, ss, parameters.info);
         };
-    a_star_local_search(local_scheme, parameters_a_star);
+    best_first_local_search(local_scheme, parameters_best_first);
 
     return output.algorithm_end(parameters.info);
 }

@@ -50,6 +50,8 @@ LocalSearchRowWeightingOutput coloringsolver::localsearch_rowweighting(
     Counter number_of_improvements = 0;
     std::vector<Penalty> penalties(instance.maximum_degree(), 0);
     std::vector<Penalty> solution_penalties(instance.number_of_edges(), 1);
+    std::vector<std::pair<VertexId, ColorId>> vc_bests;
+    std::vector<std::pair<ColorId, ColorId>> cc_bests;
 
     // Structures for the core.
     std::vector<VertexId> removed_vertices;
@@ -152,22 +154,25 @@ LocalSearchRowWeightingOutput coloringsolver::localsearch_rowweighting(
             }
 
             // Find best color combination.
-            ColorPos c1_pos_best = -1;
-            ColorPos c2_pos_best = -1;
+            cc_bests.clear();
             Penalty p_best = -1;
             for (ColorPos c1_pos = 0; c1_pos < solution.number_of_colors(); ++c1_pos) {
                 for (ColorPos c2_pos = c1_pos + 1; c2_pos < solution.number_of_colors(); ++c2_pos) {
-                    if (p_best == -1 || p_best > penalties[c1_pos][c2_pos - c1_pos - 1]) {
-                        c1_pos_best = c1_pos;
-                        c2_pos_best = c2_pos;
+                    if (cc_bests.empty() || p_best > penalties[c1_pos][c2_pos - c1_pos - 1]) {
+                        cc_bests.clear();
+                        cc_bests.push_back({c1_pos, c2_pos});
                         p_best = penalties[c1_pos][c2_pos - c1_pos - 1];
+                    } else if (!cc_bests.empty() && p_best == penalties[c1_pos][c2_pos - c1_pos - 1]) {
+                        cc_bests.push_back({c1_pos, c2_pos});
                     }
                 }
             }
 
             // Apply color merge.
-            ColorId c1_best = *(solution.colors_begin() + c1_pos_best);
-            ColorId c2_best = *(solution.colors_begin() + c2_pos_best);
+            std::uniform_int_distribution<EdgeId> d_cc(0, cc_bests.size() - 1);
+            auto cc = cc_bests[d_cc(generator)];
+            ColorId c1_best = *(solution.colors_begin() + cc.first);
+            ColorId c2_best = *(solution.colors_begin() + cc.second);
             for (VertexId v = 0; v < instance.number_of_vertices(); ++v)
                 if (solution.color(v) == c2_best)
                     solution.set(v, c1_best);
@@ -188,9 +193,8 @@ LocalSearchRowWeightingOutput coloringsolver::localsearch_rowweighting(
         EdgeId e_cur = *std::next(solution.conflicts().begin(), d_e(generator));
 
         // Find the best swap move.
-        VertexId v_best = -1;
-        ColorId  c_best = -1;
-        Penalty  p_best = -1;
+        vc_bests.clear();
+        Penalty p_best = -1;
         for (VertexId v: {instance.edge(e_cur).v1, instance.edge(e_cur).v2}) {
             for (ColorId c: colors)
                 penalties[c] = 0;
@@ -200,19 +204,23 @@ LocalSearchRowWeightingOutput coloringsolver::localsearch_rowweighting(
             for (ColorId c: colors) {
                 if (c == solution.color(v))
                     continue;
-                if (p_best == -1 || p_best > penalties[c]) {
-                    v_best = v;
-                    c_best = c;
+                if (vc_bests.empty() || p_best > penalties[c]) {
+                    vc_bests.clear();
+                    vc_bests.push_back({v, c});
                     p_best = penalties[c];
+                } else if (!vc_bests.empty() && p_best == penalties[c]) {
+                    vc_bests.push_back({v, c});
                 }
             }
         }
+        std::uniform_int_distribution<EdgeId> d_vc(0, vc_bests.size() - 1);
+        auto vc = vc_bests[d_vc(generator)];
         // Update vertices structure.
-        vertices[v_best].timestamp = output.number_of_iterations;
+        vertices[vc.first].timestamp = output.number_of_iterations;
         // Update penalties.
         bool reduce = false;
-        for (const auto& edge: instance.vertex(v_best).edges) {
-            if (solution.color(edge.v) == c_best) {
+        for (const auto& edge: instance.vertex(vc.first).edges) {
+            if (solution.color(edge.v) == vc.second) {
                 solution_penalties[edge.e]++;
                 if (solution_penalties[edge.e] > std::numeric_limits<Penalty>::max() / 2)
                     reduce = true;
@@ -224,7 +232,7 @@ LocalSearchRowWeightingOutput coloringsolver::localsearch_rowweighting(
                 solution_penalties[e] = (solution_penalties[e] - 1) / 2 + 1;
         }
         // Update solution.
-        solution.set(v_best, c_best);
+        solution.set(vc.first, vc.second);
     }
 
     return output.algorithm_end(parameters.info);
@@ -269,6 +277,8 @@ LocalSearchRowWeighting2Output coloringsolver::localsearch_rowweighting_2(
     std::vector<Penalty> penalties(instance.maximum_degree(), 0);
     std::vector<Penalty> vertex_penalties(instance.number_of_vertices(), 1);
     optimizationtools::IndexedSet uncolored_vertices(instance.number_of_vertices());
+    std::vector<std::pair<ColorId, ColorId>> cc_bests;
+    std::vector<ColorId> c_bests;
 
     // Structures for the core.
     std::vector<VertexId> removed_vertices;
@@ -372,22 +382,25 @@ LocalSearchRowWeighting2Output coloringsolver::localsearch_rowweighting_2(
             }
 
             // Find best color combination.
-            ColorPos c1_pos_best = -1;
-            ColorPos c2_pos_best = -1;
+            cc_bests.clear();
             Penalty p_best = -1;
             for (ColorPos c1_pos = 0; c1_pos < solution.number_of_colors(); ++c1_pos) {
                 for (ColorPos c2_pos = c1_pos + 1; c2_pos < solution.number_of_colors(); ++c2_pos) {
-                    if (p_best == -1 || p_best > penalties[c1_pos][c2_pos - c1_pos - 1]) {
-                        c1_pos_best = c1_pos;
-                        c2_pos_best = c2_pos;
+                    if (cc_bests.empty() || p_best > penalties[c1_pos][c2_pos - c1_pos - 1]) {
+                        cc_bests.clear();
+                        cc_bests.push_back({c1_pos, c2_pos});
                         p_best = penalties[c1_pos][c2_pos - c1_pos - 1];
+                    } else if (!cc_bests.empty() && p_best == penalties[c1_pos][c2_pos - c1_pos - 1]) {
+                        cc_bests.push_back({c1_pos, c2_pos});
                     }
                 }
             }
 
             // Apply color merge.
-            ColorId c1_best = *(solution.colors_begin() + c1_pos_best);
-            ColorId c2_best = *(solution.colors_begin() + c2_pos_best);
+            std::uniform_int_distribution<EdgeId> d_cc(0, cc_bests.size() - 1);
+            auto cc = cc_bests[d_cc(generator)];
+            ColorId c1_best = *(solution.colors_begin() + cc.first);
+            ColorId c2_best = *(solution.colors_begin() + cc.second);
             for (VertexId v = 0; v < instance.number_of_vertices(); ++v)
                 if (solution.color(v) == c2_best)
                     solution.set(v, c1_best);
@@ -423,7 +436,7 @@ LocalSearchRowWeighting2Output coloringsolver::localsearch_rowweighting_2(
         VertexId v_cur = *std::next(uncolored_vertices.begin(), d_v(generator));
 
         // Find the best swap move.
-        ColorId  c_best = -1;
+        c_bests.clear();
         Penalty  p_best = -1;
         for (ColorId c: colors)
             penalties[c] = 0;
@@ -431,11 +444,16 @@ LocalSearchRowWeighting2Output coloringsolver::localsearch_rowweighting_2(
             if (solution.contains(edge.v))
                 penalties[solution.color(edge.v)] += vertex_penalties[edge.v];
         for (ColorId c: colors) {
-            if (p_best == -1 || p_best > penalties[c]) {
-                c_best = c;
+            if (c_bests.empty() || p_best > penalties[c]) {
+                c_bests.clear();
+                c_bests.push_back(c);
                 p_best = penalties[c];
+            } else if (!c_bests.empty() && p_best == penalties[c]) {
+                c_bests.push_back(c);
             }
         }
+        std::uniform_int_distribution<EdgeId> d_c(0, c_bests.size() - 1);
+        ColorId c_best = c_bests[d_c(generator)];
         // Update penalties.
         bool reduce = false;
         for (const auto& edge: instance.vertex(v_cur).edges) {

@@ -221,17 +221,17 @@ ColumnGenerationHeuristicGreedyOutput coloringsolver::columngenerationheuristic_
     columngenerationsolver::Parameters p = get_parameters(instance);
     columngenerationsolver::GreedyOptionalParameters op;
     op.info.set_time_limit(parameters.info.remaining_time());
-    op.columngeneration_parameters.linear_programming_solver
+    op.column_generation_parameters.linear_programming_solver
         = columngenerationsolver::s2lps(parameters.linear_programming_solver);
     // Self-ajusting Wentges smoothing and automatic directional smoothing do
     // not work well on the Graph Coloring Problem as shown in "Automation and
     // Combination of Linear-Programming Based Stabilization Techniques in
     // Column Generation" (Pessoa et al., 2018). Therefore, let us disable
     // these options.
-    op.columngeneration_parameters.static_wentges_smoothing_parameter = 0.0;
-    op.columngeneration_parameters.static_directional_smoothing_parameter = 0.0;
-    op.columngeneration_parameters.self_adjusting_wentges_smoothing = false;
-    op.columngeneration_parameters.automatic_directional_smoothing = false;
+    op.column_generation_parameters.static_wentges_smoothing_parameter = 0.0;
+    op.column_generation_parameters.static_directional_smoothing_parameter = 0.0;
+    op.column_generation_parameters.self_adjusting_wentges_smoothing = false;
+    op.column_generation_parameters.automatic_directional_smoothing = false;
     //op.columngeneration_parameters.info.set_verbose(true);
     auto output_greedy = columngenerationsolver::greedy(p, op);
 
@@ -257,7 +257,7 @@ ColumnGenerationHeuristicLimitedDiscrepancySearchOutput coloringsolver::columnge
 
     columngenerationsolver::Parameters p = get_parameters(instance);
     columngenerationsolver::LimitedDiscrepancySearchOptionalParameters op;
-    op.columngeneration_parameters.linear_programming_solver
+    op.column_generation_parameters.linear_programming_solver
         = columngenerationsolver::s2lps(parameters.linear_programming_solver);
     op.new_bound_callback = [&instance, &parameters, &output](
                 const columngenerationsolver::LimitedDiscrepancySearchOutput& o)
@@ -276,14 +276,14 @@ ColumnGenerationHeuristicLimitedDiscrepancySearchOutput coloringsolver::columnge
             //        ss,
             //        parameters.info);
         };
-    op.columngeneration_parameters.static_wentges_smoothing_parameter = 0.0;
-    op.columngeneration_parameters.static_directional_smoothing_parameter = 0.0;
-    op.columngeneration_parameters.self_adjusting_wentges_smoothing = false;
-    op.columngeneration_parameters.automatic_directional_smoothing = false;
+    op.column_generation_parameters.static_wentges_smoothing_parameter = 0.0;
+    op.column_generation_parameters.static_directional_smoothing_parameter = 0.0;
+    op.column_generation_parameters.self_adjusting_wentges_smoothing = false;
+    op.column_generation_parameters.automatic_directional_smoothing = false;
     //op.columngeneration_parameters.info.set_verbose(true);
     op.info.set_time_limit(parameters.info.remaining_time());
 
-    auto output_limiteddiscrepancysearch = columngenerationsolver::limiteddiscrepancysearch( p, op);
+    auto output_limiteddiscrepancysearch = columngenerationsolver::limited_discrepancy_search( p, op);
     return output.algorithm_end(parameters.info);
 }
 
@@ -297,7 +297,7 @@ ColumnGenerationHeuristicHeuristicTreeSearchOutput coloringsolver::columngenerat
 
     columngenerationsolver::Parameters p = get_parameters(instance);
     columngenerationsolver::HeuristicTreeSearchOptionalParameters op;
-    op.columngeneration_parameters.linear_programming_solver
+    op.column_generation_parameters.linear_programming_solver
         = columngenerationsolver::s2lps(parameters.linear_programming_solver);
     op.new_bound_callback = [&instance, &parameters, &output](
                 const columngenerationsolver::HeuristicTreeSearchOutput& o)
@@ -311,14 +311,14 @@ ColumnGenerationHeuristicHeuristicTreeSearchOutput coloringsolver::columngenerat
                         parameters.info);
             }
         };
-    op.columngeneration_parameters.static_wentges_smoothing_parameter = 0.0;
-    op.columngeneration_parameters.static_directional_smoothing_parameter = 0.0;
-    op.columngeneration_parameters.self_adjusting_wentges_smoothing = false;
-    op.columngeneration_parameters.automatic_directional_smoothing = false;
+    op.column_generation_parameters.static_wentges_smoothing_parameter = 0.0;
+    op.column_generation_parameters.static_directional_smoothing_parameter = 0.0;
+    op.column_generation_parameters.self_adjusting_wentges_smoothing = false;
+    op.column_generation_parameters.automatic_directional_smoothing = false;
     //op.info.set_verbose(true);
     //op.columngeneration_parameters.info.set_verbose(true);
     op.info.set_time_limit(parameters.info.remaining_time());
 
-    auto output_heuristictreesearch = columngenerationsolver::heuristictreesearch( p, op);
+    auto output_heuristictreesearch = columngenerationsolver::heuristic_tree_search( p, op);
     return output.algorithm_end(parameters.info);
 }
