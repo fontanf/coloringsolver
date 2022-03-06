@@ -12,7 +12,9 @@ struct ColumnGenerationOptionalParameters
     std::string linear_programming_solver = "CLP";
 };
 
-/******************************************************************************/
+////////////////////////////////////////////////////////////////////////////////
+///////////////////// Column Generation Heuristic: Greedy //////////////////////
+////////////////////////////////////////////////////////////////////////////////
 
 struct ColumnGenerationHeuristicGreedyOutput: Output
 {
@@ -27,7 +29,9 @@ ColumnGenerationHeuristicGreedyOutput columngenerationheuristic_greedy(
         const Instance& instance,
         ColumnGenerationOptionalParameters parameters = {});
 
-/******************************************************************************/
+////////////////////////////////////////////////////////////////////////////////
+/////////// Column Generation Heuristic: Limited Discrepancy Search ////////////
+////////////////////////////////////////////////////////////////////////////////
 
 struct ColumnGenerationHeuristicLimitedDiscrepancySearchOutput: Output
 {
@@ -47,7 +51,9 @@ ColumnGenerationHeuristicLimitedDiscrepancySearchOutput columngenerationheuristi
         const Instance& instance,
         ColumnGenerationOptionalParameters parameters = {});
 
-/******************************************************************************/
+////////////////////////////////////////////////////////////////////////////////
+////////////// Column Generation Heuristic: Heuristic Tree Search //////////////
+////////////////////////////////////////////////////////////////////////////////
 
 struct ColumnGenerationHeuristicHeuristicTreeSearchOutput: Output
 {

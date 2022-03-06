@@ -7,7 +7,9 @@
 namespace coloringsolver
 {
 
-/************************* Assignment-based ILP model *************************/
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////// Assignment-based ILP model //////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 
 struct MilpAssignmentCplexOptionalParameters
 {
@@ -32,7 +34,9 @@ MilpAssignmentCplexOutput milp_assignment_cplex(
         const Instance& instance,
         MilpAssignmentCplexOptionalParameters parameters = {});
 
-/************************* Representatives ILP model **************************/
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////// Representatives ILP model ///////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 
 struct MilpRepresentativesCplexOptionalParameters
 {
@@ -56,7 +60,9 @@ MilpRepresentativesCplexOutput milp_representatives_cplex(
         const Instance& instance,
         MilpRepresentativesCplexOptionalParameters parameters = {});
 
-/********************** Partial-ordering based ILP model **********************/
+////////////////////////////////////////////////////////////////////////////////
+/////////////////////// Partial-ordering based ILP model ///////////////////////
+////////////////////////////////////////////////////////////////////////////////
 
 struct MilpPartialOrderingCplexOptionalParameters
 {
@@ -80,7 +86,9 @@ MilpPartialOrderingCplexOutput milp_partialordering_cplex(
         const Instance& instance,
         MilpPartialOrderingCplexOptionalParameters parameters = {});
 
-/********************* Partial-ordering based ILP model 2 *********************/
+////////////////////////////////////////////////////////////////////////////////
+////////////////////// Partial-ordering based ILP model 2 //////////////////////
+////////////////////////////////////////////////////////////////////////////////
 
 struct MilpPartialOrdering2CplexOptionalParameters
 {

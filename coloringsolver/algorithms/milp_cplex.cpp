@@ -8,7 +8,9 @@ using namespace coloringsolver;
 
 ILOSTLBEGIN
 
-/************************* Assignment-based ILP model *************************/
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////// Assignment-based ILP model //////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 
 MilpAssignmentCplexOutput& MilpAssignmentCplexOutput::algorithm_end(optimizationtools::Info& info)
 {
@@ -153,7 +155,9 @@ MilpAssignmentCplexOutput coloringsolver::milp_assignment_cplex(
     return output.algorithm_end(parameters.info);
 }
 
-/************************* Representatives ILP model **************************/
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////// Representatives ILP model ///////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 
 MilpRepresentativesCplexOutput& MilpRepresentativesCplexOutput::algorithm_end(
         optimizationtools::Info& info)
@@ -310,7 +314,9 @@ MilpRepresentativesCplexOutput coloringsolver::milp_representatives_cplex(
     return output.algorithm_end(parameters.info);
 }
 
-/********************** Partial-ordering based ILP model **********************/
+////////////////////////////////////////////////////////////////////////////////
+/////////////////////// Partial-ordering based ILP model ///////////////////////
+////////////////////////////////////////////////////////////////////////////////
 
 MilpPartialOrderingCplexOutput& MilpPartialOrderingCplexOutput::algorithm_end(
         optimizationtools::Info& info)
@@ -458,7 +464,9 @@ MilpPartialOrderingCplexOutput coloringsolver::milp_partialordering_cplex(
     return output.algorithm_end(parameters.info);
 }
 
-/********************* Partial-ordering based ILP model 2 *********************/
+////////////////////////////////////////////////////////////////////////////////
+////////////////////// Partial-ordering based ILP model 2 //////////////////////
+////////////////////////////////////////////////////////////////////////////////
 
 MilpPartialOrdering2CplexOutput& MilpPartialOrdering2CplexOutput::algorithm_end(
         optimizationtools::Info& info)

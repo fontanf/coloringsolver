@@ -11,15 +11,15 @@
 namespace coloringsolver
 {
 
-typedef int32_t VertexId; // v
-typedef int32_t VertexPos; // v_pos
-typedef int64_t EdgeId; // e
-typedef int64_t EdgePos; // e_pos
-typedef int64_t ColorId; // c
-typedef int64_t ColorPos; // c_pos
-typedef int16_t Penalty; // p
-typedef int64_t Counter;
-typedef int64_t Seed;
+using VertexId = int32_t; // v
+using VertexPos = int32_t; // v_pos
+using EdgeId = int64_t; // e
+using EdgePos = int64_t; // e_pos
+using ColorId = int64_t; // c
+using ColorPos = int64_t; // c_pos
+using Penalty = int16_t; // p
+using Counter = int64_t;
+using Seed = int64_t;
 
 struct VertexNeighbor
 {
@@ -60,6 +60,14 @@ public:
     /** Add an edge between vertex v1 and vertex v2. */
     void add_edge(VertexId v1, VertexId v2, bool check_duplicate = true);
 
+    /**
+     * Compute the core of the instance when looking for a coloration using 'k'
+     * colors.
+     *
+     * Return the list of vertices that can be trivailly colored once the other
+     * vertices have been colored. Thus, these vertices do not need to be
+     * considered when looking for a k-coloration.
+     */
     std::vector<VertexId> compute_core(ColorId k) const;
 
     /*

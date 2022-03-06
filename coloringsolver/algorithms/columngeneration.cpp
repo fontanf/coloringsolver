@@ -35,10 +35,10 @@
 
 using namespace coloringsolver;
 
-typedef columngenerationsolver::RowIdx RowIdx;
-typedef columngenerationsolver::ColIdx ColIdx;
-typedef columngenerationsolver::Value Value;
-typedef columngenerationsolver::Column Column;
+using RowIdx = columngenerationsolver::RowIdx;
+using ColIdx = columngenerationsolver::ColIdx;
+using Value = columngenerationsolver::Value;
+using Column = columngenerationsolver::Column;
 
 ColumnGenerationHeuristicGreedyOutput& ColumnGenerationHeuristicGreedyOutput::algorithm_end(
         optimizationtools::Info& info)
@@ -207,8 +207,6 @@ std::vector<Column> PricingSolver::solve_pricing(
     column.objective_coefficient = 1;
     return {column};
 }
-
-/******************************************************************************/
 
 ColumnGenerationHeuristicGreedyOutput coloringsolver::columngenerationheuristic_greedy(
         const Instance& instance, ColumnGenerationOptionalParameters parameters)

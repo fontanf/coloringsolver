@@ -6,7 +6,9 @@
 
 using namespace coloringsolver;
 
-/************************** localsearch_rowweighting *************************/
+////////////////////////////////////////////////////////////////////////////////
+/////////////////////////// localsearch_rowweighting ///////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 
 LocalSearchRowWeightingOutput& LocalSearchRowWeightingOutput::algorithm_end(
         optimizationtools::Info& info)
@@ -247,7 +249,9 @@ LocalSearchRowWeighting2Output& LocalSearchRowWeighting2Output::algorithm_end(
     return *this;
 }
 
-/************************* localsearch_rowweighting_2 ************************/
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////// localsearch_rowweighting_2 //////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 
 LocalSearchRowWeighting2Output coloringsolver::localsearch_rowweighting_2(
         const Instance& instance,

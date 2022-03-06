@@ -39,6 +39,10 @@ Solution::Solution(const Solution& solution):
 Solution& Solution::operator=(const Solution& solution)
 {
     if (this != &solution) {
+        if (&instance_ != &solution.instance_) {
+            throw std::runtime_error(
+                    "Assign a solution to a solution from a different instance.");
+        }
         assert(&instance_ == &solution.instance_);
         map_       = solution.map_;
         conflicts_ = solution.conflicts_;
@@ -68,7 +72,9 @@ std::ostream& coloringsolver::operator<<(std::ostream& os, const Solution& solut
     return os;
 }
 
-/*********************************** Output ***********************************/
+////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////// Output ////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 
 Output::Output(
         const Instance& instance,
