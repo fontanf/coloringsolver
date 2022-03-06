@@ -164,3 +164,38 @@ std::vector<VertexId> Instance::compute_core(ColorId k) const
     return removed_vertices;
 }
 
+void Instance::write(std::string instance_path, std::string format)
+{
+    std::ofstream file(instance_path);
+    if (!file.good())
+        throw std::runtime_error(
+                "Unable to open file \"" + instance_path + "\".");
+
+    if (format == "dimacs") {
+        write_dimacs(file);
+    } else if (format == "matrixmarket") {
+        write_matrixmarket(file);
+    } else if (format == "snap") {
+        write_snap(file);
+    } else {
+        throw std::invalid_argument(
+                "Unknown instance format \"" + format + "\".");
+    }
+}
+
+void Instance::write_snap(std::ofstream& file)
+{
+    for (EdgeId e = 0; e < number_of_edges(); ++e)
+        file << edge(e).v1 << " " << edge(e).v2 << std::endl;
+}
+
+void Instance::write_matrixmarket(std::ofstream& file)
+{
+    file << number_of_vertices()
+        << " " << number_of_vertices()
+        << " " << number_of_edges()
+        << std::endl;
+    for (EdgeId e = 0; e < number_of_edges(); ++e)
+        file << edge(e).v1 << " " << edge(e).v2 << std::endl;
+}
+

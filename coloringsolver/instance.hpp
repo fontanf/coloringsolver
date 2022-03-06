@@ -127,6 +127,12 @@ private:
     void read_matrixmarket(std::ifstream& file);
     /** Read an instance in 'snap' format. */
     void read_snap(std::ifstream& file);
+    /** Write the instance in 'dimacs' format. */
+    void write_dimacs(std::ofstream& file);
+    /** Write the instance in 'matrixmarket' format. */
+    void write_matrixmarket(std::ofstream& file);
+    /** Write the instance in 'snap' format. */
+    void write_snap(std::ofstream& file);
 
 };
 
