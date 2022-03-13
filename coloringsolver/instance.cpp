@@ -196,6 +196,13 @@ void Instance::write_matrixmarket(std::ofstream& file)
         << " " << number_of_edges()
         << std::endl;
     for (EdgeId e = 0; e < number_of_edges(); ++e)
-        file << edge(e).v1 << " " << edge(e).v2 << std::endl;
+        file << edge(e).v1 + 1 << " " << edge(e).v2 + 1 << std::endl;
+}
+
+void Instance::write_dimacs(std::ofstream& file)
+{
+    file << "p edge " << number_of_vertices() << " " << number_of_edges() << std::endl;
+    for (EdgeId e = 0; e < number_of_edges(); ++e)
+        file << "e " << edge(e).v1 + 1 << " " << edge(e).v2 + 1 << std::endl;
 }
 
