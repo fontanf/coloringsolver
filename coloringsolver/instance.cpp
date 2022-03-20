@@ -13,12 +13,15 @@ Instance::Instance(std::string instance_path, std::string format)
         throw std::runtime_error(
                 "Unable to open file \"" + instance_path + "\".");
 
+    set_name(instance_path);
     if (format == "dimacs") {
         read_dimacs(file);
     } else if (format == "matrixmarket") {
         read_matrixmarket(file);
     } else if (format == "snap") {
         read_snap(file);
+    } else if (format == "dimacs2010") {
+        read_dimacs2010(file);
     } else {
         throw std::invalid_argument(
                 "Unknown instance format \"" + format + "\".");
@@ -38,7 +41,7 @@ void Instance::add_vertex()
     vertices_.back().id = vertices_.size() - 1;
 }
 
-void Instance::add_edge(VertexId v1, VertexId v2, bool check_duplicate)
+void Instance::add_edge(VertexId v1, VertexId v2)
 {
     // Checks.
     check_vertex_index(v1);
@@ -48,11 +51,6 @@ void Instance::add_edge(VertexId v1, VertexId v2, bool check_duplicate)
         //std::cerr << "\033[33m" << "WARNING, loop (" << v1 << ", " << v2 << ") ignored." << "\033[0m" << std::endl;
         return;
     }
-
-    if (check_duplicate)
-        for (const auto& edge: vertex(v1).edges)
-            if (edge.v == v2)
-                return;
 
     Edge e;
     e.id = edges_.size();
@@ -88,9 +86,8 @@ void Instance::read_dimacs(std::ifstream& file)
                 name_ = line.back();
         } else if (line[0] == "p") {
             VertexId number_of_vertices = stol(line[2]);
-            vertices_.resize(number_of_vertices);
             for (VertexId v = 0; v < number_of_vertices; ++v)
-                vertices_[v].id = v;
+                add_vertex();
         } else if (line[0] == "e") {
             VertexId v1 = stol(line[1]) - 1;
             VertexId v2 = stol(line[2]) - 1;
@@ -106,15 +103,18 @@ void Instance::read_matrixmarket(std::ifstream& file)
     do {
         getline(file, tmp);
     } while (tmp[0] == '%');
-    line = optimizationtools::split(tmp, ' ');
-    VertexId n = stol(line[0]);
-    vertices_.resize(n);
+    std::stringstream ss(tmp);
+    VertexId n = -1;
+    ss >> n;
+    for (VertexId v = 0; v < n; ++v)
+        add_vertex();
 
+    VertexId v1 = -1;
+    VertexId v2 = -1;
     while (getline(file, tmp)) {
-        line = optimizationtools::split(tmp, ' ');
-        VertexId v1 = stol(line[0]) - 1;
-        VertexId v2 = stol(line[1]) - 1;
-        add_edge(v1, v2);
+        std::stringstream ss(tmp);
+        ss >> v1 >> v2;
+        add_edge(v1 - 1, v2 - 1);
     }
 }
 
@@ -122,17 +122,84 @@ void Instance::read_snap(std::ifstream& file)
 {
     std::string tmp;
     std::vector<std::string> line;
+    do {
+        getline(file, tmp);
+    } while (tmp[0] == '#');
+
     VertexId v1 = -1;
     VertexId v2 = -1;
-    while (getline(file, tmp)) {
-        if (tmp[0] == '#')
-            continue;
-        std::stringstream ss(tmp);
-        ss >> v1 >> v2;
-        if (std::max(v1, v2) >= number_of_vertices())
-            vertices_.resize(std::max(v1, v2) + 1);
+    for (;;) {
+        file >> v1 >> v2;
+        if (file.eof())
+            break;
+        while (std::max(v1, v2) >= number_of_vertices())
+            add_vertex();
         add_edge(v1, v2);
     }
+}
+
+void Instance::read_dimacs2010(std::ifstream& file)
+{
+    std::string tmp;
+    std::vector<std::string> line;
+    bool first = true;
+    VertexId v = -1;
+    while (v != number_of_vertices()) {
+        getline(file, tmp);
+        //std::cout << tmp << std::endl;
+        line = optimizationtools::split(tmp, ' ');
+        if (tmp[0] == '%')
+            continue;
+        if (first) {
+            VertexId n = stol(line[0]);
+            for (VertexId v = 0; v < n; ++v)
+                add_vertex();
+            first = false;
+            v = 0;
+        } else {
+            for (std::string str: line) {
+                VertexId v2 = stol(str) - 1;
+                if (v2 > v)
+                    add_edge(v, v2);
+            }
+            v++;
+        }
+    }
+}
+
+void Instance::clear()
+{
+    vertices_.clear();
+    edges_.clear();
+    maximum_degree_ = 0;
+}
+
+void Instance::clear_edges()
+{
+    edges_.clear();
+    maximum_degree_ = 0;
+    for (VertexId v = 0; v < number_of_vertices(); ++v)
+        vertices_[v].edges.clear();
+}
+
+void Instance::remove_duplicate_edges()
+{
+    std::vector<std::vector<VertexId>> neighbors(number_of_vertices());
+    for (VertexId v = 0; v < number_of_vertices(); ++v) {
+        for (auto& edge: vertices_[v].edges)
+            if (edge.v > v)
+                neighbors[v].push_back(edge.v);
+        sort(neighbors[v].begin(), neighbors[v].end());
+        neighbors[v].erase(
+                std::unique(
+                    neighbors[v].begin(),
+                    neighbors[v].end()),
+                neighbors[v].end());
+    }
+    clear_edges();
+    for (VertexId v1 = 0; v1 < number_of_vertices(); ++v1)
+        for (VertexId v2: neighbors[v1])
+            add_edge(v1, v2);
 }
 
 std::vector<VertexId> Instance::compute_core(ColorId k) const
@@ -204,5 +271,27 @@ void Instance::write_dimacs(std::ofstream& file)
     file << "p edge " << number_of_vertices() << " " << number_of_edges() << std::endl;
     for (EdgeId e = 0; e < number_of_edges(); ++e)
         file << "e " << edge(e).v1 + 1 << " " << edge(e).v2 + 1 << std::endl;
+}
+
+void coloringsolver::init_display(
+        const Instance& instance,
+        optimizationtools::Info& info)
+{
+    VertexId n = instance.number_of_vertices();
+    EdgeId m = instance.number_of_edges();
+    VER(info,
+               "=====================================" << std::endl
+            << "           Coloring Solver           " << std::endl
+            << "=====================================" << std::endl
+            << std::endl
+            << "Instance" << std::endl
+            << "--------" << std::endl
+            << "Name:                " << instance.name() << std::endl
+            << "Number of vertices:  " << n << std::endl
+            << "Number of edges:     " << m << std::endl
+            << "Density:             " << (double)m * 2 / n / (n - 1) << std::endl
+            << "Average degree:      " << (double)instance.number_of_edges() * 2 / n << std::endl
+            << "Maximum degree:      " << instance.maximum_degree() << std::endl
+            << std::endl);
 }
 

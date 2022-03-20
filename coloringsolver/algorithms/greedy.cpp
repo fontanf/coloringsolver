@@ -181,9 +181,18 @@ std::vector<VertexId> dynamiclargestfirst(const Instance& instance)
 
 Output coloringsolver::greedy(const Instance& instance, GreedyOptionalParameters parameters)
 {
-    VER(parameters.info, "*** greedy --ordering " << parameters.ordering
-            << ((parameters.reverse)? " --reverse": "")
-            << " ***" << std::endl);
+    init_display(instance, parameters.info);
+    VER(parameters.info,
+               "Algorithm" << std::endl
+            << "---------" << std::endl
+            << "Greedy" << std::endl
+            << std::endl
+            << "Parameters" << std::endl
+            << "----------" << std::endl
+            << "Ordering:      " << parameters.ordering << std::endl
+            << "Reverse:       " << parameters.reverse << std::endl
+            << std::endl);
+
     Output output(instance, parameters.info);
     Solution solution(instance);
 
@@ -252,7 +261,13 @@ Output coloringsolver::greedy_dsatur(
         const Instance& instance,
         optimizationtools::Info info)
 {
-    VER(info, "*** greedy_dsatur ***" << std::endl);
+    init_display(instance, info);
+    VER(info,
+               "Algorithm" << std::endl
+            << "---------" << std::endl
+            << "DSATUR" << std::endl
+            << std::endl);
+
     Output output(instance, info);
     Solution solution(instance);
 

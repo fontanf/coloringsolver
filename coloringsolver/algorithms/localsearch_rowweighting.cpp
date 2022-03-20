@@ -15,7 +15,7 @@ LocalSearchRowWeightingOutput& LocalSearchRowWeightingOutput::algorithm_end(
 {
     PUT(info, "Algorithm", "NumberOfIterations", number_of_iterations);
     Output::algorithm_end(info);
-    VER(info, "Number of iterations: " << number_of_iterations << std::endl);
+    VER(info, "Number of iterations:  " << number_of_iterations << std::endl);
     return *this;
 }
 
@@ -29,7 +29,18 @@ LocalSearchRowWeightingOutput coloringsolver::localsearch_rowweighting(
         std::mt19937_64& generator,
         LocalSearchRowWeightingOptionalParameters parameters)
 {
-    VER(parameters.info, "*** localsearch_rowweighting ***" << std::endl);
+    init_display(instance, parameters.info);
+    VER(parameters.info,
+               "Algorithm" << std::endl
+            << "---------" << std::endl
+            << "Row Weighting Local Search" << std::endl
+            << std::endl
+            << "Parameters" << std::endl
+            << "----------" << std::endl
+            << "Maximum number of iterations:                      " << parameters.maximum_number_of_iterations << std::endl
+            << "Maximum number of iterations without improvement:  " << parameters.maximum_number_of_iterations_without_improvement << std::endl
+            << "Maximum number of improvements:                    " << parameters.maximum_number_of_improvements << std::endl
+            << std::endl);
 
     // Compute initial greedy solution.
     LocalSearchRowWeightingOutput output(instance, parameters.info);
@@ -245,7 +256,7 @@ LocalSearchRowWeighting2Output& LocalSearchRowWeighting2Output::algorithm_end(
 {
     PUT(info, "Algorithm", "NumberOfIterations", number_of_iterations);
     Output::algorithm_end(info);
-    VER(info, "Number of iterations: " << number_of_iterations << std::endl);
+    VER(info, "Number of iterations:  " << number_of_iterations << std::endl);
     return *this;
 }
 
@@ -258,7 +269,18 @@ LocalSearchRowWeighting2Output coloringsolver::localsearch_rowweighting_2(
         std::mt19937_64& generator,
         LocalSearchRowWeighting2OptionalParameters parameters)
 {
-    VER(parameters.info, "*** localsearch_rowweighting_2 ***" << std::endl);
+    init_display(instance, parameters.info);
+    VER(parameters.info,
+               "Algorithm" << std::endl
+            << "---------" << std::endl
+            << "Row Weighting Local Search 2" << std::endl
+            << std::endl
+            << "Parameters" << std::endl
+            << "----------" << std::endl
+            << "Maximum number of iterations:                      " << parameters.maximum_number_of_iterations << std::endl
+            << "Maximum number of iterations without improvement:  " << parameters.maximum_number_of_iterations_without_improvement << std::endl
+            << "Maximum number of improvements:                    " << parameters.maximum_number_of_improvements << std::endl
+            << std::endl);
 
     // Compute initial greedy solution.
     LocalSearchRowWeighting2Output output(instance, parameters.info);

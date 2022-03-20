@@ -49,7 +49,12 @@ ILOMIPINFOCALLBACK5(loggingCallbackAssignment,
 MilpAssignmentCplexOutput coloringsolver::milp_assignment_cplex(
         const Instance& instance, MilpAssignmentCplexOptionalParameters parameters)
 {
-    VER(parameters.info, "*** milp_assignment_cplex ***" << std::endl);
+    init_display(instance, parameters.info);
+    VER(parameters.info,
+               "Algorithm" << std::endl
+            << "---------" << std::endl
+            << "MILP - Assignment model (CPLEX)" << std::endl
+            << std::endl);
 
     MilpAssignmentCplexOutput output(instance, parameters.info);
 
@@ -198,7 +203,12 @@ ILOMIPINFOCALLBACK5(loggingCallbackRepresentatives,
 MilpRepresentativesCplexOutput coloringsolver::milp_representatives_cplex(
         const Instance& instance, MilpRepresentativesCplexOptionalParameters parameters)
 {
-    VER(parameters.info, "*** milp_representatives_cplex ***" << std::endl);
+    init_display(instance, parameters.info);
+    VER(parameters.info,
+               "Algorithm" << std::endl
+            << "---------" << std::endl
+            << "MILP - Representative model (CPLEX)" << std::endl
+            << std::endl);
 
     MilpRepresentativesCplexOutput output(instance, parameters.info);
 
@@ -359,7 +369,12 @@ ILOMIPINFOCALLBACK6(loggingCallbackPartialOrdering,
 MilpPartialOrderingCplexOutput coloringsolver::milp_partialordering_cplex(
         const Instance& instance, MilpPartialOrderingCplexOptionalParameters parameters)
 {
-    VER(parameters.info, "*** milp_partialordering_cplex ***" << std::endl);
+    init_display(instance, parameters.info);
+    VER(parameters.info,
+               "Algorithm" << std::endl
+            << "---------" << std::endl
+            << "MILP - Partial ordering based model (CPLEX)" << std::endl
+            << std::endl);
 
     MilpPartialOrderingCplexOutput output(instance, parameters.info);
 
@@ -509,7 +524,12 @@ ILOMIPINFOCALLBACK6(loggingCallbackPartialOrdering2,
 MilpPartialOrdering2CplexOutput coloringsolver::milp_partialordering2_cplex(
         const Instance& instance, MilpPartialOrdering2CplexOptionalParameters parameters)
 {
-    VER(parameters.info, "*** milp_partialordering2_cplex ***" << std::endl);
+    init_display(instance, parameters.info);
+    VER(parameters.info,
+               "Algorithm" << std::endl
+            << "---------" << std::endl
+            << "MILP - Partial ordering based model 2 (CPLEX)" << std::endl
+            << std::endl);
 
     MilpPartialOrdering2CplexOutput output(instance, parameters.info);
 

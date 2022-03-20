@@ -58,7 +58,13 @@ public:
     /** Add a vertex. */
     void add_vertex();
     /** Add an edge between vertex v1 and vertex v2. */
-    void add_edge(VertexId v1, VertexId v2, bool check_duplicate = true);
+    void add_edge(VertexId v1, VertexId v2);
+    /** Clear the instance (remove all vertices and edges). */
+    void clear();
+    /** Clear the edges of the instance (remove all edges). */
+    void clear_edges();
+    /** Remove duplicate edges (changes the edge ids). */
+    void remove_duplicate_edges();
 
     /**
      * Compute the core of the instance when looking for a coloration using 'k'
@@ -135,6 +141,8 @@ private:
     void read_matrixmarket(std::ifstream& file);
     /** Read an instance in 'snap' format. */
     void read_snap(std::ifstream& file);
+    /** Read an instance in 'dimacs2010' format. */
+    void read_dimacs2010(std::ifstream& file);
     /** Write the instance in 'dimacs' format. */
     void write_dimacs(std::ofstream& file);
     /** Write the instance in 'matrixmarket' format. */
@@ -145,6 +153,10 @@ private:
 };
 
 std::ostream& operator<<(std::ostream &os, const Instance& ins);
+
+void init_display(
+        const Instance& instance,
+        optimizationtools::Info& info);
 
 }
 

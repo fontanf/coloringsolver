@@ -20,6 +20,7 @@ int main(int argc, char *argv[])
     int loglevelmax = 999;
     int seed = 0;
     double time_limit = std::numeric_limits<double>::infinity();
+    ColorId best_known_bound = 0;
 
     po::options_description desc("Allowed options");
     desc.add_options()
@@ -32,7 +33,9 @@ int main(int argc, char *argv[])
         ("certificate,c", po::value<std::string>(&certificate_path), "set certificate file")
         ("time-limit,t", po::value<double>(&time_limit), "Time limit in seconds")
         ("seed,s", po::value<int>(&seed), "set seed")
+        ("best-known-bound,", po::value<ColorId>(&best_known_bound), "set best known bound")
         ("verbose,v", "set verbosity")
+        ("remove-duplicate-edges,", "remove duplicate edges")
         ("log,l", po::value<std::string>(&log_path), "set log file")
         ("loglevelmax", po::value<int>(&loglevelmax), "set log max level")
         ("log2stderr", "write log to stderr")
@@ -53,6 +56,8 @@ int main(int argc, char *argv[])
     // Run algorithm
 
     Instance instance(instance_path, format);
+    if (vm.count("remove-duplicate-edges"))
+        instance.remove_duplicate_edges();
 
     optimizationtools::Info info = optimizationtools::Info()
         .set_verbose(vm.count("verbose"))
@@ -65,11 +70,6 @@ int main(int argc, char *argv[])
         .set_maximum_log_level(loglevelmax)
         .set_sigint_handler()
         ;
-
-    VER(info, "Instance:            " << instance.name() << std::endl);
-    VER(info, "Number of vertices:  " << instance.number_of_vertices() << std::endl);
-    VER(info, "Number of edges:     " << instance.number_of_edges() << std::endl);
-    VER(info, "Maximum degree:      " << instance.maximum_degree() << std::endl);
 
     std::mt19937_64 generator(seed);
     Solution solution(instance, initial_solution_path);
