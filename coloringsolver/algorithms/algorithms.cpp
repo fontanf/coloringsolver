@@ -125,6 +125,7 @@ Output coloringsolver::run(
         std::string algorithm,
         const Instance& instance,
         const Solution& initial_solution,
+        ColorId goal,
         std::mt19937_64& generator,
         optimizationtools::Info info)
 {
@@ -168,10 +169,12 @@ Output coloringsolver::run(
     } else if (algorithm_args[0] == "localsearch_rowweighting") {
         auto parameters = read_localsearch_rowweighting_args(algorithm_argv);
         parameters.info = info;
+        parameters.goal = goal;
         return localsearch_rowweighting(instance, generator, parameters);
     } else if (algorithm_args[0] == "localsearch_rowweighting_2") {
         auto parameters = read_localsearch_rowweighting_2_args(algorithm_argv);
         parameters.info = info;
+        parameters.goal = goal;
         return localsearch_rowweighting_2(instance, generator, parameters);
     } else if (algorithm_args[0] == "columngenerationheuristic_greedy") {
         auto parameters = read_columngeneration_args(algorithm_argv);

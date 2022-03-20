@@ -32,6 +32,8 @@ struct LocalSearchRowWeightingOptionalParameters
     Counter maximum_number_of_iterations_without_improvement = -1;
     /** Maximum number of improvements. */
     Counter maximum_number_of_improvements = -1;
+    /** Goal. */
+    ColorId goal = 0;
     /** Enable k-core reduction. */
     bool enable_core_reduction = true;
     /** Initial solution. */
@@ -75,6 +77,8 @@ struct LocalSearchRowWeighting2OptionalParameters
     Counter maximum_number_of_iterations_without_improvement = -1;
     /** Maximum number of improvements. */
     Counter maximum_number_of_improvements = -1;
+    /** Goal. */
+    ColorId goal = 0;
     /** Enable k-core reduction. */
     bool enable_core_reduction = true;
     /** Initial solution. */

@@ -20,7 +20,7 @@ int main(int argc, char *argv[])
     int loglevelmax = 999;
     int seed = 0;
     double time_limit = std::numeric_limits<double>::infinity();
-    ColorId best_known_bound = 0;
+    ColorId goal = 0;
 
     po::options_description desc("Allowed options");
     desc.add_options()
@@ -33,7 +33,7 @@ int main(int argc, char *argv[])
         ("certificate,c", po::value<std::string>(&certificate_path), "set certificate file")
         ("time-limit,t", po::value<double>(&time_limit), "Time limit in seconds")
         ("seed,s", po::value<int>(&seed), "set seed")
-        ("best-known-bound,", po::value<ColorId>(&best_known_bound), "set best known bound")
+        ("goal,g", po::value<ColorId>(&goal), "set goal")
         ("verbose,v", "set verbosity")
         ("remove-duplicate-edges,", "remove duplicate edges")
         ("log,l", po::value<std::string>(&log_path), "set log file")
@@ -74,7 +74,13 @@ int main(int argc, char *argv[])
     std::mt19937_64 generator(seed);
     Solution solution(instance, initial_solution_path);
 
-    auto output = run(algorithm, instance, solution, generator, info);
+    auto output = run(
+            algorithm,
+            instance,
+            solution,
+            goal,
+            generator,
+            info);
 
     return 0;
 }

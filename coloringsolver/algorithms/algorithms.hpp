@@ -15,6 +15,7 @@ Output run(
         std::string algorithm,
         const Instance& instance,
         const Solution& initial_solution,
+        ColorId goal,
         std::mt19937_64& generator,
         optimizationtools::Info info);
 

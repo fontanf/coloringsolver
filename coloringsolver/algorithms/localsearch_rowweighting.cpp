@@ -40,6 +40,7 @@ LocalSearchRowWeightingOutput coloringsolver::localsearch_rowweighting(
             << "Maximum number of iterations:                      " << parameters.maximum_number_of_iterations << std::endl
             << "Maximum number of iterations without improvement:  " << parameters.maximum_number_of_iterations_without_improvement << std::endl
             << "Maximum number of improvements:                    " << parameters.maximum_number_of_improvements << std::endl
+            << "Goal:                                              " << parameters.goal << std::endl
             << std::endl);
 
     // Compute initial greedy solution.
@@ -56,6 +57,8 @@ LocalSearchRowWeightingOutput coloringsolver::localsearch_rowweighting(
     parameters.info.output->mutex_solutions.lock();
     parameters.new_solution_callback(output);
     parameters.info.output->mutex_solutions.unlock();
+    if (output.solution.number_of_colors() <= parameters.goal)
+        return output.algorithm_end(parameters.info);
 
     // Initialize local search structures.
     std::vector<LocalSearchRowWeightingVertex> vertices(instance.number_of_vertices());
@@ -82,6 +85,8 @@ LocalSearchRowWeightingOutput coloringsolver::localsearch_rowweighting(
             break;
         if (parameters.maximum_number_of_improvements != -1
                 && number_of_improvements > parameters.maximum_number_of_improvements)
+            break;
+        if (output.solution.number_of_colors() <= parameters.goal)
             break;
         //if (iterations % 10000 == 0)
         //    std::cout << "it " << iterations << std::endl;
@@ -280,6 +285,7 @@ LocalSearchRowWeighting2Output coloringsolver::localsearch_rowweighting_2(
             << "Maximum number of iterations:                      " << parameters.maximum_number_of_iterations << std::endl
             << "Maximum number of iterations without improvement:  " << parameters.maximum_number_of_iterations_without_improvement << std::endl
             << "Maximum number of improvements:                    " << parameters.maximum_number_of_improvements << std::endl
+            << "Goal:                                              " << parameters.goal << std::endl
             << std::endl);
 
     // Compute initial greedy solution.
@@ -296,6 +302,8 @@ LocalSearchRowWeighting2Output coloringsolver::localsearch_rowweighting_2(
     parameters.info.output->mutex_solutions.lock();
     parameters.new_solution_callback(output);
     parameters.info.output->mutex_solutions.unlock();
+    if (output.solution.number_of_colors() <= parameters.goal)
+        return output.algorithm_end(parameters.info);
 
     // Initialize local search structures.
     Counter number_of_iterations_without_improvement = 0;
@@ -322,6 +330,8 @@ LocalSearchRowWeighting2Output coloringsolver::localsearch_rowweighting_2(
             break;
         if (parameters.maximum_number_of_improvements != -1
                 && number_of_improvements > parameters.maximum_number_of_improvements)
+            break;
+        if (output.solution.number_of_colors() <= parameters.goal)
             break;
         //if (iterations % 10000 == 0)
         //    std::cout << "it " << iterations << std::endl;
