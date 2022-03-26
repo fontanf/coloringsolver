@@ -204,6 +204,9 @@ LocalSearchRowWeightingOutput coloringsolver::localsearch_rowweighting(
                     solution.set(v, -1);
             }
 
+            if (output.solution.number_of_colors() == 2
+                    && !solution.feasible())
+                return output.algorithm_end(parameters.info);
         }
 
         // Draw randomly a conflicting edge.
@@ -465,6 +468,9 @@ LocalSearchRowWeighting2Output coloringsolver::localsearch_rowweighting_2(
                 }
             }
 
+            if (output.solution.number_of_colors() == 2
+                    && !solution.feasible())
+                return output.algorithm_end(parameters.info);
         }
 
         // Draw randomly a conflicting edge.

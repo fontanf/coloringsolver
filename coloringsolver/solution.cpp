@@ -10,7 +10,9 @@ Solution::Solution(const Instance& instance):
 {
 }
 
-Solution::Solution(const Instance& instance, std::string certificate_path):
+Solution::Solution(
+        const Instance& instance,
+        std::string certificate_path):
     instance_(instance),
     map_(instance.number_of_vertices(), std::max(instance.maximum_degree(), instance.number_of_vertices()))
 {
@@ -64,7 +66,9 @@ void Solution::write(std::string certificate_path) const
     file.close();
 }
 
-std::ostream& coloringsolver::operator<<(std::ostream& os, const Solution& solution)
+std::ostream& coloringsolver::operator<<(
+        std::ostream& os,
+        const Solution& solution)
 {
     os << solution.number_of_colors() << std::endl;
     for (VertexId v = 0; v < solution.instance().number_of_vertices(); ++v)
@@ -106,12 +110,14 @@ void Output::print(optimizationtools::Info& info, const std::stringstream& s) co
         (double)(upper_bound() - lower_bound) / lower_bound * 100;
     double t = round(info.elapsed_time() * 10000) / 10000;
 
-    VER(info, std::setw(12) << t);
-    VER(info, std::setw(12) << upper_bound());
-    VER(info, std::setw(12) << lower_bound);
-    VER(info, std::setw(12) << upper_bound() - lower_bound);
-    VER(info, std::setw(12) << gap);
-    VER(info, std::setw(24) << s.str() << std::endl);
+    VER(info,
+               std::setw(12) << t
+            << std::setw(12) << upper_bound()
+            << std::setw(12) << lower_bound
+            << std::setw(12) << upper_bound() - lower_bound
+            << std::setw(12) << gap
+            << std::setw(24) << s.str()
+            << std::endl);
 
     if (!info.output->only_write_at_the_end)
         info.write_json_output();

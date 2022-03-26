@@ -12,7 +12,8 @@ ILOSTLBEGIN
 ////////////////////////// Assignment-based ILP model //////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
-MilpAssignmentCplexOutput& MilpAssignmentCplexOutput::algorithm_end(optimizationtools::Info& info)
+MilpAssignmentCplexOutput& MilpAssignmentCplexOutput::algorithm_end(
+        optimizationtools::Info& info)
 {
     //PUT(info, "Algorithm", "Iterations", it);
     Output::algorithm_end(info);
@@ -33,7 +34,8 @@ ILOMIPINFOCALLBACK5(loggingCallbackAssignment,
     if (!hasIncumbent())
         return;
 
-    if (!output.solution.feasible() || output.solution.number_of_colors() > getIncumbentObjValue() + 0.5) {
+    if (!output.solution.feasible()
+            || output.solution.number_of_colors() > getIncumbentObjValue() + 0.5) {
         Solution solution(instance);
         for (VertexId v = 0; v < instance.number_of_vertices(); ++v) {
             IloNumArray val(x[v].getEnv());
@@ -42,12 +44,16 @@ ILOMIPINFOCALLBACK5(loggingCallbackAssignment,
                 if (val[c] > 0.5)
                     solution.set(v, c);
         }
-        output.update_solution(solution, std::stringstream(""), parameters.info);
+        output.update_solution(
+                solution,
+                std::stringstream(""),
+                parameters.info);
     }
 }
 
 MilpAssignmentCplexOutput coloringsolver::milp_assignment_cplex(
-        const Instance& instance, MilpAssignmentCplexOptionalParameters parameters)
+        const Instance& instance,
+        MilpAssignmentCplexOptionalParameters parameters)
 {
     init_display(instance, parameters.info);
     VER(parameters.info,
@@ -123,30 +129,47 @@ MilpAssignmentCplexOutput coloringsolver::milp_assignment_cplex(
         cplex.setParam(IloCplex::TiLim, parameters.info.remaining_time());
 
     // Callback
-    cplex.use(loggingCallbackAssignment(env, instance, parameters, output, upper_bound, x));
+    cplex.use(loggingCallbackAssignment(
+                env,
+                instance,
+                parameters,
+                output,
+                upper_bound,
+                x));
 
     // Optimize
     cplex.solve();
 
     if (cplex.getStatus() == IloAlgorithm::Infeasible) {
     } else if (cplex.getStatus() == IloAlgorithm::Optimal) {
-        if (!output.solution.feasible() || output.solution.number_of_colors() > cplex.getObjValue() + 0.5) {
+        if (!output.solution.feasible()
+                || output.solution.number_of_colors() > cplex.getObjValue() + 0.5) {
             Solution solution(instance);
             for (VertexId v = 0; v < instance.number_of_vertices(); ++v)
                 for (ColorId c = 0; c < upper_bound; ++c)
                     if (cplex.getValue(x[v][c]) > 0.5)
                         solution.set(v, c);
-            output.update_solution(solution, std::stringstream(""), parameters.info);
+            output.update_solution(
+                    solution,
+                    std::stringstream(""),
+                    parameters.info);
         }
-        output.update_lower_bound(output.solution.number_of_colors(), std::stringstream(""), parameters.info);
+        output.update_lower_bound(
+                output.solution.number_of_colors(),
+                std::stringstream(""),
+                parameters.info);
     } else if (cplex.isPrimalFeasible()) {
-        if (!output.solution.feasible() || output.solution.number_of_colors() > cplex.getObjValue() + 0.5) {
+        if (!output.solution.feasible()
+                || output.solution.number_of_colors() > cplex.getObjValue() + 0.5) {
             Solution solution(instance);
             for (VertexId v = 0; v < instance.number_of_vertices(); ++v)
                 for (ColorId c = 0; c < upper_bound; ++c)
                     if (cplex.getValue(x[v][c]) > 0.5)
                         solution.set(v, c);
-            output.update_solution(solution, std::stringstream(""), parameters.info);
+            output.update_solution(
+                    solution,
+                    std::stringstream(""),
+                    parameters.info);
         }
         ColorId lb = std::ceil(cplex.getBestObjValue() - TOL);
         output.update_lower_bound(lb, std::stringstream(""), parameters.info);
@@ -186,7 +209,8 @@ ILOMIPINFOCALLBACK5(loggingCallbackRepresentatives,
     if (!hasIncumbent())
         return;
 
-    if (!output.solution.feasible() || output.solution.number_of_colors() > getIncumbentObjValue() + 0.5) {
+    if (!output.solution.feasible()
+            || output.solution.number_of_colors() > getIncumbentObjValue() + 0.5) {
         Solution solution(instance);
         for (VertexId v1 = 0; v1 < instance.number_of_vertices(); ++v1) {
             for (VertexId v2 = 0; v2 < instance.number_of_vertices(); ++v2) {
@@ -201,7 +225,8 @@ ILOMIPINFOCALLBACK5(loggingCallbackRepresentatives,
 }
 
 MilpRepresentativesCplexOutput coloringsolver::milp_representatives_cplex(
-        const Instance& instance, MilpRepresentativesCplexOptionalParameters parameters)
+        const Instance& instance,
+        MilpRepresentativesCplexOptionalParameters parameters)
 {
     init_display(instance, parameters.info);
     VER(parameters.info,
@@ -279,14 +304,21 @@ MilpRepresentativesCplexOutput coloringsolver::milp_representatives_cplex(
         cplex.setParam(IloCplex::TiLim, parameters.info.remaining_time());
 
     // Callback
-    cplex.use(loggingCallbackRepresentatives(env, instance, parameters, output, complementary_edges, x));
+    cplex.use(loggingCallbackRepresentatives(
+                env,
+                instance,
+                parameters,
+                output,
+                complementary_edges,
+                x));
 
     // Optimize
     cplex.solve();
 
     if (cplex.getStatus() == IloAlgorithm::Infeasible) {
     } else if (cplex.getStatus() == IloAlgorithm::Optimal) {
-        if (!output.solution.feasible() || output.solution.number_of_colors() > cplex.getObjValue() + 0.5) {
+        if (!output.solution.feasible()
+                || output.solution.number_of_colors() > cplex.getObjValue() + 0.5) {
             Solution solution(instance);
             for (VertexId v1 = 0; v1 < instance.number_of_vertices(); ++v1) {
                 for (VertexId v2 = 0; v2 < instance.number_of_vertices(); ++v2) {
@@ -296,11 +328,18 @@ MilpRepresentativesCplexOutput coloringsolver::milp_representatives_cplex(
                     }
                 }
             }
-            output.update_solution(solution, std::stringstream(""), parameters.info);
+            output.update_solution(
+                    solution,
+                    std::stringstream(""),
+                    parameters.info);
         }
-        output.update_lower_bound(output.solution.number_of_colors(), std::stringstream(""), parameters.info);
+        output.update_lower_bound(
+                output.solution.number_of_colors(),
+                std::stringstream(""),
+                parameters.info);
     } else if (cplex.isPrimalFeasible()) {
-        if (!output.solution.feasible() || output.solution.number_of_colors() > cplex.getObjValue() + 0.5) {
+        if (!output.solution.feasible()
+                || output.solution.number_of_colors() > cplex.getObjValue() + 0.5) {
             Solution solution(instance);
             for (VertexId v1 = 0; v1 < instance.number_of_vertices(); ++v1) {
                 for (VertexId v2 = 0; v2 < instance.number_of_vertices(); ++v2) {
@@ -310,7 +349,10 @@ MilpRepresentativesCplexOutput coloringsolver::milp_representatives_cplex(
                     }
                 }
             }
-            output.update_solution(solution, std::stringstream(""), parameters.info);
+            output.update_solution(
+                    solution,
+                    std::stringstream(""),
+                    parameters.info);
         }
         ColorId lb = std::ceil(cplex.getBestObjValue() - TOL);
         output.update_lower_bound(lb, std::stringstream(""), parameters.info);
@@ -351,7 +393,8 @@ ILOMIPINFOCALLBACK6(loggingCallbackPartialOrdering,
     if (!hasIncumbent())
         return;
 
-    if (!output.solution.feasible() || output.solution.number_of_colors() > getIncumbentObjValue() + 0.5) {
+    if (!output.solution.feasible()
+            || output.solution.number_of_colors() > getIncumbentObjValue() + 0.5) {
         Solution solution(instance);
         for (VertexId v = 0; v < instance.number_of_vertices(); ++v) {
             IloNumArray val_y(y[v].getEnv());
@@ -367,7 +410,8 @@ ILOMIPINFOCALLBACK6(loggingCallbackPartialOrdering,
 }
 
 MilpPartialOrderingCplexOutput coloringsolver::milp_partialordering_cplex(
-        const Instance& instance, MilpPartialOrderingCplexOptionalParameters parameters)
+        const Instance& instance,
+        MilpPartialOrderingCplexOptionalParameters parameters)
 {
     init_display(instance, parameters.info);
     VER(parameters.info,
@@ -442,30 +486,48 @@ MilpPartialOrderingCplexOutput coloringsolver::milp_partialordering_cplex(
         cplex.setParam(IloCplex::TiLim, parameters.info.remaining_time());
 
     // Callback
-    cplex.use(loggingCallbackPartialOrdering(env, instance, parameters, output, upper_bound, y, z));
+    cplex.use(loggingCallbackPartialOrdering(
+                env,
+                instance,
+                parameters,
+                output,
+                upper_bound,
+                y,
+                z));
 
     // Optimize
     cplex.solve();
 
     if (cplex.getStatus() == IloAlgorithm::Infeasible) {
     } else if (cplex.getStatus() == IloAlgorithm::Optimal) {
-        if (!output.solution.feasible() || output.solution.number_of_colors() > cplex.getObjValue() + 0.5) {
+        if (!output.solution.feasible()
+                || output.solution.number_of_colors() > cplex.getObjValue() + 0.5) {
             Solution solution(instance);
             for (VertexId v = 0; v < instance.number_of_vertices(); ++v)
                 for (ColorId c = 0; c < upper_bound; ++c)
                     if (cplex.getValue(y[v][c]) + cplex.getValue(z[v][c]) < 0.5)
                         solution.set(v, c);
-            output.update_solution(solution, std::stringstream(""), parameters.info);
+            output.update_solution(
+                    solution,
+                    std::stringstream(""),
+                    parameters.info);
         }
-        output.update_lower_bound(output.solution.number_of_colors(), std::stringstream(""), parameters.info);
+        output.update_lower_bound(
+                output.solution.number_of_colors(),
+                std::stringstream(""),
+                parameters.info);
     } else if (cplex.isPrimalFeasible()) {
-        if (!output.solution.feasible() || output.solution.number_of_colors() > cplex.getObjValue() + 0.5) {
+        if (!output.solution.feasible()
+                || output.solution.number_of_colors() > cplex.getObjValue() + 0.5) {
             Solution solution(instance);
             for (VertexId v = 0; v < instance.number_of_vertices(); ++v)
                 for (ColorId c = 0; c < upper_bound; ++c)
                     if (cplex.getValue(y[v][c]) + cplex.getValue(z[v][c]) < 0.5)
                         solution.set(v, c);
-            output.update_solution(solution, std::stringstream(""), parameters.info);
+            output.update_solution(
+                    solution,
+                    std::stringstream(""),
+                    parameters.info);
         }
         ColorId lb = std::ceil(cplex.getBestObjValue() - TOL);
         output.update_lower_bound(lb, std::stringstream(""), parameters.info);
@@ -506,7 +568,8 @@ ILOMIPINFOCALLBACK6(loggingCallbackPartialOrdering2,
     if (!hasIncumbent())
         return;
 
-    if (!output.solution.feasible() || output.solution.number_of_colors() > getIncumbentObjValue() + 0.5) {
+    if (!output.solution.feasible()
+            || output.solution.number_of_colors() > getIncumbentObjValue() + 0.5) {
         Solution solution(instance);
         for (VertexId v = 0; v < instance.number_of_vertices(); ++v) {
             IloNumArray val_y(y[v].getEnv());
@@ -517,12 +580,16 @@ ILOMIPINFOCALLBACK6(loggingCallbackPartialOrdering2,
                 if (val_y[c] + val_z[c] < 0.5)
                     solution.set(v, c);
         }
-        output.update_solution(solution, std::stringstream(""), parameters.info);
+        output.update_solution(
+                solution,
+                std::stringstream(""),
+                parameters.info);
     }
 }
 
 MilpPartialOrdering2CplexOutput coloringsolver::milp_partialordering2_cplex(
-        const Instance& instance, MilpPartialOrdering2CplexOptionalParameters parameters)
+        const Instance& instance,
+        MilpPartialOrdering2CplexOptionalParameters parameters)
 {
     init_display(instance, parameters.info);
     VER(parameters.info,
@@ -606,30 +673,48 @@ MilpPartialOrdering2CplexOutput coloringsolver::milp_partialordering2_cplex(
         cplex.setParam(IloCplex::TiLim, parameters.info.remaining_time());
 
     // Callback
-    cplex.use(loggingCallbackPartialOrdering2(env, instance, parameters, output, upper_bound, y, z));
+    cplex.use(loggingCallbackPartialOrdering2(
+                env,
+                instance,
+                parameters,
+                output,
+                upper_bound,
+                y,
+                z));
 
     // Optimize
     cplex.solve();
 
     if (cplex.getStatus() == IloAlgorithm::Infeasible) {
     } else if (cplex.getStatus() == IloAlgorithm::Optimal) {
-        if (!output.solution.feasible() || output.solution.number_of_colors() > cplex.getObjValue() + 0.5) {
+        if (!output.solution.feasible()
+                || output.solution.number_of_colors() > cplex.getObjValue() + 0.5) {
             Solution solution(instance);
             for (VertexId v = 0; v < instance.number_of_vertices(); ++v)
                 for (ColorId c = 0; c < upper_bound; ++c)
                     if (cplex.getValue(y[v][c]) + cplex.getValue(z[v][c]) < 0.5)
                         solution.set(v, c);
-            output.update_solution(solution, std::stringstream(""), parameters.info);
+            output.update_solution(
+                    solution,
+                    std::stringstream(""),
+                    parameters.info);
         }
-        output.update_lower_bound(output.solution.number_of_colors(), std::stringstream(""), parameters.info);
+        output.update_lower_bound(
+                output.solution.number_of_colors(),
+                std::stringstream(""),
+                parameters.info);
     } else if (cplex.isPrimalFeasible()) {
-        if (!output.solution.feasible() || output.solution.number_of_colors() > cplex.getObjValue() + 0.5) {
+        if (!output.solution.feasible()
+                || output.solution.number_of_colors() > cplex.getObjValue() + 0.5) {
             Solution solution(instance);
             for (VertexId v = 0; v < instance.number_of_vertices(); ++v)
                 for (ColorId c = 0; c < upper_bound; ++c)
                     if (cplex.getValue(y[v][c]) + cplex.getValue(z[v][c]) < 0.5)
                         solution.set(v, c);
-            output.update_solution(solution, std::stringstream(""), parameters.info);
+            output.update_solution(
+                    solution,
+                    std::stringstream(""),
+                    parameters.info);
         }
         ColorId lb = std::ceil(cplex.getBestObjValue() - TOL);
         output.update_lower_bound(lb, std::stringstream(""), parameters.info);
