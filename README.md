@@ -45,7 +45,7 @@ bazel build -- //...
 Examples:
 
 ```shell
-./bazel-bin/coloringsolver/main -v -i "data/graphcoloring/1-FullIns_3.col" -a greedy_dsatur -c solution.txt
+./bazel-bin/coloringsolver/main -v -i "data/dimacs1992/1-FullIns_3.col" -a greedy_dsatur -c solution.txt
 ```
 ```
 =====================================
@@ -80,7 +80,7 @@ Time (s):              0.0002
 ```
 
 ```shell
-./bazel-bin/coloringsolver/main -v -i "data/graphcoloring/r1000.5.col" -a "localsearch_rowweighting" -t 20
+./bazel-bin/coloringsolver/main -v -i "data/dimacs1992/r1000.5.col" -a "localsearch_rowweighting" -t 30
 ```
 ```
 =====================================

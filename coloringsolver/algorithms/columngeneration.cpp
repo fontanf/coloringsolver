@@ -211,7 +211,7 @@ std::vector<Column> PricingSolver::solve_pricing(
 ColumnGenerationHeuristicGreedyOutput coloringsolver::columngenerationheuristic_greedy(
         const Instance& instance, ColumnGenerationOptionalParameters parameters)
 {
-    VER(parameters.info, "*** columngenerationheuristic_greedy"
+    FFOT_VER(parameters.info, "*** columngenerationheuristic_greedy"
             << " --linear-programming-solver " << parameters.linear_programming_solver
             << " ***" << std::endl);
     ColumnGenerationHeuristicGreedyOutput output(instance, parameters.info);
@@ -248,7 +248,7 @@ ColumnGenerationHeuristicGreedyOutput coloringsolver::columngenerationheuristic_
 ColumnGenerationHeuristicLimitedDiscrepancySearchOutput coloringsolver::columngenerationheuristic_limiteddiscrepancysearch(
         const Instance& instance, ColumnGenerationOptionalParameters parameters)
 {
-    VER(parameters.info, "*** columngenerationheuristic_limiteddiscrepancysearch"
+    FFOT_VER(parameters.info, "*** columngenerationheuristic_limiteddiscrepancysearch"
             << " --linear-programming-solver " << parameters.linear_programming_solver
             << " ***" << std::endl);
     ColumnGenerationHeuristicLimitedDiscrepancySearchOutput output(instance, parameters.info);
@@ -288,7 +288,7 @@ ColumnGenerationHeuristicLimitedDiscrepancySearchOutput coloringsolver::columnge
 ColumnGenerationHeuristicHeuristicTreeSearchOutput coloringsolver::columngenerationheuristic_heuristictreesearch(
         const Instance& instance, ColumnGenerationOptionalParameters parameters)
 {
-    VER(parameters.info, "*** columngenerationheuristic_heuristictreesearch"
+    FFOT_VER(parameters.info, "*** columngenerationheuristic_heuristictreesearch"
             << " --linear-programming-solver " << parameters.linear_programming_solver
             << " ***" << std::endl);
     ColumnGenerationHeuristicHeuristicTreeSearchOutput output(instance, parameters.info);

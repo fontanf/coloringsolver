@@ -423,9 +423,9 @@ private:
 LocalSearchOutput& LocalSearchOutput::algorithm_end(
         optimizationtools::Info& info)
 {
-    //PUT(info, "Algorithm", "Iterations", iterations);
+    //FFOT_PUT(info, "Algorithm", "Iterations", iterations);
     Output::algorithm_end(info);
-    //VER(info, "Iterations: " << iterations << std::endl);
+    //FFOT_VER(info, "Iterations: " << iterations << std::endl);
     return *this;
 }
 
@@ -434,7 +434,7 @@ LocalSearchOutput coloringsolver::localsearch(
         std::mt19937_64& generator,
         LocalSearchOptionalParameters parameters)
 {
-    VER(parameters.info, "*** localsearch ***" << std::endl);
+    FFOT_VER(parameters.info, "*** localsearch ***" << std::endl);
 
     LocalSearchOutput output(instance, parameters.info);
 

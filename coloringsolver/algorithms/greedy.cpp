@@ -1,6 +1,6 @@
 #include "coloringsolver/algorithms/greedy.hpp"
 
-#include "optimizationtools/indexed_binary_heap.hpp"
+#include "optimizationtools/containers/indexed_binary_heap.hpp"
 
 using namespace coloringsolver;
 
@@ -182,7 +182,7 @@ std::vector<VertexId> dynamiclargestfirst(const Instance& instance)
 Output coloringsolver::greedy(const Instance& instance, GreedyOptionalParameters parameters)
 {
     init_display(instance, parameters.info);
-    VER(parameters.info,
+    FFOT_VER(parameters.info,
                "Algorithm" << std::endl
             << "---------" << std::endl
             << "Greedy" << std::endl
@@ -262,7 +262,7 @@ Output coloringsolver::greedy_dsatur(
         optimizationtools::Info info)
 {
     init_display(instance, info);
-    VER(info,
+    FFOT_VER(info,
                "Algorithm" << std::endl
             << "---------" << std::endl
             << "DSATUR" << std::endl

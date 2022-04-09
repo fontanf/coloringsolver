@@ -9,9 +9,10 @@ using namespace coloringsolver;
 Instance::Instance(std::string instance_path, std::string format)
 {
     std::ifstream file(instance_path);
-    if (!file.good())
+    if (!file.good()) {
         throw std::runtime_error(
                 "Unable to open file \"" + instance_path + "\".");
+    }
 
     set_name(instance_path);
     if (format == "dimacs") {
@@ -209,22 +210,19 @@ std::vector<VertexId> Instance::compute_core(ColorId k) const
     std::vector<VertexId> vertex_queue;
     for (VertexId v = 0; v < number_of_vertices(); ++v) {
         vertex_degrees[v] = degree(v);
-        if (vertex_degrees[v] < k) {
+        if (vertex_degrees[v] < k)
             vertex_queue.push_back(v);
-            removed_vertices.push_back(v);
-        }
     }
     while (!vertex_queue.empty()) {
         VertexId v = vertex_queue.back();
+        removed_vertices.push_back(v);
         vertex_queue.pop_back();
         for (const auto& edge: vertex(v).edges) {
             if (vertex_degrees[edge.v] < k)
                 continue;
             vertex_degrees[edge.v]--;
-            if (vertex_degrees[edge.v] < k) {
+            if (vertex_degrees[edge.v] < k)
                 vertex_queue.push_back(edge.v);
-                removed_vertices.push_back(edge.v);
-            }
         }
     }
     //std::cout << "k " << k << " removed_vertices.size() " << removed_vertices.size() << std::endl;
@@ -279,7 +277,7 @@ void coloringsolver::init_display(
 {
     VertexId n = instance.number_of_vertices();
     EdgeId m = instance.number_of_edges();
-    VER(info,
+    FFOT_VER(info,
                "=====================================" << std::endl
             << "           Coloring Solver           " << std::endl
             << "=====================================" << std::endl

@@ -1,9 +1,9 @@
 #pragma once
 
-#include "optimizationtools/info.hpp"
-#include "optimizationtools/utils.hpp"
-#include "optimizationtools/indexed_map.hpp"
-#include "optimizationtools/doubly_indexed_map.hpp"
+#include "optimizationtools/utils/info.hpp"
+#include "optimizationtools/utils/utils.hpp"
+#include "optimizationtools/containers/indexed_map.hpp"
+#include "optimizationtools/containers/doubly_indexed_map.hpp"
 
 #include <random>
 #include <set>

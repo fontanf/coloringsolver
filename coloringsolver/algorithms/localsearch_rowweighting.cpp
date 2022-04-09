@@ -13,9 +13,9 @@ using namespace coloringsolver;
 LocalSearchRowWeightingOutput& LocalSearchRowWeightingOutput::algorithm_end(
         optimizationtools::Info& info)
 {
-    PUT(info, "Algorithm", "NumberOfIterations", number_of_iterations);
+    FFOT_PUT(info, "Algorithm", "NumberOfIterations", number_of_iterations);
     Output::algorithm_end(info);
-    VER(info, "Number of iterations:  " << number_of_iterations << std::endl);
+    FFOT_VER(info, "Number of iterations:  " << number_of_iterations << std::endl);
     return *this;
 }
 
@@ -30,7 +30,7 @@ LocalSearchRowWeightingOutput coloringsolver::localsearch_rowweighting(
         LocalSearchRowWeightingOptionalParameters parameters)
 {
     init_display(instance, parameters.info);
-    VER(parameters.info,
+    FFOT_VER(parameters.info,
                "Algorithm" << std::endl
             << "---------" << std::endl
             << "Row Weighting Local Search" << std::endl
@@ -262,9 +262,9 @@ LocalSearchRowWeightingOutput coloringsolver::localsearch_rowweighting(
 LocalSearchRowWeighting2Output& LocalSearchRowWeighting2Output::algorithm_end(
         optimizationtools::Info& info)
 {
-    PUT(info, "Algorithm", "NumberOfIterations", number_of_iterations);
+    FFOT_PUT(info, "Algorithm", "NumberOfIterations", number_of_iterations);
     Output::algorithm_end(info);
-    VER(info, "Number of iterations:  " << number_of_iterations << std::endl);
+    FFOT_VER(info, "Number of iterations:  " << number_of_iterations << std::endl);
     return *this;
 }
 
@@ -278,7 +278,7 @@ LocalSearchRowWeighting2Output coloringsolver::localsearch_rowweighting_2(
         LocalSearchRowWeighting2OptionalParameters parameters)
 {
     init_display(instance, parameters.info);
-    VER(parameters.info,
+    FFOT_VER(parameters.info,
                "Algorithm" << std::endl
             << "---------" << std::endl
             << "Row Weighting Local Search 2" << std::endl
