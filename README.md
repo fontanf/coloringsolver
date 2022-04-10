@@ -80,7 +80,7 @@ Time (s):              0.0002
 ```
 
 ```shell
-./bazel-bin/coloringsolver/main -v -i "data/dimacs1992/r1000.5.col" -a "localsearch_rowweighting" -t 30
+./bazel-bin/coloringsolver/main -v -i "data/dimacs1992/r1000.5.col" -a "localsearch_rowweighting_2 --iterations 100000"
 ```
 ```
 =====================================
@@ -89,7 +89,6 @@ Time (s):              0.0002
 
 Instance
 --------
-Name:                data/graphcoloring/r1000.5.col
 Number of vertices:  1000
 Number of edges:     238267
 Density:             0.477011
@@ -98,35 +97,35 @@ Maximum degree:      781
 
 Algorithm
 ---------
-Row Weighting Local Search
+Row Weighting Local Search 2
 
 Parameters
 ----------
-Maximum number of iterations:                      -1
+Maximum number of iterations:                      100000
 Maximum number of iterations without improvement:  -1
 Maximum number of improvements:                    -1
 Goal:                                              0
 
        T (s)          UB          LB         GAP     GAP (%)                 Comment
        -----          --          --         ---     -------                 -------
-      0.0001         782           0         782         inf                        
-      0.0097         250           0         250         inf        initial solution
-      0.0113         249           0         249         inf             iteration 7
-      0.0126         248           0         248         inf            iteration 11
-      0.0139         247           0         247         inf            iteration 41
-      0.0155         246           0         246         inf           iteration 115
-      0.8448         245           0         245         inf        iteration 182052
-      0.9065         244           0         244         inf        iteration 196035
-      1.4955         243           0         243         inf        iteration 335080
-      1.5796         242           0         242         inf        iteration 354950
-      1.8055         241           0         241         inf        iteration 408907
-      2.3594         240           0         240         inf        iteration 543664
-      3.0347         239           0         239         inf        iteration 712696
-      3.4089         238           0         238         inf        iteration 806580
-      4.2307         237           0         237         inf       iteration 1016132
-      7.3668         236           0         236         inf       iteration 1832197
-     10.2384         235           0         235         inf       iteration 2596244
-     17.5431         234           0         234         inf       iteration 4565602
+      0.0002         782           0         782         inf                        
+      0.0108         250           0         250         inf        initial solution
+       0.013         249           0         249         inf            iteration 30
+       0.015         248           0         248         inf            iteration 35
+      0.0306         247           0         247         inf          iteration 2474
+      0.0329         246           0         246         inf          iteration 2525
+      0.0367         245           0         245         inf          iteration 2866
+      0.0411         244           0         244         inf          iteration 3329
+      0.0444         243           0         243         inf          iteration 3585
+      0.0475         242           0         242         inf          iteration 3808
+      0.0548         241           0         241         inf          iteration 4890
+      0.0585         240           0         240         inf          iteration 5245
+      0.0632         239           0         239         inf          iteration 5777
+      0.0712         238           0         238         inf          iteration 7035
+      0.0819         237           0         237         inf          iteration 8953
+      0.1085         236           0         236         inf         iteration 14317
+      0.1604         235           0         235         inf         iteration 26263
+      0.3759         234           0         234         inf         iteration 77314
 
 Final statistics
 ----------------
@@ -134,8 +133,8 @@ Value:                 234
 Bound:                 0
 Gap:                   234
 Gap (%):               inf
-Time (s):              20
-Number of iterations:  5212819
+Time (s):              0.475
+Number of iterations:  100000
 ```
 
 Benchmarks:

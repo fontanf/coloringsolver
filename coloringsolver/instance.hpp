@@ -59,7 +59,7 @@ public:
      */
 
     /** Get graph. */
-    inline const optimizationtools::AbstractGraph* graph() const { return graph_.get(); }
+    inline const optimizationtools::AbstractGraph& graph() const { return *graph_; }
 
     /** Get the adjacency list graph. */
     inline const optimizationtools::AdjacencyListGraph* adjacency_list_graph() const { return adjacency_list_graph_; }

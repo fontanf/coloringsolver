@@ -29,10 +29,10 @@ Instance::Instance(
 std::vector<VertexId> Instance::compute_core(ColorId k) const
 {
     std::vector<VertexId> removed_vertices;
-    std::vector<VertexPos> vertex_degrees(graph()->number_of_vertices(), -1);
+    std::vector<VertexPos> vertex_degrees(graph().number_of_vertices(), -1);
     std::vector<VertexId> vertex_queue;
-    for (VertexId v = 0; v < graph()->number_of_vertices(); ++v) {
-        vertex_degrees[v] = graph()->degree(v);
+    for (VertexId v = 0; v < graph().number_of_vertices(); ++v) {
+        vertex_degrees[v] = graph().degree(v);
         if (vertex_degrees[v] < k)
             vertex_queue.push_back(v);
     }
@@ -40,8 +40,8 @@ std::vector<VertexId> Instance::compute_core(ColorId k) const
         VertexId v = vertex_queue.back();
         removed_vertices.push_back(v);
         vertex_queue.pop_back();
-        for (auto it = graph()->neighbors_begin(v);
-                it != graph()->neighbors_end(v); ++it) {
+        for (auto it = graph().neighbors_begin(v);
+                it != graph().neighbors_end(v); ++it) {
             if (vertex_degrees[*it] < k)
                 continue;
             vertex_degrees[*it]--;
@@ -57,9 +57,9 @@ void coloringsolver::init_display(
         const Instance& instance,
         optimizationtools::Info& info)
 {
-    const optimizationtools::AbstractGraph* graph = instance.graph();
-    VertexId n = graph->number_of_vertices();
-    EdgeId m = graph->number_of_edges();
+    const optimizationtools::AbstractGraph& graph = instance.graph();
+    VertexId n = graph.number_of_vertices();
+    EdgeId m = graph.number_of_edges();
     FFOT_VER(info,
                "=====================================" << std::endl
             << "           Coloring Solver           " << std::endl
@@ -70,8 +70,8 @@ void coloringsolver::init_display(
             << "Number of vertices:  " << n << std::endl
             << "Number of edges:     " << m << std::endl
             << "Density:             " << (double)m * 2 / n / (n - 1) << std::endl
-            << "Average degree:      " << (double)graph->number_of_edges() * 2 / n << std::endl
-            << "Maximum degree:      " << graph->maximum_degree() << std::endl
+            << "Average degree:      " << (double)graph.number_of_edges() * 2 / n << std::endl
+            << "Maximum degree:      " << graph.maximum_degree() << std::endl
             << std::endl);
 }
 

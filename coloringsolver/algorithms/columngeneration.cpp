@@ -68,8 +68,8 @@ public:
 
     PricingSolver(const Instance& instance):
         instance_(instance),
-        fixed_vertices_(instance.graph()->number_of_vertices()),
-        coloring2mwis_(instance.graph()->number_of_vertices())
+        fixed_vertices_(instance.graph().number_of_vertices()),
+        coloring2mwis_(instance.graph().number_of_vertices())
     {  }
 
     virtual std::vector<ColIdx> initialize_pricing(
@@ -93,7 +93,7 @@ private:
 
 columngenerationsolver::Parameters get_parameters(const Instance& instance)
 {
-    columngenerationsolver::Parameters p(instance.graph()->number_of_vertices());
+    columngenerationsolver::Parameters p(instance.graph().number_of_vertices());
 
     p.objective_sense = columngenerationsolver::ObjectiveSense::Min;
     p.column_lower_bound = 0;
@@ -107,7 +107,7 @@ columngenerationsolver::Parameters get_parameters(const Instance& instance)
     // Row coefficent upper bounds.
     std::fill(p.row_coefficient_upper_bounds.begin(), p.row_coefficient_upper_bounds.end(), 1);
     // Dummy column objective coefficient.
-    p.dummy_column_objective_coefficient = instance.graph()->maximum_degree();
+    p.dummy_column_objective_coefficient = instance.graph().maximum_degree();
     // Pricing solver.
     p.pricing_solver = std::unique_ptr<columngenerationsolver::PricingSolver>(
             new PricingSolver(instance));
@@ -157,7 +157,7 @@ std::vector<ColIdx> PricingSolver::initialize_pricing(
 std::vector<Column> PricingSolver::solve_pricing(
             const std::vector<Value>& duals)
 {
-    VertexId n = instance_.graph()->number_of_vertices();
+    VertexId n = instance_.graph().number_of_vertices();
     std::vector<Column> columns;
     stablesolver::Weight mult = 10000;
 
@@ -181,8 +181,8 @@ std::vector<Column> PricingSolver::solve_pricing(
         instance_mwis.set_weight(v1, weights_[v1]);
         // Add edges.
         VertexId v1_orig = mwis2coloring_[v1];
-        for (auto it = instance_.graph()->neighbors_begin(v1_orig);
-                it != instance_.graph()->neighbors_end(v1_orig); ++it) {
+        for (auto it = instance_.graph().neighbors_begin(v1_orig);
+                it != instance_.graph().neighbors_end(v1_orig); ++it) {
             VertexId v_neighbor = *it;
             stablesolver::VertexId v2 = coloring2mwis_[v_neighbor];
             if (v2 != -1 && v2 > v1)

@@ -37,7 +37,7 @@ public:
     /** Get the instance. */
     const Instance& instance() const { return instance_; }
     /** Return 'true' iff the solution is feasible. */
-    bool feasible() const { return number_of_vertices() == instance().graph()->number_of_vertices() && number_of_conflicts() == 0; };
+    bool feasible() const { return number_of_vertices() == instance().graph().number_of_vertices() && number_of_conflicts() == 0; };
     /** Get the number of colors used in the solution. */
     ColorId number_of_colors() const { return map_.number_of_values(); }
     /** Return 'true' iff a color is assigned to vertex v in the solution. */
@@ -96,11 +96,11 @@ std::ostream& operator<<(std::ostream& os, const Solution& solution);
 
 void Solution::set(VertexId v, ColorId c)
 {
-    const optimizationtools::AbstractGraph* graph = instance().graph();
+    const optimizationtools::AbstractGraph& graph = instance().graph();
 
     // Checks.
-    graph->check_vertex_index(v);
-    if (c < -1 || c >= graph->number_of_vertices()) {
+    graph.check_vertex_index(v);
+    if (c < -1 || c >= graph.number_of_vertices()) {
         throw std::out_of_range(
                 "Invalid color value: \"" + std::to_string(c) + "\"."
                 + " Color values should belong to [-1, "
@@ -109,26 +109,25 @@ void Solution::set(VertexId v, ColorId c)
 
     // Update conflicts_.
     if (instance().adjacency_list_graph() != nullptr) {
-        for (EdgeId e: instance().adjacency_list_graph()->edges(v)) {
-            VertexId v_neighbor = instance().adjacency_list_graph()->other_end(e, v);
+        for (const auto& edge: instance().adjacency_list_graph()->edges(v)) {
             // Remove old conflicts.
-            if (contains(v_neighbor) && color(v_neighbor) == color(v)) {
+            if (contains(edge.v) && color(edge.v) == color(v)) {
                 total_number_of_conflicts_--;
-                conflicts_.erase(e);
+                conflicts_.erase(edge.e);
                 number_of_conflicts_.set(v, number_of_conflicts_[v] - 1);
-                number_of_conflicts_.set(v_neighbor, number_of_conflicts_[v_neighbor] - 1);
+                number_of_conflicts_.set(edge.v, number_of_conflicts_[edge.v] - 1);
             }
             // Add new conflicts.
-            if (c != -1 && color(v_neighbor) == c) {
+            if (c != -1 && color(edge.v) == c) {
                 total_number_of_conflicts_++;
-                conflicts_.insert(e);
+                conflicts_.insert(edge.e);
                 number_of_conflicts_.set(v, number_of_conflicts_[v] + 1);
-                number_of_conflicts_.set(v_neighbor, number_of_conflicts_[v_neighbor] + 1);
+                number_of_conflicts_.set(edge.v, number_of_conflicts_[edge.v] + 1);
             }
         }
     } else {
-        for (auto it = graph->neighbors_begin(v);
-                it != graph->neighbors_end(v); ++it) {
+        for (auto it = graph.neighbors_begin(v);
+                it != graph.neighbors_end(v); ++it) {
             // Remove old conflicts.
             if (contains(*it) && color(*it) == color(v)) {
                 total_number_of_conflicts_--;
@@ -166,7 +165,7 @@ struct Output
     double time = -1;
 
     bool optimal() const { return solution.feasible() && solution.number_of_colors() == lower_bound; }
-    ColorId upper_bound() const { return (solution.feasible())? solution.number_of_colors(): solution.instance().graph()->maximum_degree() + 1; }
+    ColorId upper_bound() const { return (solution.feasible())? solution.number_of_colors(): solution.instance().graph().maximum_degree() + 1; }
     double gap() const;
     void print(optimizationtools::Info& info, const std::stringstream& s) const;
 
