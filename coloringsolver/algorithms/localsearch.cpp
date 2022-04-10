@@ -55,8 +55,8 @@ public:
     struct Solution
     {
         Solution(const Instance& instance):
-            map(instance.number_of_vertices(), instance.maximum_degree()),
-            conflicting_vertices(instance.number_of_vertices(), 0) {  }
+            map(instance.graph()->number_of_vertices(), instance.graph()->maximum_degree()),
+            conflicting_vertices(instance.graph()->number_of_vertices(), 0) {  }
 
         optimizationtools::DoublyIndexedMap map;
         optimizationtools::IndexedMap<EdgeId> conflicting_vertices;
@@ -65,8 +65,8 @@ public:
 
     CompactSolution solution2compact(const Solution& solution)
     {
-        std::vector<ColorId> compact_solution(instance_.number_of_vertices(), -1);
-        for (VertexId v = 0; v < instance_.number_of_vertices(); ++v)
+        std::vector<ColorId> compact_solution(instance_.graph()->number_of_vertices(), -1);
+        for (VertexId v = 0; v < instance_.graph()->number_of_vertices(); ++v)
             compact_solution[v] = solution.map[v];
         return compact_solution;
     }
@@ -74,7 +74,7 @@ public:
     Solution compact2solution(const CompactSolution& compact_solution)
     {
         auto solution = empty_solution();
-        for (VertexId v = 0; v < instance_.number_of_vertices(); ++v) {
+        for (VertexId v = 0; v < instance_.graph()->number_of_vertices(); ++v) {
             ColorId c = compact_solution[v];
             set(solution, v, c);
         }
@@ -124,7 +124,7 @@ public:
     {
         Solution solution_new = empty_solution();
 
-        for (VertexId v = 0; v < instance_.number_of_vertices(); ++v) {
+        for (VertexId v = 0; v < instance_.graph()->number_of_vertices(); ++v) {
             if (!solution.contains(v))
                 continue;
             ColorId c = solution.color(v);
@@ -221,7 +221,7 @@ public:
             }
         } else {
             // Compute positions.
-            std::vector<ColorPos> positions(instance_.maximum_degree(), -1);
+            std::vector<ColorPos> positions(instance_.graph()->maximum_degree(), -1);
             for (ColorPos c_pos = 0; c_pos < solution.map.number_of_values(); ++c_pos) {
                 ColorId c = *(solution.map.values_begin() + c_pos);
                 positions[c] = c_pos;
@@ -233,17 +233,19 @@ public:
                 number_of_conflicts[c_pos].resize(solution.map.number_of_values() - c_pos - 1, 0);
 
             // Compute penalties.
-            for (EdgeId e = 0; e < instance_.number_of_edges(); ++e) {
-                VertexId v1 = instance_.edge(e).v1;
-                VertexId v2 = instance_.edge(e).v2;
-                ColorId c1 = solution.map[v1];
-                ColorId c2 = solution.map[v2];
-                ColorPos c1_pos = positions[c1];
-                ColorPos c2_pos = positions[c2];
-                ColorPos i1 = std::min(c1_pos, c2_pos);
-                ColorPos i2 = std::max(c1_pos, c2_pos) - i1 - 1;
-                assert(c1 != c2);
-                number_of_conflicts[i1][i2]++;
+            for (VertexId v1 = 0; v1 < instance_.graph()->number_of_vertices(); ++v1) {
+                for (auto it = instance_.graph()->neighbors_begin(v1);
+                        it != instance_.graph()->neighbors_end(v1); ++it) {
+                    VertexId v2 = *it;
+                    ColorId c1 = solution.map[v1];
+                    ColorId c2 = solution.map[v2];
+                    ColorPos c1_pos = positions[c1];
+                    ColorPos c2_pos = positions[c2];
+                    ColorPos i1 = std::min(c1_pos, c2_pos);
+                    ColorPos i2 = std::max(c1_pos, c2_pos) - i1 - 1;
+                    assert(c1 != c2);
+                    number_of_conflicts[i1][i2]++;
+                }
             }
 
             for (ColorPos c1_pos = 0; c1_pos < solution.map.number_of_values(); ++c1_pos) {
@@ -366,20 +368,22 @@ private:
             ColorId c) const
     {
         // Update conflicts_.
-        for (const auto& edge: instance_.vertex(v).edges) {
-            if (!solution.map.contains(edge.v))
+        for (auto it = instance_.graph()->neighbors_begin(v);
+                it != instance_.graph()->neighbors_end(v); ++it) {
+            VertexId v_neighbor = *it;
+            if (!solution.map.contains(v_neighbor))
                 continue;
             if (solution.map.contains(v)
-                    && solution.map[edge.v] == solution.map[v]) {
+                    && solution.map[v_neighbor] == solution.map[v]) {
                 solution.conflicting_vertices.set(
-                        edge.v, solution.conflicting_vertices[edge.v] - 1);
+                        v_neighbor, solution.conflicting_vertices[v_neighbor] - 1);
                 solution.conflicting_vertices.set(
                         v, solution.conflicting_vertices[v] - 1);
                 solution.total_number_of_conflicts--;
             }
-            if (solution.map[edge.v] == c) {
+            if (solution.map[v_neighbor] == c) {
                 solution.conflicting_vertices.set(
-                        edge.v, solution.conflicting_vertices[edge.v] + 1);
+                        v_neighbor, solution.conflicting_vertices[v_neighbor] + 1);
                 solution.conflicting_vertices.set(
                         v, solution.conflicting_vertices[v] + 1);
                 solution.total_number_of_conflicts++;
@@ -395,12 +399,14 @@ private:
     {
         // Update conflicts_.
         GlobalCost gc = global_cost(solution);
-        for (const auto& edge: instance_.vertex(v).edges) {
-            if (!solution.map.contains(edge.v))
+        for (auto it = instance_.graph()->neighbors_begin(v);
+                it != instance_.graph()->neighbors_end(v); ++it) {
+            VertexId v_neighbor = *it;
+            if (!solution.map.contains(v_neighbor))
                 continue;
-            if (solution.map[edge.v] == solution.map[v])
+            if (solution.map[v_neighbor] == solution.map[v])
                 number_of_conflicts(gc)--;
-            if (solution.map[edge.v] == c)
+            if (solution.map[v_neighbor] == c)
                 number_of_conflicts(gc)++;
         }
         return gc;
@@ -467,7 +473,7 @@ LocalSearchOutput coloringsolver::localsearch(
             if (solution.total_number_of_conflicts > 0)
                 return;
             Solution sol(instance);
-            for (VertexId v = 0; v < instance.number_of_vertices(); ++v) {
+            for (VertexId v = 0; v < instance.graph()->number_of_vertices(); ++v) {
                 ColorId c = solution.map[v];
                 sol.set(v, c);
             }

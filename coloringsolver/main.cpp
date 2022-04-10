@@ -20,7 +20,7 @@ int main(int argc, char *argv[])
     int loglevelmax = 999;
     int seed = 0;
     double time_limit = std::numeric_limits<double>::infinity();
-    ColorId goal = 0;
+    double goal = 0;
 
     po::options_description desc("Allowed options");
     desc.add_options()
@@ -33,7 +33,7 @@ int main(int argc, char *argv[])
         ("certificate,c", po::value<std::string>(&certificate_path), "set certificate file")
         ("time-limit,t", po::value<double>(&time_limit), "Time limit in seconds")
         ("seed,s", po::value<int>(&seed), "set seed")
-        ("goal,g", po::value<ColorId>(&goal), "set goal")
+        ("goal,g", po::value<double>(&goal), "set goal")
         ("verbose,v", "set verbosity")
         ("remove-duplicate-edges,", "remove duplicate edges")
         ("log,l", po::value<std::string>(&log_path), "set log file")
@@ -78,7 +78,7 @@ int main(int argc, char *argv[])
             algorithm,
             instance,
             solution,
-            goal,
+            std::ceil(goal - FFOT_TOL),
             generator,
             info);
 

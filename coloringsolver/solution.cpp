@@ -6,7 +6,12 @@ using namespace coloringsolver;
 
 Solution::Solution(const Instance& instance):
     instance_(instance),
-    map_(instance.number_of_vertices(), std::max(instance.maximum_degree(), instance.number_of_vertices()))
+    map_(
+            instance.graph()->number_of_vertices(),
+            std::max(
+                instance.graph()->maximum_degree(),
+                instance.graph()->number_of_vertices())),
+    number_of_conflicts_(instance.graph()->number_of_vertices(), 0)
 {
 }
 
@@ -14,7 +19,12 @@ Solution::Solution(
         const Instance& instance,
         std::string certificate_path):
     instance_(instance),
-    map_(instance.number_of_vertices(), std::max(instance.maximum_degree(), instance.number_of_vertices()))
+    map_(
+            instance.graph()->number_of_vertices(),
+            std::max(
+                instance.graph()->maximum_degree(),
+                instance.graph()->number_of_vertices())),
+    number_of_conflicts_(instance.graph()->number_of_vertices(), 0)
 {
     if (certificate_path.empty())
         return;
@@ -27,7 +37,7 @@ Solution::Solution(
     ColorId number_of_colors;
     ColorId c;
     file >> number_of_colors;
-    for (VertexId v = 0; v < instance.number_of_vertices(); ++v) {
+    for (VertexId v = 0; v < instance.graph()->number_of_vertices(); ++v) {
         file >> c;
         set(v, c);
     }
@@ -36,7 +46,9 @@ Solution::Solution(
 Solution::Solution(const Solution& solution):
     instance_(solution.instance_),
     map_(solution.map_),
-    conflicts_(solution.conflicts_)
+    conflicts_(solution.conflicts_),
+    number_of_conflicts_(solution.number_of_conflicts_),
+    total_number_of_conflicts_(solution.total_number_of_conflicts_)
 { }
 
 Solution& Solution::operator=(const Solution& solution)
@@ -46,9 +58,11 @@ Solution& Solution::operator=(const Solution& solution)
             throw std::runtime_error(
                     "Assign a solution to a solution from a different instance.");
         }
-        assert(&instance_ == &solution.instance_);
-        map_       = solution.map_;
+
+        map_ = solution.map_;
         conflicts_ = solution.conflicts_;
+        number_of_conflicts_ = solution.number_of_conflicts_;
+        total_number_of_conflicts_ = solution.total_number_of_conflicts_;
     }
     return *this;
 }
@@ -62,7 +76,7 @@ void Solution::write(std::string certificate_path) const
         throw std::runtime_error(
                 "Unable to open file \"" + certificate_path + "\".");
 
-    for (VertexId v = 0; v < instance().number_of_vertices(); ++v)
+    for (VertexId v = 0; v < instance().graph()->number_of_vertices(); ++v)
         file << color(v) << std::endl;
     file.close();
 }
@@ -72,7 +86,7 @@ std::ostream& coloringsolver::operator<<(
         const Solution& solution)
 {
     os << solution.number_of_colors() << std::endl;
-    for (VertexId v = 0; v < solution.instance().number_of_vertices(); ++v)
+    for (VertexId v = 0; v < solution.instance().graph()->number_of_vertices(); ++v)
         os << v << "|" << solution.color(v) << " ";
     return os;
 }
@@ -134,7 +148,7 @@ void Output::update_solution(
     if (solution_new.feasible()
             && (!solution.feasible() || solution.number_of_colors() > solution_new.number_of_colors())) {
         // Update solution
-        for (VertexId v = 0; v < solution.instance().number_of_vertices(); ++v)
+        for (VertexId v = 0; v < solution.instance().graph()->number_of_vertices(); ++v)
             if (solution.color(v) != solution_new.color(v))
                 solution.set(v, solution_new.color(v));
         print(info, s);

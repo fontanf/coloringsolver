@@ -68,8 +68,8 @@ public:
 
     PricingSolver(const Instance& instance):
         instance_(instance),
-        fixed_vertices_(instance.number_of_vertices()),
-        coloring2mwis_(instance.number_of_vertices())
+        fixed_vertices_(instance.graph()->number_of_vertices()),
+        coloring2mwis_(instance.graph()->number_of_vertices())
     {  }
 
     virtual std::vector<ColIdx> initialize_pricing(
@@ -93,7 +93,7 @@ private:
 
 columngenerationsolver::Parameters get_parameters(const Instance& instance)
 {
-    columngenerationsolver::Parameters p(instance.number_of_vertices());
+    columngenerationsolver::Parameters p(instance.graph()->number_of_vertices());
 
     p.objective_sense = columngenerationsolver::ObjectiveSense::Min;
     p.column_lower_bound = 0;
@@ -107,7 +107,7 @@ columngenerationsolver::Parameters get_parameters(const Instance& instance)
     // Row coefficent upper bounds.
     std::fill(p.row_coefficient_upper_bounds.begin(), p.row_coefficient_upper_bounds.end(), 1);
     // Dummy column objective coefficient.
-    p.dummy_column_objective_coefficient = instance.maximum_degree();
+    p.dummy_column_objective_coefficient = instance.graph()->maximum_degree();
     // Pricing solver.
     p.pricing_solver = std::unique_ptr<columngenerationsolver::PricingSolver>(
             new PricingSolver(instance));
@@ -157,7 +157,7 @@ std::vector<ColIdx> PricingSolver::initialize_pricing(
 std::vector<Column> PricingSolver::solve_pricing(
             const std::vector<Value>& duals)
 {
-    VertexId n = instance_.number_of_vertices();
+    VertexId n = instance_.graph()->number_of_vertices();
     std::vector<Column> columns;
     stablesolver::Weight mult = 10000;
 
@@ -181,8 +181,10 @@ std::vector<Column> PricingSolver::solve_pricing(
         instance_mwis.set_weight(v1, weights_[v1]);
         // Add edges.
         VertexId v1_orig = mwis2coloring_[v1];
-        for (const VertexNeighbor& vn: instance_.vertex(v1_orig).edges) {
-            stablesolver::VertexId v2 = coloring2mwis_[vn.v];
+        for (auto it = instance_.graph()->neighbors_begin(v1_orig);
+                it != instance_.graph()->neighbors_end(v1_orig); ++it) {
+            VertexId v_neighbor = *it;
+            stablesolver::VertexId v2 = coloring2mwis_[v_neighbor];
             if (v2 != -1 && v2 > v1)
                 instance_mwis.add_edge(v1, v2);
         }
@@ -234,7 +236,7 @@ ColumnGenerationHeuristicGreedyOutput coloringsolver::columngenerationheuristic_
     auto output_greedy = columngenerationsolver::greedy(p, op);
 
     //output.update_lower_bound(
-    //        std::ceil(output_greedy.bound - TOL),
+    //        std::ceil(output_greedy.bound - FFOT_TOL),
     //        std::stringstream(""),
     //        parameters.info);
     if (output_greedy.solution.size() > 0)
@@ -270,7 +272,7 @@ ColumnGenerationHeuristicLimitedDiscrepancySearchOutput coloringsolver::columnge
                         parameters.info);
             }
             //output.update_lower_bound(
-            //        std::ceil(o.bound - TOL),
+            //        std::ceil(o.bound - FFOT_TOL),
             //        ss,
             //        parameters.info);
         };

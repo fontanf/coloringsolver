@@ -16,6 +16,7 @@ cc_library(
                 "@optimizationtools//optimizationtools/utils:info",
                 "@optimizationtools//optimizationtools/utils:utils",
                 "@optimizationtools//optimizationtools/containers:containers",
+                "@optimizationtools//optimizationtools/graph:graph",
         ],
         visibility = ["//visibility:public"],
 )

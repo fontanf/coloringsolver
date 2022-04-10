@@ -2,6 +2,9 @@
 
 #include "coloringsolver/instance.hpp"
 
+#include "optimizationtools/containers/indexed_map.hpp"
+#include "optimizationtools/containers/doubly_indexed_map.hpp"
+
 #include <unordered_set>
 
 namespace coloringsolver
@@ -34,7 +37,7 @@ public:
     /** Get the instance. */
     const Instance& instance() const { return instance_; }
     /** Return 'true' iff the solution is feasible. */
-    bool feasible() const { return number_of_vertices() == instance().number_of_vertices() && conflicts_.size() == 0; };
+    bool feasible() const { return number_of_vertices() == instance().graph()->number_of_vertices() && number_of_conflicts() == 0; };
     /** Get the number of colors used in the solution. */
     ColorId number_of_colors() const { return map_.number_of_values(); }
     /** Return 'true' iff a color is assigned to vertex v in the solution. */
@@ -46,13 +49,15 @@ public:
     /** Get the number of vertices with color c. */
     VertexPos number_of_vertices(ColorId c) const { return map_.number_of_elements(c); }
     /** Get the number of conflitcs in the solution. */
-    EdgePos number_of_conflicts() const { return conflicts_.size(); }
+    EdgeId number_of_conflicts() const { return total_number_of_conflicts_; }
     /** Get a begin iterator to the colors. */
     std::vector<ColorId>::const_iterator colors_begin() const { return map_.values_begin(); }
     /** Get an end iterator to the colors. */
     std::vector<ColorId>::const_iterator colors_end() const { return map_.values_end(); }
-    /** Get the set of conflicting vertices. */
+    /** Get the set of conflicting edges. */
     const std::unordered_set<EdgeId>& conflicts() const { return conflicts_; }
+    /** Get the set of conflicting vertices. */
+    const optimizationtools::IndexedMap<VertexPos>& conflicting_vertices() const { return number_of_conflicts_; }
 
     /*
      * Setters.
@@ -80,6 +85,10 @@ private:
     optimizationtools::DoublyIndexedMap map_;
     /** Set of conflicting edges. */
     std::unordered_set<EdgeId> conflicts_;
+    /** Conflicting vertices. */
+    optimizationtools::IndexedMap<VertexPos> number_of_conflicts_;
+    /** Number of conflicts. */
+    EdgeId total_number_of_conflicts_ = 0;
 
 };
 
@@ -87,9 +96,11 @@ std::ostream& operator<<(std::ostream& os, const Solution& solution);
 
 void Solution::set(VertexId v, ColorId c)
 {
+    const optimizationtools::AbstractGraph* graph = instance().graph();
+
     // Checks.
-    instance().check_vertex_index(v);
-    if (c < -1 || c >= instance_.number_of_vertices()) {
+    graph->check_vertex_index(v);
+    if (c < -1 || c >= graph->number_of_vertices()) {
         throw std::out_of_range(
                 "Invalid color value: \"" + std::to_string(c) + "\"."
                 + " Color values should belong to [-1, "
@@ -97,13 +108,40 @@ void Solution::set(VertexId v, ColorId c)
     }
 
     // Update conflicts_.
-    for (const auto& edge: instance().vertex(v).edges) {
-        // Remove old conflicts.
-        if (contains(edge.v) && color(edge.v) == color(v))
-            conflicts_.erase(edge.e);
-        // Add new conflicts.
-        if (c != -1 && color(edge.v) == c)
-            conflicts_.insert(edge.e);
+    if (instance().adjacency_list_graph() != nullptr) {
+        for (EdgeId e: instance().adjacency_list_graph()->edges(v)) {
+            VertexId v_neighbor = instance().adjacency_list_graph()->other_end(e, v);
+            // Remove old conflicts.
+            if (contains(v_neighbor) && color(v_neighbor) == color(v)) {
+                total_number_of_conflicts_--;
+                conflicts_.erase(e);
+                number_of_conflicts_.set(v, number_of_conflicts_[v] - 1);
+                number_of_conflicts_.set(v_neighbor, number_of_conflicts_[v_neighbor] - 1);
+            }
+            // Add new conflicts.
+            if (c != -1 && color(v_neighbor) == c) {
+                total_number_of_conflicts_++;
+                conflicts_.insert(e);
+                number_of_conflicts_.set(v, number_of_conflicts_[v] + 1);
+                number_of_conflicts_.set(v_neighbor, number_of_conflicts_[v_neighbor] + 1);
+            }
+        }
+    } else {
+        for (auto it = graph->neighbors_begin(v);
+                it != graph->neighbors_end(v); ++it) {
+            // Remove old conflicts.
+            if (contains(*it) && color(*it) == color(v)) {
+                total_number_of_conflicts_--;
+                number_of_conflicts_.set(v, number_of_conflicts_[v] - 1);
+                number_of_conflicts_.set(*it, number_of_conflicts_[*it] - 1);
+            }
+            // Add new conflicts.
+            if (c != -1 && color(*it) == c) {
+                total_number_of_conflicts_++;
+                number_of_conflicts_.set(v, number_of_conflicts_[v] + 1);
+                number_of_conflicts_.set(*it, number_of_conflicts_[*it] + 1);
+            }
+        }
     }
     // Update map_.
     if (c != -1) {
@@ -128,7 +166,7 @@ struct Output
     double time = -1;
 
     bool optimal() const { return solution.feasible() && solution.number_of_colors() == lower_bound; }
-    ColorId upper_bound() const { return (solution.feasible())? solution.number_of_colors(): solution.instance().maximum_degree() + 1; }
+    ColorId upper_bound() const { return (solution.feasible())? solution.number_of_colors(): solution.instance().graph()->maximum_degree() + 1; }
     double gap() const;
     void print(optimizationtools::Info& info, const std::stringstream& s) const;
 
