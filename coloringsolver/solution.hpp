@@ -63,8 +63,14 @@ public:
      * Setters.
      */
 
-    /** Set color c to vertex v. */
-    inline void set(VertexId v, ColorId c);
+    /**
+     * Set color c to vertex v.
+     *
+     * If 'check' is 'false', infeasibilities are not updated. This makes the
+     * method faster, but should only be used if this change of color doesn't
+     * remove or add any conflict.
+     */
+    inline void set(VertexId v, ColorId c, bool check = true);
 
     /*
      * Export.
@@ -94,7 +100,7 @@ private:
 
 std::ostream& operator<<(std::ostream& os, const Solution& solution);
 
-void Solution::set(VertexId v, ColorId c)
+void Solution::set(VertexId v, ColorId c, bool check)
 {
     const optimizationtools::AbstractGraph& graph = instance().graph();
 
@@ -108,37 +114,40 @@ void Solution::set(VertexId v, ColorId c)
     }
 
     // Update conflicts_.
-    if (instance().adjacency_list_graph() != nullptr) {
-        for (const auto& edge: instance().adjacency_list_graph()->edges(v)) {
-            // Remove old conflicts.
-            if (contains(edge.v) && color(edge.v) == color(v)) {
-                total_number_of_conflicts_--;
-                conflicts_.erase(edge.e);
-                number_of_conflicts_.set(v, number_of_conflicts_[v] - 1);
-                number_of_conflicts_.set(edge.v, number_of_conflicts_[edge.v] - 1);
+    if (check) {
+        if (instance().adjacency_list_graph() != nullptr) {
+            for (const auto& edge: instance().adjacency_list_graph()->edges(v)) {
+                // Remove old conflicts.
+                if (contains(edge.v) && color(edge.v) == color(v)) {
+                    total_number_of_conflicts_--;
+                    conflicts_.erase(edge.e);
+                    number_of_conflicts_.set(v, number_of_conflicts_[v] - 1);
+                    number_of_conflicts_.set(edge.v, number_of_conflicts_[edge.v] - 1);
+                }
+                // Add new conflicts.
+                if (c != -1 && color(edge.v) == c) {
+                    total_number_of_conflicts_++;
+                    conflicts_.insert(edge.e);
+                    number_of_conflicts_.set(v, number_of_conflicts_[v] + 1);
+                    number_of_conflicts_.set(edge.v, number_of_conflicts_[edge.v] + 1);
+                }
             }
-            // Add new conflicts.
-            if (c != -1 && color(edge.v) == c) {
-                total_number_of_conflicts_++;
-                conflicts_.insert(edge.e);
-                number_of_conflicts_.set(v, number_of_conflicts_[v] + 1);
-                number_of_conflicts_.set(edge.v, number_of_conflicts_[edge.v] + 1);
-            }
-        }
-    } else {
-        for (auto it = graph.neighbors_begin(v);
-                it != graph.neighbors_end(v); ++it) {
-            // Remove old conflicts.
-            if (contains(*it) && color(*it) == color(v)) {
-                total_number_of_conflicts_--;
-                number_of_conflicts_.set(v, number_of_conflicts_[v] - 1);
-                number_of_conflicts_.set(*it, number_of_conflicts_[*it] - 1);
-            }
-            // Add new conflicts.
-            if (c != -1 && color(*it) == c) {
-                total_number_of_conflicts_++;
-                number_of_conflicts_.set(v, number_of_conflicts_[v] + 1);
-                number_of_conflicts_.set(*it, number_of_conflicts_[*it] + 1);
+        } else {
+            auto it = graph.neighbors_begin(v);
+            auto it_end = graph.neighbors_end(v);
+            for (; it != it_end; ++it) {
+                // Remove old conflicts.
+                if (contains(*it) && color(*it) == color(v)) {
+                    total_number_of_conflicts_--;
+                    number_of_conflicts_.set(v, number_of_conflicts_[v] - 1);
+                    number_of_conflicts_.set(*it, number_of_conflicts_[*it] - 1);
+                }
+                // Add new conflicts.
+                if (c != -1 && color(*it) == c) {
+                    total_number_of_conflicts_++;
+                    number_of_conflicts_.set(v, number_of_conflicts_[v] + 1);
+                    number_of_conflicts_.set(*it, number_of_conflicts_[*it] + 1);
+                }
             }
         }
     }

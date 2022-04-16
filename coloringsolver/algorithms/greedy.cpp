@@ -50,14 +50,15 @@ std::ostream& coloringsolver::operator<<(std::ostream &os, Ordering ordering)
 std::vector<VertexId> largestfirst(const Instance& instance)
 {
     const optimizationtools::AbstractGraph& graph = instance.graph();
+    VertexId n = graph.number_of_vertices();
 
-    std::vector<VertexId> ordered_vertices(graph.number_of_vertices());
+    std::vector<VertexId> ordered_vertices(n);
     std::vector<std::vector<VertexId>> vertices(graph.maximum_degree() + 1);
-    for (VertexId v = 0; v < graph.number_of_vertices(); ++v)
+    for (VertexId v = 0; v < n; ++v)
         vertices[graph.degree(v)].push_back(v);
 
     VertexId d_cur = graph.maximum_degree();
-    for (VertexPos v_pos = 0; v_pos < graph.number_of_vertices(); ++v_pos) {
+    for (VertexPos v_pos = 0; v_pos < n; ++v_pos) {
         while (vertices[d_cur].empty())
             d_cur--;
         VertexId v = vertices[d_cur].back();
@@ -70,32 +71,34 @@ std::vector<VertexId> largestfirst(const Instance& instance)
 std::vector<VertexId> incidencedegree(const Instance& instance)
 {
     const optimizationtools::AbstractGraph& graph = instance.graph();
+    VertexId n = graph.number_of_vertices();
 
-    std::vector<VertexId> ordered_vertices(graph.number_of_vertices());
-    std::vector<uint8_t> added(graph.number_of_vertices(), 0);
+    std::vector<VertexId> ordered_vertices(n);
+    std::vector<uint8_t> added(n, 0);
     std::vector<std::vector<VertexId>> vertices(graph.maximum_degree() + 1);
-    std::vector<std::pair<VertexId, VertexPos>> positions(graph.number_of_vertices(), {-1, -1});
+    std::vector<std::pair<VertexId, VertexPos>> positions(n, {-1, -1});
     VertexId v_best = -1;
-    for (VertexId v = 0; v < graph.number_of_vertices(); ++v) {
+    for (VertexId v = 0; v < n; ++v) {
         positions[v] = {0, v};
         vertices[0].push_back(v);
         if (v_best == -1 || graph.degree(v_best) < graph.degree(v))
             v_best = v;
     }
-    vertices[0][graph.number_of_vertices() - 1] = v_best;
-    vertices[0][v_best] = graph.number_of_vertices() - 1;
-    positions[v_best].second = graph.number_of_vertices() - 1;
-    positions[graph.number_of_vertices() - 1].second = v_best;
+    vertices[0][n - 1] = v_best;
+    vertices[0][v_best] = n - 1;
+    positions[v_best].second = n - 1;
+    positions[n - 1].second = v_best;
 
     VertexId d_cur = 0;
-    for (VertexPos v_pos = 0; v_pos < graph.number_of_vertices(); ++v_pos) {
+    for (VertexPos v_pos = 0; v_pos < n; ++v_pos) {
         while (vertices[d_cur].empty())
             d_cur++;
         VertexId v = vertices[d_cur].back();
         vertices[d_cur].pop_back();
         positions[v] = {-1, -1};
-        for (auto it = graph.neighbors_begin(v);
-                it != graph.neighbors_end(v); ++it) {
+        auto it = graph.neighbors_begin(v);
+        auto it_end = graph.neighbors_end(v);
+        for (; it != it_end; ++it) {
             VertexId v_neighbor = *it;
             if (added[v_neighbor] == 1)
                 continue;
@@ -115,20 +118,21 @@ std::vector<VertexId> incidencedegree(const Instance& instance)
 std::vector<VertexId> smallestlast(const Instance& instance)
 {
     const optimizationtools::AbstractGraph& graph = instance.graph();
+    VertexId n = graph.number_of_vertices();
 
-    std::vector<VertexId> ordered_vertices(graph.number_of_vertices());
-    std::vector<uint8_t> added(graph.number_of_vertices(), 0);
+    std::vector<VertexId> ordered_vertices(n);
+    std::vector<uint8_t> added(n, 0);
 
     std::vector<std::vector<VertexId>> vertices(graph.maximum_degree() + 1);
-    std::vector<std::pair<VertexId, VertexPos>> positions(graph.number_of_vertices(), {-1, -1});
-    for (VertexId v = 0; v < graph.number_of_vertices(); ++v) {
+    std::vector<std::pair<VertexId, VertexPos>> positions(n, {-1, -1});
+    for (VertexId v = 0; v < n; ++v) {
         VertexId dv = graph.degree(v);
         positions[v] = {dv, vertices[dv].size()};
         vertices[dv].push_back(v);
     }
 
     VertexId d_cur = 0;
-    for (VertexPos v_pos = 0; v_pos < graph.number_of_vertices(); ++v_pos) {
+    for (VertexPos v_pos = 0; v_pos < n; ++v_pos) {
         if (d_cur > 0 && !vertices[d_cur - 1].empty())
             d_cur--;
         while (vertices[d_cur].empty())
@@ -136,8 +140,9 @@ std::vector<VertexId> smallestlast(const Instance& instance)
         VertexId v = vertices[d_cur].back();
         vertices[d_cur].pop_back();
         positions[v] = {-1, -1};
-        for (auto it = graph.neighbors_begin(v);
-                it != graph.neighbors_end(v); ++it) {
+        auto it = graph.neighbors_begin(v);
+        auto it_end = graph.neighbors_end(v);
+        for (; it != it_end; ++it) {
             VertexId v_neighbor = *it;
             if (added[v_neighbor] == 1)
                 continue;
@@ -157,26 +162,28 @@ std::vector<VertexId> smallestlast(const Instance& instance)
 std::vector<VertexId> dynamiclargestfirst(const Instance& instance)
 {
     const optimizationtools::AbstractGraph& graph = instance.graph();
+    VertexId n = graph.number_of_vertices();
 
-    std::vector<VertexId> ordered_vertices(graph.number_of_vertices());
-    std::vector<uint8_t> added(graph.number_of_vertices(), 0);
+    std::vector<VertexId> ordered_vertices(n);
+    std::vector<uint8_t> added(n, 0);
     std::vector<std::vector<VertexId>> vertices(graph.maximum_degree() + 1);
-    std::vector<std::pair<VertexId, VertexPos>> positions(graph.number_of_vertices(), {-1, -1});
-    for (VertexId v = 0; v < graph.number_of_vertices(); ++v) {
+    std::vector<std::pair<VertexId, VertexPos>> positions(n, {-1, -1});
+    for (VertexId v = 0; v < n; ++v) {
         VertexId dv = graph.degree(v);
         positions[v] = {dv, vertices[dv].size()};
         vertices[dv].push_back(v);
     }
 
     VertexId d_cur = graph.maximum_degree();
-    for (VertexPos v_pos = 0; v_pos < graph.number_of_vertices(); ++v_pos) {
+    for (VertexPos v_pos = 0; v_pos < n; ++v_pos) {
         while (vertices[d_cur].empty())
             d_cur--;
         VertexId v = vertices[d_cur].back();
         vertices[d_cur].pop_back();
         positions[v] = {-1, -1};
-        for (auto it = graph.neighbors_begin(v);
-                it != graph.neighbors_end(v); ++it) {
+        auto it = graph.neighbors_begin(v);
+        auto it_end = graph.neighbors_end(v);
+        for (; it != it_end; ++it) {
             VertexId v_neighbor = *it;
             if (added[v_neighbor] == 1)
                 continue;
@@ -208,13 +215,14 @@ Output coloringsolver::greedy(const Instance& instance, GreedyOptionalParameters
             << std::endl);
 
     const optimizationtools::AbstractGraph& graph = instance.graph();
+    VertexId n = graph.number_of_vertices();
     Output output(instance, parameters.info);
     Solution solution(instance);
 
     std::vector<VertexId> ordered_vertices;
     switch (parameters.ordering) {
     case Ordering::Default: {
-        ordered_vertices.resize(graph.number_of_vertices());
+        ordered_vertices.resize(n);
         std::iota(ordered_vertices.begin(), ordered_vertices.end(), 0);
         break;
     } case Ordering::LargestFirst: {
@@ -238,39 +246,41 @@ Output coloringsolver::greedy(const Instance& instance, GreedyOptionalParameters
         for (auto it_v = ordered_vertices.begin(); it_v != ordered_vertices.end(); ++it_v) {
             VertexId v = *it_v;
             color_set.clear();
-            for (auto it = graph.neighbors_begin(v);
-                    it != graph.neighbors_end(v); ++it) {
+            auto it = graph.neighbors_begin(v);
+            auto it_end = graph.neighbors_end(v);
+            for (; it != it_end; ++it) {
                 VertexId v_neighbor = *it;
                 if (solution.contains(v_neighbor))
                     color_set.add(solution.color(v_neighbor));
             }
             ColorId c_best = -1;
-            for (ColorId c = 0; c < graph.number_of_vertices(); ++c) {
+            for (ColorId c = 0; c < n; ++c) {
                 if (!color_set.contains(c)) {
                     c_best = c;
                     break;
                 }
             }
-            solution.set(v, c_best);
+            solution.set(v, c_best, false);
         }
     } else {
         for (auto it_v = ordered_vertices.rbegin(); it_v != ordered_vertices.rend(); ++it_v) {
             VertexId v = *it_v;
             color_set.clear();
-            for (auto it = graph.neighbors_begin(v);
-                    it != graph.neighbors_end(v); ++it) {
+            auto it = graph.neighbors_begin(v);
+            auto it_end = graph.neighbors_end(v);
+            for (; it != it_end; ++it) {
                 VertexId v_neighbor = *it;
                 if (solution.contains(v_neighbor))
                     color_set.add(solution.color(v_neighbor));
             }
             ColorId c_best = -1;
-            for (ColorId c = 0; c < graph.number_of_vertices(); ++c) {
+            for (ColorId c = 0; c < n; ++c) {
                 if (!color_set.contains(c)) {
                     c_best = c;
                     break;
                 }
             }
-            solution.set(v, c_best);
+            solution.set(v, c_best, false);
         }
     }
 
@@ -290,22 +300,23 @@ Output coloringsolver::greedy_dsatur(
             << std::endl);
 
     const optimizationtools::AbstractGraph& graph = instance.graph();
+    VertexId n = graph.number_of_vertices();
     Output output(instance, info);
     Solution solution(instance);
 
     VertexId v_best = -1;
-    for (VertexId v = 0; v < graph.number_of_vertices(); ++v)
+    for (VertexId v = 0; v < n; ++v)
         if (v_best == -1 || graph.degree(v_best) < graph.degree(v))
             v_best = v;
 
     auto f = [](VertexId) { return 0; };
-    optimizationtools::IndexedBinaryHeap<double> heap(graph.number_of_vertices(), f);
+    optimizationtools::IndexedBinaryHeap<double> heap(n, f);
     heap.update_key(v_best, -1);
 
     optimizationtools::IndexedSet color_set(graph.maximum_degree() + 1);
 
     std::vector<std::vector<bool>> is_adjacent;
-    std::vector<ColorId> number_of_adjacent_colors(graph.number_of_vertices(), 0);
+    std::vector<ColorId> number_of_adjacent_colors(n, 0);
     while (!solution.feasible()) {
         auto p = heap.top();
         heap.pop();
@@ -321,18 +332,17 @@ Output coloringsolver::greedy_dsatur(
         }
 
         ColorId c_best = -1;
-        for (ColorId c = 0; c < graph.number_of_vertices(); ++c) {
+        for (ColorId c = 0; c < n; ++c) {
             if (!color_set.contains(c)) {
                 c_best = c;
                 break;
             }
         }
         if (c_best >= (ColorId)is_adjacent.size()) {
-            is_adjacent.push_back(std::vector<bool>(
-                        graph.number_of_vertices(), false));
+            is_adjacent.push_back(std::vector<bool>(n, false));
         }
 
-        solution.set(p.first, c_best);
+        solution.set(p.first, c_best, false);
 
         for (auto it = it_begin; it != it_end; ++it) {
             VertexId v_neighbor = *it;

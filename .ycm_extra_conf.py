@@ -3,12 +3,15 @@ def Settings(**kwargs):
             'flags': [
                 '-x', 'c++',
                 '-Wall', '-Wextra', '-Werror',
+                '-DCPLEX_FOUND',
+                '-DCOINOR_FOUND',
                 '-DIL_STD',  # Cplex
                 '-I', '.',
                 '-I', './bazel-coloringsolver/external/json/single_include',
                 '-I', './bazel-coloringsolver/external/googletest/googletest/include',
                 '-I', './bazel-coloringsolver/external/boost/',
                 '-I', './bazel-coloringsolver/external/optimizationtools',
+                # '-I', './../optimizationtools/',
                 '-I', './bazel-coloringsolver/external/columngenerationsolver',
                 # '-I', './../columngenerationsolver/',
                 '-I', './bazel-coloringsolver/external/stablesolver/',

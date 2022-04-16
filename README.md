@@ -80,7 +80,7 @@ Time (s):              0.0002
 ```
 
 ```shell
-./bazel-bin/coloringsolver/main -v -i "data/dimacs1992/r1000.5.col" -a "localsearch_rowweighting_2 --iterations 100000"
+./bazel-bin/coloringsolver/main -v -i "data/dimacs1992/r1000.5.col" -a "localsearch_rowweighting_2 --iterations 50000"
 ```
 ```
 =====================================
@@ -101,7 +101,7 @@ Row Weighting Local Search 2
 
 Parameters
 ----------
-Maximum number of iterations:                      100000
+Maximum number of iterations:                      50000
 Maximum number of iterations without improvement:  -1
 Maximum number of improvements:                    -1
 Goal:                                              0
@@ -109,23 +109,23 @@ Goal:                                              0
        T (s)          UB          LB         GAP     GAP (%)                 Comment
        -----          --          --         ---     -------                 -------
       0.0002         782           0         782         inf                        
-      0.0108         250           0         250         inf        initial solution
-       0.013         249           0         249         inf            iteration 30
-       0.015         248           0         248         inf            iteration 35
-      0.0306         247           0         247         inf          iteration 2474
-      0.0329         246           0         246         inf          iteration 2525
-      0.0367         245           0         245         inf          iteration 2866
-      0.0411         244           0         244         inf          iteration 3329
-      0.0444         243           0         243         inf          iteration 3585
-      0.0475         242           0         242         inf          iteration 3808
-      0.0548         241           0         241         inf          iteration 4890
-      0.0585         240           0         240         inf          iteration 5245
-      0.0632         239           0         239         inf          iteration 5777
-      0.0712         238           0         238         inf          iteration 7035
-      0.0819         237           0         237         inf          iteration 8953
-      0.1085         236           0         236         inf         iteration 14317
-      0.1604         235           0         235         inf         iteration 26263
-      0.3759         234           0         234         inf         iteration 77314
+      0.0068         250           0         250         inf        initial solution
+      0.0088         249           0         249         inf            iteration 29
+      0.0105         248           0         248         inf            iteration 34
+      0.0238         247           0         247         inf          iteration 2473
+      0.0258         246           0         246         inf          iteration 2524
+      0.0289         245           0         245         inf          iteration 2865
+      0.0335         244           0         244         inf          iteration 3514
+      0.0359         243           0         243         inf          iteration 3699
+      0.0383         242           0         242         inf          iteration 3842
+      0.0414         241           0         241         inf          iteration 4197
+      0.0461         240           0         240         inf          iteration 4939
+      0.0565         239           0         239         inf          iteration 7201
+      0.0606         238           0         238         inf          iteration 7791
+      0.0704         237           0         237         inf         iteration 10040
+      0.0775         236           0         236         inf         iteration 11477
+      0.1262         235           0         235         inf         iteration 24907
+      0.1899         234           0         234         inf         iteration 42727
 
 Final statistics
 ----------------
@@ -133,8 +133,8 @@ Value:                 234
 Bound:                 0
 Gap:                   234
 Gap (%):               inf
-Time (s):              0.475
-Number of iterations:  100000
+Time (s):              0.2167
+Number of iterations:  50000
 ```
 
 Benchmarks:

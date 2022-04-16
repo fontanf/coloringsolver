@@ -72,9 +72,10 @@ void Solution::write(std::string certificate_path) const
     if (certificate_path.empty())
         return;
     std::ofstream file(certificate_path);
-    if (!file.good())
+    if (!file.good()) {
         throw std::runtime_error(
                 "Unable to open file \"" + certificate_path + "\".");
+    }
 
     for (VertexId v = 0; v < instance().graph().number_of_vertices(); ++v)
         file << color(v) << std::endl;
@@ -148,9 +149,13 @@ void Output::update_solution(
     if (solution_new.feasible()
             && (!solution.feasible() || solution.number_of_colors() > solution_new.number_of_colors())) {
         // Update solution
-        for (VertexId v = 0; v < solution.instance().graph().number_of_vertices(); ++v)
-            if (solution.color(v) != solution_new.color(v))
-                solution.set(v, solution_new.color(v));
+        if (solution.number_of_vertices() == 0) {
+            solution = solution_new;
+        } else {
+            for (VertexId v = 0; v < solution.instance().graph().number_of_vertices(); ++v)
+                if (solution.color(v) != solution_new.color(v))
+                    solution.set(v, solution_new.color(v));
+        }
         print(info, s);
 
         info.output->number_of_solutions++;

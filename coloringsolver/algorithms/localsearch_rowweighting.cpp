@@ -82,7 +82,9 @@ LocalSearchRowWeightingOutput coloringsolver::localsearch_rowweighting(
     optimizationtools::IndexedSet colors(solution.number_of_colors());
     colors.fill();
 
-    for (output.number_of_iterations = 1; !parameters.info.needs_to_end(); ++output.number_of_iterations, number_of_iterations_without_improvement++) {
+    for (output.number_of_iterations = 0; !parameters.info.needs_to_end();
+            ++output.number_of_iterations,
+            ++number_of_iterations_without_improvement) {
         // Check stop criteria.
         if (parameters.maximum_number_of_iterations != -1
                 && output.number_of_iterations >= parameters.maximum_number_of_iterations)
@@ -107,8 +109,9 @@ LocalSearchRowWeightingOutput coloringsolver::localsearch_rowweighting(
                     it_v != removed_vertices.rend(); ++it_v) {
                 VertexId v = *it_v;
                 optimizationtools::IndexedSet available_colors = colors;
-                for (auto it = graph.neighbors_begin(v);
-                        it != graph.neighbors_end(v); ++it) {
+                auto it = graph.neighbors_begin(v);
+                auto it_end = graph.neighbors_end(v);
+                for (; it != it_end; ++it) {
                     VertexId v_neighbor = *it;
                     if (solution.contains(v_neighbor) == 0)
                         continue;
@@ -338,7 +341,9 @@ LocalSearchRowWeighting2Output coloringsolver::localsearch_rowweighting_2(
     optimizationtools::IndexedSet colors(solution.number_of_colors());
     colors.fill();
 
-    for (output.number_of_iterations = 1; !parameters.info.needs_to_end(); ++output.number_of_iterations, number_of_iterations_without_improvement++) {
+    for (output.number_of_iterations = 0; !parameters.info.needs_to_end();
+            ++output.number_of_iterations,
+            ++number_of_iterations_without_improvement) {
         // Check stop criteria.
         if (parameters.maximum_number_of_iterations != -1
                 && output.number_of_iterations >= parameters.maximum_number_of_iterations)
@@ -363,8 +368,9 @@ LocalSearchRowWeighting2Output coloringsolver::localsearch_rowweighting_2(
                     it_v != removed_vertices.rend(); ++it_v) {
                 VertexId v = *it_v;
                 optimizationtools::IndexedSet available_colors = colors;
-                for (auto it = graph.neighbors_begin(v);
-                        it != graph.neighbors_end(v); ++it) {
+                auto it = graph.neighbors_begin(v);
+                auto it_end = graph.neighbors_end(v);
+                for (; it != it_end; ++it) {
                     VertexId v_neighbor = *it;
                     if (solution.contains(v_neighbor) == 0)
                         continue;
@@ -412,8 +418,9 @@ LocalSearchRowWeighting2Output coloringsolver::localsearch_rowweighting_2(
 
             // Compute penalties.
             for (VertexId v1 = 0; v1 < graph.number_of_vertices(); ++v1) {
-                for (auto it = graph.neighbors_begin(v1);
-                        it != graph.neighbors_end(v1); ++it) {
+                auto it = graph.neighbors_begin(v1);
+                auto it_end = graph.neighbors_end(v1);
+                for (; it != it_end; ++it) {
                     VertexId v2 = *it;
                     if (v2 <= v1)
                         continue;
@@ -501,8 +508,9 @@ LocalSearchRowWeighting2Output coloringsolver::localsearch_rowweighting_2(
         Penalty p_best = -1;
         for (ColorId c: colors)
             penalties[c] = 0;
-        for (auto it = graph.neighbors_begin(v_cur);
-                it != graph.neighbors_end(v_cur); ++it) {
+        auto it = graph.neighbors_begin(v_cur);
+        auto it_end = graph.neighbors_end(v_cur);
+        for (; it != it_end; ++it) {
             VertexId v_neighbor = *it;
             if (solution.contains(v_neighbor))
                 penalties[solution.color(v_neighbor)] += vertex_penalties[v_neighbor];
@@ -520,8 +528,9 @@ LocalSearchRowWeighting2Output coloringsolver::localsearch_rowweighting_2(
         ColorId c_best = c_bests[d_c(generator)];
         // Update penalties.
         bool reduce = false;
-        for (auto it = graph.neighbors_begin(v_cur);
-                it != graph.neighbors_end(v_cur); ++it) {
+        it = graph.neighbors_begin(v_cur);
+        it_end = graph.neighbors_end(v_cur);
+        for (; it != it_end; ++it) {
             VertexId v_neighbor = *it;
             if (solution.color(v_neighbor) == c_best) {
                 vertex_penalties[v_neighbor]++;
@@ -538,8 +547,9 @@ LocalSearchRowWeighting2Output coloringsolver::localsearch_rowweighting_2(
         solution.set(v_cur, c_best);
         uncolored_vertices.remove(v_cur);
         std::vector<VertexId> vertices_to_remove;
-        for (auto it = graph.neighbors_begin(v_cur);
-                it != graph.neighbors_end(v_cur); ++it) {
+        it = graph.neighbors_begin(v_cur);
+        it_end = graph.neighbors_end(v_cur);
+        for (; it != it_end; ++it) {
             VertexId v_neighbor = *it;
             if (solution.color(v_neighbor) == c_best) {
                 vertices_to_remove.push_back(v_neighbor);
