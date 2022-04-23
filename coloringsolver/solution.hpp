@@ -98,6 +98,7 @@ private:
 
 };
 
+/** Stream insertion operator. */
 std::ostream& operator<<(std::ostream& os, const Solution& solution);
 
 void Solution::set(VertexId v, ColorId c, bool check)

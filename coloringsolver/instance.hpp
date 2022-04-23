@@ -82,6 +82,7 @@ private:
 
 };
 
+/** Stream insertion operator. */
 std::ostream& operator<<(std::ostream &os, const Instance& ins);
 
 void init_display(
