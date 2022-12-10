@@ -21,41 +21,47 @@ public:
 
     /** Create an empty solution. */
     Solution(const Instance& instance);
+
     /** Create a solution from a certificate file. */
     Solution(const Instance& instance, std::string certificate_path);
-    /** Copy constructor. */
-    Solution(const Solution& solution);
-    /** Copy assignment operator. */
-    Solution& operator=(const Solution& solution);
-    /** Destructor. */
-    virtual ~Solution() { }
 
     /*
      * Getters.
      */
 
     /** Get the instance. */
-    const Instance& instance() const { return instance_; }
+    const Instance& instance() const { return *instance_; }
+
     /** Return 'true' iff the solution is feasible. */
     bool feasible() const { return number_of_vertices() == instance().graph().number_of_vertices() && number_of_conflicts() == 0; };
+
     /** Get the number of colors used in the solution. */
     ColorId number_of_colors() const { return map_.number_of_values(); }
+
     /** Return 'true' iff a color is assigned to vertex v in the solution. */
     bool contains(VertexId v) const { return map_.contains(v); }
+
     /** Get the color of vertex v. */
     ColorId color(VertexId v) const { return map_[v]; }
+
     /** Get the number of vertices with an assigned color. */
     VertexPos number_of_vertices() const { return map_.number_of_elements(); }
+
     /** Get the number of vertices with color c. */
     VertexPos number_of_vertices(ColorId c) const { return map_.number_of_elements(c); }
+
     /** Get the number of conflitcs in the solution. */
     EdgeId number_of_conflicts() const { return total_number_of_conflicts_; }
+
     /** Get a begin iterator to the colors. */
     std::vector<ColorId>::const_iterator colors_begin() const { return map_.values_begin(); }
+
     /** Get an end iterator to the colors. */
     std::vector<ColorId>::const_iterator colors_end() const { return map_.values_end(); }
+
     /** Get the set of conflicting edges. */
     const std::unordered_set<EdgeId>& conflicts() const { return conflicts_; }
+
     /** Get the set of conflicting vertices. */
     const optimizationtools::IndexedMap<VertexPos>& conflicting_vertices() const { return number_of_conflicts_; }
 
@@ -86,13 +92,17 @@ private:
      */
 
     /** Instance. */
-    const Instance& instance_;
+    const Instance* instance_;
+
     /** Map storing the color assigned to each vertex. */
     optimizationtools::DoublyIndexedMap map_;
+
     /** Set of conflicting edges. */
     std::unordered_set<EdgeId> conflicts_;
+
     /** Conflicting vertices. */
     optimizationtools::IndexedMap<VertexPos> number_of_conflicts_;
+
     /** Number of conflicts. */
     EdgeId total_number_of_conflicts_ = 0;
 

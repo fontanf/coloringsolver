@@ -5,7 +5,7 @@
 using namespace coloringsolver;
 
 Solution::Solution(const Instance& instance):
-    instance_(instance),
+    instance_(&instance),
     map_(
             instance.graph().number_of_vertices(),
             std::max(
@@ -18,13 +18,7 @@ Solution::Solution(const Instance& instance):
 Solution::Solution(
         const Instance& instance,
         std::string certificate_path):
-    instance_(instance),
-    map_(
-            instance.graph().number_of_vertices(),
-            std::max(
-                instance.graph().maximum_degree(),
-                instance.graph().number_of_vertices())),
-    number_of_conflicts_(instance.graph().number_of_vertices(), 0)
+    Solution(instance)
 {
     if (certificate_path.empty())
         return;
@@ -41,30 +35,6 @@ Solution::Solution(
         file >> c;
         set(v, c);
     }
-}
-
-Solution::Solution(const Solution& solution):
-    instance_(solution.instance_),
-    map_(solution.map_),
-    conflicts_(solution.conflicts_),
-    number_of_conflicts_(solution.number_of_conflicts_),
-    total_number_of_conflicts_(solution.total_number_of_conflicts_)
-{ }
-
-Solution& Solution::operator=(const Solution& solution)
-{
-    if (this != &solution) {
-        if (&instance_ != &solution.instance_) {
-            throw std::runtime_error(
-                    "Assign a solution to a solution from a different instance.");
-        }
-
-        map_ = solution.map_;
-        conflicts_ = solution.conflicts_;
-        number_of_conflicts_ = solution.number_of_conflicts_;
-        total_number_of_conflicts_ = solution.total_number_of_conflicts_;
-    }
-    return *this;
 }
 
 void Solution::write(std::string certificate_path) const 
