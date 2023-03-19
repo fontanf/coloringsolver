@@ -19,6 +19,7 @@ int main(int argc, char *argv[])
     std::string log_path = "";
     int loglevelmax = 999;
     int seed = 0;
+    int verbosity_level = 1;
     double time_limit = std::numeric_limits<double>::infinity();
     double goal = 0;
 
@@ -34,7 +35,7 @@ int main(int argc, char *argv[])
         ("time-limit,t", po::value<double>(&time_limit), "Time limit in seconds")
         ("seed,s", po::value<int>(&seed), "set seed")
         ("goal,g", po::value<double>(&goal), "set goal")
-        ("verbose,v", "set verbosity")
+        ("verbosity-level,v", po::value<int>(&verbosity_level), "set verbosity level")
         ("remove-duplicate-edges,", "remove duplicate edges")
         ("log,l", po::value<std::string>(&log_path), "set log file")
         ("loglevelmax", po::value<int>(&loglevelmax), "set log max level")
@@ -60,7 +61,7 @@ int main(int argc, char *argv[])
         instance.remove_duplicate_edges();
 
     optimizationtools::Info info = optimizationtools::Info()
-        .set_verbose(vm.count("verbose"))
+        .set_verbosity_level(verbosity_level)
         .set_time_limit(time_limit)
         .set_certificate_path(certificate_path)
         .set_json_output_path(output_path)

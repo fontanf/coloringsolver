@@ -213,9 +213,12 @@ std::vector<Column> PricingSolver::solve_pricing(
 ColumnGenerationHeuristicGreedyOutput coloringsolver::columngenerationheuristic_greedy(
         const Instance& instance, ColumnGenerationOptionalParameters parameters)
 {
-    FFOT_VER(parameters.info, "*** columngenerationheuristic_greedy"
-            << " --linear-programming-solver " << parameters.linear_programming_solver
-            << " ***" << std::endl);
+    init_display(instance, parameters.info);
+    parameters.info.os()
+        << "Algorithm" << std::endl
+        << "---------" << std::endl
+        << "Column generation heuristic - Greedy" << std::endl
+        << std::endl;
     ColumnGenerationHeuristicGreedyOutput output(instance, parameters.info);
 
     columngenerationsolver::Parameters p = get_parameters(instance);
@@ -250,9 +253,12 @@ ColumnGenerationHeuristicGreedyOutput coloringsolver::columngenerationheuristic_
 ColumnGenerationHeuristicLimitedDiscrepancySearchOutput coloringsolver::columngenerationheuristic_limiteddiscrepancysearch(
         const Instance& instance, ColumnGenerationOptionalParameters parameters)
 {
-    FFOT_VER(parameters.info, "*** columngenerationheuristic_limiteddiscrepancysearch"
-            << " --linear-programming-solver " << parameters.linear_programming_solver
-            << " ***" << std::endl);
+    init_display(instance, parameters.info);
+    parameters.info.os()
+        << "Algorithm" << std::endl
+        << "---------" << std::endl
+        << "Column generation heuristic - Limited discrepancy search" << std::endl
+        << std::endl;
     ColumnGenerationHeuristicLimitedDiscrepancySearchOutput output(instance, parameters.info);
 
     columngenerationsolver::Parameters p = get_parameters(instance);
@@ -290,9 +296,12 @@ ColumnGenerationHeuristicLimitedDiscrepancySearchOutput coloringsolver::columnge
 ColumnGenerationHeuristicHeuristicTreeSearchOutput coloringsolver::columngenerationheuristic_heuristictreesearch(
         const Instance& instance, ColumnGenerationOptionalParameters parameters)
 {
-    FFOT_VER(parameters.info, "*** columngenerationheuristic_heuristictreesearch"
-            << " --linear-programming-solver " << parameters.linear_programming_solver
-            << " ***" << std::endl);
+    init_display(instance, parameters.info);
+    parameters.info.os()
+        << "Algorithm" << std::endl
+        << "---------" << std::endl
+        << "Column generation heuristic - Heuristic tree search" << std::endl
+        << std::endl;
     ColumnGenerationHeuristicHeuristicTreeSearchOutput output(instance, parameters.info);
 
     columngenerationsolver::Parameters p = get_parameters(instance);

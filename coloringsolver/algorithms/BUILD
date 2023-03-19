@@ -10,18 +10,6 @@ cc_library(
 )
 
 cc_library(
-        name = "localsearch",
-        hdrs = ["localsearch.hpp"],
-        srcs = ["localsearch.cpp"],
-        deps = [
-                "//coloringsolver:coloringsolver",
-                ":greedy",
-                "@localsearchsolver//localsearchsolver:localsearchsolver",
-        ],
-        visibility = ["//visibility:public"],
-)
-
-cc_library(
         name = "localsearch_rowweighting",
         hdrs = ["localsearch_rowweighting.hpp"],
         srcs = ["localsearch_rowweighting.cpp"],
@@ -62,7 +50,6 @@ cc_library(
         srcs = ["algorithms.cpp"],
         deps = [
                 ":greedy",
-                ":localsearch",
                 ":localsearch_rowweighting",
                 ":milp_cplex",
                 ":columngeneration",

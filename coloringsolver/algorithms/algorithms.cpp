@@ -25,24 +25,6 @@ GreedyOptionalParameters read_greedy_args(const std::vector<char*>& argv)
     return parameters;
 }
 
-LocalSearchOptionalParameters read_localsearch_args(const std::vector<char*>& argv)
-{
-    LocalSearchOptionalParameters parameters;
-    po::options_description desc("Allowed options");
-    desc.add_options()
-        ("threads,t", po::value<Counter>(&parameters.number_of_threads), "")
-        ;
-    po::variables_map vm;
-    po::store(po::parse_command_line((Counter)argv.size(), argv.data(), desc), vm);
-    try {
-        po::notify(vm);
-    } catch (const po::required_option& e) {
-        std::cout << desc << std::endl;;
-        throw "";
-    }
-    return parameters;
-}
-
 LocalSearchRowWeightingOptionalParameters read_localsearch_rowweighting_args(const std::vector<char*>& argv)
 {
     LocalSearchRowWeightingOptionalParameters parameters;
@@ -129,6 +111,7 @@ Output coloringsolver::run(
         std::mt19937_64& generator,
         optimizationtools::Info info)
 {
+    (void)initial_solution;
     std::vector<std::string> algorithm_args = po::split_unix(algorithm);
     std::vector<char*> algorithm_argv;
     for (Counter i = 0; i < (Counter)algorithm_args.size(); ++i)
@@ -161,11 +144,6 @@ Output coloringsolver::run(
         parameters.info = info;
         return milp_partialordering2_cplex(instance, parameters);
 #endif
-    } else if (algorithm_args[0] == "localsearch") {
-        auto parameters = read_localsearch_args(algorithm_argv);
-        parameters.info = info;
-        parameters.initial_solution = &initial_solution;
-        return localsearch(instance, generator, parameters);
     } else if (algorithm_args[0] == "localsearch_rowweighting") {
         auto parameters = read_localsearch_rowweighting_args(algorithm_argv);
         parameters.info = info;

@@ -34,8 +34,7 @@ cc_library(
 git_repository(
     name = "optimizationtools",
     remote = "https://github.com/fontanf/optimizationtools.git",
-    commit = "592ba85b762fce7333542335a4fcad0e88582492",
-    shallow_since = "1650692671 +0200",
+    commit = "ca6b29c",
 )
 
 local_repository(
@@ -46,8 +45,7 @@ local_repository(
 git_repository(
     name = "columngenerationsolver",
     remote = "https://github.com/fontanf/columngenerationsolver.git",
-    commit = "e1f129fb7f912996d98bcefe1ba42d84ad5a62c9",
-    shallow_since = "1649493214 +0200",
+    commit = "2595e3ad316143827d8a8fa943d5713d2b180b70",
 )
 
 local_repository(
@@ -58,8 +56,7 @@ local_repository(
 git_repository(
     name = "localsearchsolver",
     remote = "https://github.com/fontanf/localsearchsolver.git",
-    commit = "479547553b666084ac981fe82478e752826714b7",
-    shallow_since = "1648967658 +0200",
+    commit = "6a68672a51f85d1068ba0cde4350f44d2b34373c",
 )
 
 local_repository(
@@ -70,8 +67,7 @@ local_repository(
 git_repository(
     name = "stablesolver",
     remote = "https://github.com/fontanf/stablesolver.git",
-    commit = "3c61bdbe12bdc9581466d88cf4d0f7b4fbec4fc0",
-    shallow_since = "1649492232 +0200",
+    commit = "8011197f6c77a5e9f8484e3800c6ac24928db54f",
 )
 
 local_repository(

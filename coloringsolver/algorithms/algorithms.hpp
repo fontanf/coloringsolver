@@ -3,7 +3,6 @@
 #include "coloringsolver/solution.hpp"
 
 #include "coloringsolver/algorithms/greedy.hpp"
-#include "coloringsolver/algorithms/localsearch.hpp"
 #include "coloringsolver/algorithms/localsearch_rowweighting.hpp"
 #include "coloringsolver/algorithms/milp_cplex.hpp"
 #include "coloringsolver/algorithms/columngeneration.hpp"

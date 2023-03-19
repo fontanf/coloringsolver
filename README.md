@@ -21,8 +21,6 @@ A solver for the Graph Coloring Problem.
   * Partial-ordering based ILP model `-a milp_partialordering_cplex`
   * Partial-ordering based ILP model 2 `-a milp_partialordering2_cplex`
 
-* Local search algorithm implemented with [fontanf/localsearchsolver](https://github.com/fontanf/localsearchsolver) `-a "localsearch"`
-
 * Row weighting local search
   * Penalize conflicting edges `-a "localsearch_rowweighting --iterations 100000 --iterations-without-improvement 10000"`
   * Penalize uncolored vertices `-a "localsearch_rowweighting_2 --iterations 100000 --iterations-without-improvement 10000"`
@@ -45,7 +43,7 @@ bazel build -- //...
 Examples:
 
 ```shell
-./bazel-bin/coloringsolver/main -v -i "data/dimacs1992/1-FullIns_3.col" -a greedy_dsatur -c solution.txt
+./bazel-bin/coloringsolver/main -v 1 -i "data/dimacs1992/1-FullIns_3.col" -a greedy_dsatur -c solution.txt
 ```
 ```
 =====================================
@@ -80,7 +78,7 @@ Time (s):              0.0002
 ```
 
 ```shell
-./bazel-bin/coloringsolver/main -v -i "data/dimacs1992/r1000.5.col" -a "localsearch_rowweighting_2 --iterations 50000"
+./bazel-bin/coloringsolver/main -v 1 -i "data/dimacs1992/r1000.5.col" -a "localsearch_rowweighting_2 --iterations 50000"
 ```
 ```
 =====================================

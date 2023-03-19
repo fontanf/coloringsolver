@@ -203,16 +203,16 @@ std::vector<VertexId> dynamiclargestfirst(const Instance& instance)
 Output coloringsolver::greedy(const Instance& instance, GreedyOptionalParameters parameters)
 {
     init_display(instance, parameters.info);
-    FFOT_VER(parameters.info,
-               "Algorithm" << std::endl
-            << "---------" << std::endl
-            << "Greedy" << std::endl
-            << std::endl
-            << "Parameters" << std::endl
-            << "----------" << std::endl
-            << "Ordering:      " << parameters.ordering << std::endl
-            << "Reverse:       " << parameters.reverse << std::endl
-            << std::endl);
+    parameters.info.os()
+        << "Algorithm" << std::endl
+        << "---------" << std::endl
+        << "Greedy" << std::endl
+        << std::endl
+        << "Parameters" << std::endl
+        << "----------" << std::endl
+        << "Ordering:      " << parameters.ordering << std::endl
+        << "Reverse:       " << parameters.reverse << std::endl
+        << std::endl;
 
     const optimizationtools::AbstractGraph& graph = instance.graph();
     VertexId n = graph.number_of_vertices();
@@ -293,11 +293,11 @@ Output coloringsolver::greedy_dsatur(
         optimizationtools::Info info)
 {
     init_display(instance, info);
-    FFOT_VER(info,
-               "Algorithm" << std::endl
-            << "---------" << std::endl
-            << "DSATUR" << std::endl
-            << std::endl);
+    info.os()
+        << "Algorithm" << std::endl
+        << "---------" << std::endl
+        << "DSATUR" << std::endl
+        << std::endl;
 
     const optimizationtools::AbstractGraph& graph = instance.graph();
     VertexId n = graph.number_of_vertices();

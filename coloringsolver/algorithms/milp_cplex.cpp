@@ -15,9 +15,9 @@ ILOSTLBEGIN
 MilpAssignmentCplexOutput& MilpAssignmentCplexOutput::algorithm_end(
         optimizationtools::Info& info)
 {
-    //FFOT_PUT(info, "Algorithm", "Iterations", it);
+    //info.add_to_json("Algorithm", "Iterations", it);
     Output::algorithm_end(info);
-    //FFOT_VER(info, "Iterations: " << it << std::endl);
+    //info.os() << "Iterations: " << it << std::endl;
     return *this;
 }
 
@@ -56,11 +56,11 @@ MilpAssignmentCplexOutput coloringsolver::milp_assignment_cplex(
         MilpAssignmentCplexOptionalParameters parameters)
 {
     init_display(instance, parameters.info);
-    FFOT_VER(parameters.info,
-               "Algorithm" << std::endl
-            << "---------" << std::endl
-            << "MILP - Assignment model (CPLEX)" << std::endl
-            << std::endl);
+    parameters.info.os()
+        << "Algorithm" << std::endl
+        << "---------" << std::endl
+        << "MILP - Assignment model (CPLEX)" << std::endl
+        << std::endl;
 
     if (instance.adjacency_list_graph() == nullptr) {
         throw std::runtime_error(
@@ -196,9 +196,9 @@ MilpAssignmentCplexOutput coloringsolver::milp_assignment_cplex(
 MilpRepresentativesCplexOutput& MilpRepresentativesCplexOutput::algorithm_end(
         optimizationtools::Info& info)
 {
-    //FFOT_PUT(info, "Algorithm", "Iterations", it);
+    //info.add_to_json("Algorithm", "Iterations", it);
     Output::algorithm_end(info);
-    //FFOT_VER(info, "Iterations: " << it << std::endl);
+    //info.os() "Iterations: " << it << std::endl;
     return *this;
 }
 
@@ -236,11 +236,11 @@ MilpRepresentativesCplexOutput coloringsolver::milp_representatives_cplex(
         MilpRepresentativesCplexOptionalParameters parameters)
 {
     init_display(instance, parameters.info);
-    FFOT_VER(parameters.info,
-               "Algorithm" << std::endl
-            << "---------" << std::endl
-            << "MILP - Representative model (CPLEX)" << std::endl
-            << std::endl);
+    parameters.info.os()
+        << "Algorithm" << std::endl
+        << "---------" << std::endl
+        << "MILP - Representative model (CPLEX)" << std::endl
+        << std::endl;
 
     if (instance.adjacency_list_graph() == nullptr) {
         throw std::runtime_error(
@@ -369,9 +369,9 @@ MilpRepresentativesCplexOutput coloringsolver::milp_representatives_cplex(
 MilpPartialOrderingCplexOutput& MilpPartialOrderingCplexOutput::algorithm_end(
         optimizationtools::Info& info)
 {
-    //FFOT_PUT(info, "Algorithm", "Iterations", it);
+    //info.add_to_json("Algorithm", "Iterations", it);
     Output::algorithm_end(info);
-    //FFOT_VER(info, "Iterations: " << it << std::endl);
+    //info.os() << "Iterations: " << it << std::endl;
     return *this;
 }
 
@@ -411,11 +411,11 @@ MilpPartialOrderingCplexOutput coloringsolver::milp_partialordering_cplex(
         MilpPartialOrderingCplexOptionalParameters parameters)
 {
     init_display(instance, parameters.info);
-    FFOT_VER(parameters.info,
-               "Algorithm" << std::endl
-            << "---------" << std::endl
-            << "MILP - Partial ordering based model (CPLEX)" << std::endl
-            << std::endl);
+    parameters.info.os()
+        << "Algorithm" << std::endl
+        << "---------" << std::endl
+        << "MILP - Partial ordering based model (CPLEX)" << std::endl
+        << std::endl;
 
     if (instance.adjacency_list_graph() == nullptr) {
         throw std::runtime_error(
@@ -552,9 +552,9 @@ MilpPartialOrderingCplexOutput coloringsolver::milp_partialordering_cplex(
 MilpPartialOrdering2CplexOutput& MilpPartialOrdering2CplexOutput::algorithm_end(
         optimizationtools::Info& info)
 {
-    //FFOT_PUT(info, "Algorithm", "Iterations", it);
+    //info.add_to_json("Algorithm", "Iterations", it);
     Output::algorithm_end(info);
-    //FFOT_VER(info, "Iterations: " << it << std::endl);
+    //info.os() << "Iterations: " << it << std::endl;
     return *this;
 }
 
@@ -597,11 +597,11 @@ MilpPartialOrdering2CplexOutput coloringsolver::milp_partialordering2_cplex(
         MilpPartialOrdering2CplexOptionalParameters parameters)
 {
     init_display(instance, parameters.info);
-    FFOT_VER(parameters.info,
-               "Algorithm" << std::endl
-            << "---------" << std::endl
-            << "MILP - Partial ordering based model 2 (CPLEX)" << std::endl
-            << std::endl);
+    parameters.info.os()
+        << "Algorithm" << std::endl
+        << "---------" << std::endl
+        << "MILP - Partial ordering based model 2 (CPLEX)" << std::endl
+        << std::endl;
 
     if (instance.adjacency_list_graph() == nullptr) {
         throw std::runtime_error(

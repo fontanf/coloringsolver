@@ -13,9 +13,9 @@ using namespace coloringsolver;
 LocalSearchRowWeightingOutput& LocalSearchRowWeightingOutput::algorithm_end(
         optimizationtools::Info& info)
 {
-    FFOT_PUT(info, "Algorithm", "NumberOfIterations", number_of_iterations);
+    info.add_to_json("Algorithm", "NumberOfIterations", number_of_iterations);
     Output::algorithm_end(info);
-    FFOT_VER(info, "Number of iterations:  " << number_of_iterations << std::endl);
+    info.os() << "Number of iterations:  " << number_of_iterations << std::endl;
     return *this;
 }
 
@@ -30,18 +30,18 @@ LocalSearchRowWeightingOutput coloringsolver::localsearch_rowweighting(
         LocalSearchRowWeightingOptionalParameters parameters)
 {
     init_display(instance, parameters.info);
-    FFOT_VER(parameters.info,
-               "Algorithm" << std::endl
-            << "---------" << std::endl
-            << "Row Weighting Local Search" << std::endl
-            << std::endl
-            << "Parameters" << std::endl
-            << "----------" << std::endl
-            << "Maximum number of iterations:                      " << parameters.maximum_number_of_iterations << std::endl
-            << "Maximum number of iterations without improvement:  " << parameters.maximum_number_of_iterations_without_improvement << std::endl
-            << "Maximum number of improvements:                    " << parameters.maximum_number_of_improvements << std::endl
-            << "Goal:                                              " << parameters.goal << std::endl
-            << std::endl);
+    parameters.info.os()
+        << "Algorithm" << std::endl
+        << "---------" << std::endl
+        << "Row Weighting Local Search" << std::endl
+        << std::endl
+        << "Parameters" << std::endl
+        << "----------" << std::endl
+        << "Maximum number of iterations:                      " << parameters.maximum_number_of_iterations << std::endl
+        << "Maximum number of iterations without improvement:  " << parameters.maximum_number_of_iterations_without_improvement << std::endl
+        << "Maximum number of improvements:                    " << parameters.maximum_number_of_improvements << std::endl
+        << "Goal:                                              " << parameters.goal << std::endl
+        << std::endl;
 
     if (instance.adjacency_list_graph() == nullptr) {
         throw std::runtime_error(
@@ -59,9 +59,9 @@ LocalSearchRowWeightingOutput coloringsolver::localsearch_rowweighting(
     std::stringstream ss;
     ss << "initial solution";
     output.update_solution(solution, ss, parameters.info);
-    parameters.info.output->mutex_solutions.lock();
+    parameters.info.lock();
     parameters.new_solution_callback(output);
-    parameters.info.output->mutex_solutions.unlock();
+    parameters.info.unlock();
     if (output.solution.number_of_colors() <= parameters.goal)
         return output.algorithm_end(parameters.info);
     if (output.solution.number_of_colors() == 1)
@@ -136,9 +136,9 @@ LocalSearchRowWeightingOutput coloringsolver::localsearch_rowweighting(
                 std::stringstream ss;
                 ss << "iteration " << output.number_of_iterations;
                 output.update_solution(solution, ss, parameters.info);
-                parameters.info.output->mutex_solutions.lock();
+                parameters.info.lock();
                 parameters.new_solution_callback(output);
-                parameters.info.output->mutex_solutions.unlock();
+                parameters.info.unlock();
                 number_of_improvements++;
             }
 
@@ -276,9 +276,9 @@ LocalSearchRowWeightingOutput coloringsolver::localsearch_rowweighting(
 LocalSearchRowWeighting2Output& LocalSearchRowWeighting2Output::algorithm_end(
         optimizationtools::Info& info)
 {
-    FFOT_PUT(info, "Algorithm", "NumberOfIterations", number_of_iterations);
+    info.add_to_json("Algorithm", "NumberOfIterations", number_of_iterations);
     Output::algorithm_end(info);
-    FFOT_VER(info, "Number of iterations:  " << number_of_iterations << std::endl);
+    info.os() << "Number of iterations:  " << number_of_iterations << std::endl;
     return *this;
 }
 
@@ -292,18 +292,18 @@ LocalSearchRowWeighting2Output coloringsolver::localsearch_rowweighting_2(
         LocalSearchRowWeighting2OptionalParameters parameters)
 {
     init_display(instance, parameters.info);
-    FFOT_VER(parameters.info,
-               "Algorithm" << std::endl
-            << "---------" << std::endl
-            << "Row Weighting Local Search 2" << std::endl
-            << std::endl
-            << "Parameters" << std::endl
-            << "----------" << std::endl
-            << "Maximum number of iterations:                      " << parameters.maximum_number_of_iterations << std::endl
-            << "Maximum number of iterations without improvement:  " << parameters.maximum_number_of_iterations_without_improvement << std::endl
-            << "Maximum number of improvements:                    " << parameters.maximum_number_of_improvements << std::endl
-            << "Goal:                                              " << parameters.goal << std::endl
-            << std::endl);
+    parameters.info.os()
+        << "Algorithm" << std::endl
+        << "---------" << std::endl
+        << "Row Weighting Local Search 2" << std::endl
+        << std::endl
+        << "Parameters" << std::endl
+        << "----------" << std::endl
+        << "Maximum number of iterations:                      " << parameters.maximum_number_of_iterations << std::endl
+        << "Maximum number of iterations without improvement:  " << parameters.maximum_number_of_iterations_without_improvement << std::endl
+        << "Maximum number of improvements:                    " << parameters.maximum_number_of_improvements << std::endl
+        << "Goal:                                              " << parameters.goal << std::endl
+        << std::endl;
 
     const optimizationtools::AbstractGraph& graph = instance.graph();
 
@@ -318,9 +318,9 @@ LocalSearchRowWeighting2Output coloringsolver::localsearch_rowweighting_2(
     std::stringstream ss;
     ss << "initial solution";
     output.update_solution(solution, ss, parameters.info);
-    parameters.info.output->mutex_solutions.lock();
+    parameters.info.lock();
     parameters.new_solution_callback(output);
-    parameters.info.output->mutex_solutions.unlock();
+    parameters.info.unlock();
     if (output.solution.number_of_colors() <= parameters.goal)
         return output.algorithm_end(parameters.info);
     if (output.solution.number_of_colors() == 1)
@@ -395,9 +395,9 @@ LocalSearchRowWeighting2Output coloringsolver::localsearch_rowweighting_2(
                 std::stringstream ss;
                 ss << "iteration " << output.number_of_iterations;
                 output.update_solution(solution, ss, parameters.info);
-                parameters.info.output->mutex_solutions.lock();
+                parameters.info.lock();
                 parameters.new_solution_callback(output);
-                parameters.info.output->mutex_solutions.unlock();
+                parameters.info.unlock();
                 number_of_improvements++;
             }
 
