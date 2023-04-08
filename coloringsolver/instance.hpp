@@ -31,16 +31,22 @@ public:
 
     /** Create an instance from a file. */
     Instance(std::string instance_path, std::string format);
+
     /** Create an instance manually. */
     Instance(VertexId number_of_vertices = 0);
+
     /** Add a vertex. */
     VertexId add_vertex(Weight weight = 1) { return adjacency_list_graph_->add_vertex(weight); }
+
     /** Set the weight of vertex 'v' to 'weight'. */
     void set_weight(VertexId v, Weight weight) { return adjacency_list_graph_->set_weight(v, weight); }
+
     /** Add an edge between vertex 'v1' and vertex 'v2'. */
     void add_edge(VertexId v1, VertexId v2) { adjacency_list_graph_->add_edge(v1, v2); }
+
     /** Set the weight of all vertices to 1. */
     void set_unweighted() { adjacency_list_graph_->set_unweighted(); }
+
     /** Remove duplicate edges (changes the edge ids). */
     void remove_duplicate_edges() { adjacency_list_graph_->remove_duplicate_edges(); }
 
