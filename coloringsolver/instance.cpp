@@ -31,17 +31,20 @@ std::vector<VertexId> Instance::compute_core(ColorId k) const
     std::vector<VertexId> removed_vertices;
     std::vector<VertexPos> vertex_degrees(graph().number_of_vertices(), -1);
     std::vector<VertexId> vertex_queue;
-    for (VertexId v = 0; v < graph().number_of_vertices(); ++v) {
-        vertex_degrees[v] = graph().degree(v);
-        if (vertex_degrees[v] < k)
-            vertex_queue.push_back(v);
+    for (VertexId vertex_id = 0;
+            vertex_id < graph().number_of_vertices();
+            ++vertex_id) {
+        vertex_degrees[vertex_id] = graph().degree(vertex_id);
+        if (vertex_degrees[vertex_id] < k)
+            vertex_queue.push_back(vertex_id);
     }
     while (!vertex_queue.empty()) {
-        VertexId v = vertex_queue.back();
-        removed_vertices.push_back(v);
+        VertexId vertex_id = vertex_queue.back();
+        removed_vertices.push_back(vertex_id);
         vertex_queue.pop_back();
-        for (auto it = graph().neighbors_begin(v);
-                it != graph().neighbors_end(v); ++it) {
+        for (auto it = graph().neighbors_begin(vertex_id);
+                it != graph().neighbors_end(vertex_id);
+                ++it) {
             if (vertex_degrees[*it] < k)
                 continue;
             vertex_degrees[*it]--;

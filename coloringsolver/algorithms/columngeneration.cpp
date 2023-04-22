@@ -165,28 +165,36 @@ std::vector<Column> PricingSolver::solve_pricing(
     std::fill(coloring2mwis_.begin(), coloring2mwis_.end(), -1);
     mwis2coloring_.clear();
     weights_.clear();
-    for (VertexId v = 0; v < n; ++v) {
-        if (fixed_vertices_[v] == 1)
+    for (VertexId vertex_id = 0; vertex_id < n; ++vertex_id) {
+        if (fixed_vertices_[vertex_id] == 1)
             continue;
-        stablesolver::Weight weight = std::floor(mult * duals[v]);
+        stablesolver::Weight weight = std::floor(mult * duals[vertex_id]);
         if (weight <= 0)
             continue;
-        coloring2mwis_[v] = mwis2coloring_.size();
-        mwis2coloring_.push_back(v);
+        coloring2mwis_[vertex_id] = mwis2coloring_.size();
+        mwis2coloring_.push_back(vertex_id);
         weights_.push_back(weight);
     }
     stablesolver::Instance instance_mwis(mwis2coloring_.size());
-    for (stablesolver::VertexId v1 = 0; v1 < instance_mwis.number_of_vertices(); ++v1) {
+    for (stablesolver::VertexId mwis_vertex_id_1 = 0;
+            mwis_vertex_id_1 < instance_mwis.number_of_vertices();
+            ++mwis_vertex_id_1) {
         // Set weight.
-        instance_mwis.set_weight(v1, weights_[v1]);
+        instance_mwis.set_weight(
+                mwis_vertex_id_1,
+                weights_[mwis_vertex_id_1]);
         // Add edges.
-        VertexId v1_orig = mwis2coloring_[v1];
-        for (auto it = instance_.graph().neighbors_begin(v1_orig);
-                it != instance_.graph().neighbors_end(v1_orig); ++it) {
-            VertexId v_neighbor = *it;
-            stablesolver::VertexId v2 = coloring2mwis_[v_neighbor];
-            if (v2 != -1 && v2 > v1)
-                instance_mwis.add_edge(v1, v2);
+        VertexId vertex_id_1 = mwis2coloring_[mwis_vertex_id_1];
+        for (auto it = instance_.graph().neighbors_begin(vertex_id_1);
+                it != instance_.graph().neighbors_end(vertex_id_1); ++it) {
+            VertexId vertex_id_2 = *it;
+            stablesolver::VertexId mwis_vertex_id_2 = coloring2mwis_[vertex_id_2];
+            if (mwis_vertex_id_2 != -1
+                    && mwis_vertex_id_2 > mwis_vertex_id_1) {
+                instance_mwis.add_edge(
+                        mwis_vertex_id_1,
+                        mwis_vertex_id_2);
+            }
         }
     }
     instance_mwis.compute_components();
@@ -200,9 +208,11 @@ std::vector<Column> PricingSolver::solve_pricing(
 
     // Retrieve column.
     Column column;
-    for (stablesolver::VertexId v = 0; v < instance_mwis.number_of_vertices(); ++v) {
-        if (output_mwis.solution.contains(v)) {
-            column.row_indices.push_back(mwis2coloring_[v]);
+    for (stablesolver::VertexId mwis_vertex_id = 0;
+            mwis_vertex_id < instance_mwis.number_of_vertices();
+            ++mwis_vertex_id) {
+        if (output_mwis.solution.contains(mwis_vertex_id)) {
+            column.row_indices.push_back(mwis2coloring_[mwis_vertex_id]);
             column.row_coefficients.push_back(1);
         }
     }

@@ -54,16 +54,16 @@ std::vector<VertexId> largestfirst(const Instance& instance)
 
     std::vector<VertexId> ordered_vertices(n);
     std::vector<std::vector<VertexId>> vertices(graph.maximum_degree() + 1);
-    for (VertexId v = 0; v < n; ++v)
-        vertices[graph.degree(v)].push_back(v);
+    for (VertexId vertex_id = 0; vertex_id < n; ++vertex_id)
+        vertices[graph.degree(vertex_id)].push_back(vertex_id);
 
     VertexId d_cur = graph.maximum_degree();
-    for (VertexPos v_pos = 0; v_pos < n; ++v_pos) {
+    for (VertexPos vertex_pos = 0; vertex_pos < n; ++vertex_pos) {
         while (vertices[d_cur].empty())
             d_cur--;
-        VertexId v = vertices[d_cur].back();
+        VertexId vertex_id = vertices[d_cur].back();
         vertices[d_cur].pop_back();
-        ordered_vertices[v_pos] = v;
+        ordered_vertices[vertex_pos] = vertex_id;
     }
     return ordered_vertices;
 }
@@ -77,40 +77,41 @@ std::vector<VertexId> incidencedegree(const Instance& instance)
     std::vector<uint8_t> added(n, 0);
     std::vector<std::vector<VertexId>> vertices(graph.maximum_degree() + 1);
     std::vector<std::pair<VertexId, VertexPos>> positions(n, {-1, -1});
-    VertexId v_best = -1;
-    for (VertexId v = 0; v < n; ++v) {
-        positions[v] = {0, v};
-        vertices[0].push_back(v);
-        if (v_best == -1 || graph.degree(v_best) < graph.degree(v))
-            v_best = v;
+    VertexId vertex_id_best = -1;
+    for (VertexId vertex_id = 0; vertex_id < n; ++vertex_id) {
+        positions[vertex_id] = {0, vertex_id};
+        vertices[0].push_back(vertex_id);
+        if (vertex_id_best == -1
+                || graph.degree(vertex_id_best) < graph.degree(vertex_id))
+            vertex_id_best = vertex_id;
     }
-    vertices[0][n - 1] = v_best;
-    vertices[0][v_best] = n - 1;
-    positions[v_best].second = n - 1;
-    positions[n - 1].second = v_best;
+    vertices[0][n - 1] = vertex_id_best;
+    vertices[0][vertex_id_best] = n - 1;
+    positions[vertex_id_best].second = n - 1;
+    positions[n - 1].second = vertex_id_best;
 
     VertexId d_cur = 0;
-    for (VertexPos v_pos = 0; v_pos < n; ++v_pos) {
+    for (VertexPos vertex_pos = 0; vertex_pos < n; ++vertex_pos) {
         while (vertices[d_cur].empty())
             d_cur++;
-        VertexId v = vertices[d_cur].back();
+        VertexId vertex_id = vertices[d_cur].back();
         vertices[d_cur].pop_back();
-        positions[v] = {-1, -1};
-        auto it = graph.neighbors_begin(v);
-        auto it_end = graph.neighbors_end(v);
+        positions[vertex_id] = {-1, -1};
+        auto it = graph.neighbors_begin(vertex_id);
+        auto it_end = graph.neighbors_end(vertex_id);
         for (; it != it_end; ++it) {
-            VertexId v_neighbor = *it;
-            if (added[v_neighbor] == 1)
+            VertexId vertex_id_neighbor = *it;
+            if (added[vertex_id_neighbor] == 1)
                 continue;
-            auto old = positions[v_neighbor];
+            auto old = positions[vertex_id_neighbor];
             positions[vertices[old.first].back()] = old;
             vertices[old.first][old.second] = vertices[old.first].back();
             vertices[old.first].pop_back();
-            positions[v_neighbor] = {old.first + 1, vertices[old.first + 1].size()};
-            vertices[old.first + 1].push_back(v_neighbor);
+            positions[vertex_id_neighbor] = {old.first + 1, vertices[old.first + 1].size()};
+            vertices[old.first + 1].push_back(vertex_id_neighbor);
         }
-        added[v] = 1;
-        ordered_vertices[v_pos] = v;
+        added[vertex_id] = 1;
+        ordered_vertices[vertex_pos] = vertex_id;
     }
     return ordered_vertices;
 }
@@ -125,23 +126,23 @@ std::vector<VertexId> smallestlast(const Instance& instance)
 
     std::vector<std::vector<VertexId>> vertices(graph.maximum_degree() + 1);
     std::vector<std::pair<VertexId, VertexPos>> positions(n, {-1, -1});
-    for (VertexId v = 0; v < n; ++v) {
-        VertexId dv = graph.degree(v);
-        positions[v] = {dv, vertices[dv].size()};
-        vertices[dv].push_back(v);
+    for (VertexId vertex_id = 0; vertex_id < n; ++vertex_id) {
+        VertexId dv = graph.degree(vertex_id);
+        positions[vertex_id] = {dv, vertices[dv].size()};
+        vertices[dv].push_back(vertex_id);
     }
 
     VertexId d_cur = 0;
-    for (VertexPos v_pos = 0; v_pos < n; ++v_pos) {
+    for (VertexPos vertex_pos = 0; vertex_pos < n; ++vertex_pos) {
         if (d_cur > 0 && !vertices[d_cur - 1].empty())
             d_cur--;
         while (vertices[d_cur].empty())
             d_cur++;
-        VertexId v = vertices[d_cur].back();
+        VertexId vertex_id = vertices[d_cur].back();
         vertices[d_cur].pop_back();
-        positions[v] = {-1, -1};
-        auto it = graph.neighbors_begin(v);
-        auto it_end = graph.neighbors_end(v);
+        positions[vertex_id] = {-1, -1};
+        auto it = graph.neighbors_begin(vertex_id);
+        auto it_end = graph.neighbors_end(vertex_id);
         for (; it != it_end; ++it) {
             VertexId v_neighbor = *it;
             if (added[v_neighbor] == 1)
@@ -153,8 +154,8 @@ std::vector<VertexId> smallestlast(const Instance& instance)
             positions[v_neighbor] = {old.first - 1, vertices[old.first - 1].size()};
             vertices[old.first - 1].push_back(v_neighbor);
         }
-        added[v] = 1;
-        ordered_vertices[v_pos] = v;
+        added[vertex_id] = 1;
+        ordered_vertices[vertex_pos] = vertex_id;
     }
     return ordered_vertices;
 }
@@ -168,34 +169,34 @@ std::vector<VertexId> dynamiclargestfirst(const Instance& instance)
     std::vector<uint8_t> added(n, 0);
     std::vector<std::vector<VertexId>> vertices(graph.maximum_degree() + 1);
     std::vector<std::pair<VertexId, VertexPos>> positions(n, {-1, -1});
-    for (VertexId v = 0; v < n; ++v) {
-        VertexId dv = graph.degree(v);
-        positions[v] = {dv, vertices[dv].size()};
-        vertices[dv].push_back(v);
+    for (VertexId vertex_id = 0; vertex_id < n; ++vertex_id) {
+        VertexId dv = graph.degree(vertex_id);
+        positions[vertex_id] = {dv, vertices[dv].size()};
+        vertices[dv].push_back(vertex_id);
     }
 
     VertexId d_cur = graph.maximum_degree();
-    for (VertexPos v_pos = 0; v_pos < n; ++v_pos) {
+    for (VertexPos vertex_pos = 0; vertex_pos < n; ++vertex_pos) {
         while (vertices[d_cur].empty())
             d_cur--;
-        VertexId v = vertices[d_cur].back();
+        VertexId vertex_id = vertices[d_cur].back();
         vertices[d_cur].pop_back();
-        positions[v] = {-1, -1};
-        auto it = graph.neighbors_begin(v);
-        auto it_end = graph.neighbors_end(v);
+        positions[vertex_id] = {-1, -1};
+        auto it = graph.neighbors_begin(vertex_id);
+        auto it_end = graph.neighbors_end(vertex_id);
         for (; it != it_end; ++it) {
-            VertexId v_neighbor = *it;
-            if (added[v_neighbor] == 1)
+            VertexId vertex_id_neighbor = *it;
+            if (added[vertex_id_neighbor] == 1)
                 continue;
-            auto old = positions[v_neighbor];
+            auto old = positions[vertex_id_neighbor];
             positions[vertices[old.first].back()] = old;
             vertices[old.first][old.second] = vertices[old.first].back();
             vertices[old.first].pop_back();
-            positions[v_neighbor] = {old.first - 1, vertices[old.first - 1].size()};
-            vertices[old.first - 1].push_back(v_neighbor);
+            positions[vertex_id_neighbor] = {old.first - 1, vertices[old.first - 1].size()};
+            vertices[old.first - 1].push_back(vertex_id_neighbor);
         }
-        added[v] = 1;
-        ordered_vertices[v_pos] = v;
+        added[vertex_id] = 1;
+        ordered_vertices[vertex_pos] = vertex_id;
     }
     return ordered_vertices;
 }
@@ -244,43 +245,43 @@ Output coloringsolver::greedy(const Instance& instance, GreedyOptionalParameters
     optimizationtools::IndexedSet color_set(graph.maximum_degree() + 1);
     if (!parameters.reverse) {
         for (auto it_v = ordered_vertices.begin(); it_v != ordered_vertices.end(); ++it_v) {
-            VertexId v = *it_v;
+            VertexId vertex_id = *it_v;
             color_set.clear();
-            auto it = graph.neighbors_begin(v);
-            auto it_end = graph.neighbors_end(v);
+            auto it = graph.neighbors_begin(vertex_id);
+            auto it_end = graph.neighbors_end(vertex_id);
             for (; it != it_end; ++it) {
-                VertexId v_neighbor = *it;
-                if (solution.contains(v_neighbor))
-                    color_set.add(solution.color(v_neighbor));
+                VertexId vertex_id_neighbor = *it;
+                if (solution.contains(vertex_id_neighbor))
+                    color_set.add(solution.color(vertex_id_neighbor));
             }
-            ColorId c_best = -1;
-            for (ColorId c = 0; c < n; ++c) {
-                if (!color_set.contains(c)) {
-                    c_best = c;
+            ColorId color_id_best = -1;
+            for (ColorId color_id = 0; color_id < n; ++color_id) {
+                if (!color_set.contains(color_id)) {
+                    color_id_best = color_id;
                     break;
                 }
             }
-            solution.set(v, c_best, false);
+            solution.set(vertex_id, color_id_best, false);
         }
     } else {
         for (auto it_v = ordered_vertices.rbegin(); it_v != ordered_vertices.rend(); ++it_v) {
-            VertexId v = *it_v;
+            VertexId vertex_id = *it_v;
             color_set.clear();
-            auto it = graph.neighbors_begin(v);
-            auto it_end = graph.neighbors_end(v);
+            auto it = graph.neighbors_begin(vertex_id);
+            auto it_end = graph.neighbors_end(vertex_id);
             for (; it != it_end; ++it) {
-                VertexId v_neighbor = *it;
-                if (solution.contains(v_neighbor))
-                    color_set.add(solution.color(v_neighbor));
+                VertexId vertex_id_neighbor = *it;
+                if (solution.contains(vertex_id_neighbor))
+                    color_set.add(solution.color(vertex_id_neighbor));
             }
-            ColorId c_best = -1;
-            for (ColorId c = 0; c < n; ++c) {
-                if (!color_set.contains(c)) {
-                    c_best = c;
+            ColorId color_id_best = -1;
+            for (ColorId color_id = 0; color_id < n; ++color_id) {
+                if (!color_set.contains(color_id)) {
+                    color_id_best = color_id;
                     break;
                 }
             }
-            solution.set(v, c_best, false);
+            solution.set(vertex_id, color_id_best, false);
         }
     }
 
@@ -304,14 +305,15 @@ Output coloringsolver::greedy_dsatur(
     Output output(instance, info);
     Solution solution(instance);
 
-    VertexId v_best = -1;
-    for (VertexId v = 0; v < n; ++v)
-        if (v_best == -1 || graph.degree(v_best) < graph.degree(v))
-            v_best = v;
+    VertexId vertex_id_best = -1;
+    for (VertexId vertex_id = 0; vertex_id < n; ++vertex_id)
+        if (vertex_id_best == -1
+                || graph.degree(vertex_id_best) < graph.degree(vertex_id))
+            vertex_id_best = vertex_id;
 
     auto f = [](VertexId) { return 0; };
     optimizationtools::IndexedBinaryHeap<double> heap(n, f);
-    heap.update_key(v_best, -1);
+    heap.update_key(vertex_id_best, -1);
 
     optimizationtools::IndexedSet color_set(graph.maximum_degree() + 1);
 
@@ -322,39 +324,39 @@ Output coloringsolver::greedy_dsatur(
         heap.pop();
 
         color_set.clear();
-        VertexId v = p.first;
-        auto it_begin = graph.neighbors_begin(v);
-        auto it_end = graph.neighbors_end(v);
+        VertexId vertex_id = p.first;
+        auto it_begin = graph.neighbors_begin(vertex_id);
+        auto it_end = graph.neighbors_end(vertex_id);
         for (auto it = it_begin; it != it_end; ++it) {
-            VertexId v_neighbor = *it;
-            if (solution.contains(v_neighbor))
-                color_set.add(solution.color(v_neighbor));
+            VertexId vertex_id_neighbor = *it;
+            if (solution.contains(vertex_id_neighbor))
+                color_set.add(solution.color(vertex_id_neighbor));
         }
 
-        ColorId c_best = -1;
-        for (ColorId c = 0; c < n; ++c) {
-            if (!color_set.contains(c)) {
-                c_best = c;
+        ColorId color_id_best = -1;
+        for (ColorId color_id = 0; color_id < n; ++color_id) {
+            if (!color_set.contains(color_id)) {
+                color_id_best = color_id;
                 break;
             }
         }
-        if (c_best >= (ColorId)is_adjacent.size()) {
+        if (color_id_best >= (ColorId)is_adjacent.size()) {
             is_adjacent.push_back(std::vector<bool>(n, false));
         }
 
-        solution.set(p.first, c_best, false);
+        solution.set(p.first, color_id_best, false);
 
         for (auto it = it_begin; it != it_end; ++it) {
-            VertexId v_neighbor = *it;
-            if (solution.contains(v_neighbor))
+            VertexId vertex_id_neighbor = *it;
+            if (solution.contains(vertex_id_neighbor))
                 continue;
-            if (is_adjacent[c_best][v_neighbor])
+            if (is_adjacent[color_id_best][vertex_id_neighbor])
                 continue;
-            is_adjacent[c_best][v_neighbor] = true;
-            number_of_adjacent_colors[v_neighbor]++;
-            double val = -number_of_adjacent_colors[v_neighbor]
-                - (double)graph.degree(v_neighbor) / (graph.maximum_degree() + 1);
-            heap.update_key(v_neighbor, val);
+            is_adjacent[color_id_best][vertex_id_neighbor] = true;
+            number_of_adjacent_colors[vertex_id_neighbor]++;
+            double val = -number_of_adjacent_colors[vertex_id_neighbor]
+                - (double)graph.degree(vertex_id_neighbor) / (graph.maximum_degree() + 1);
+            heap.update_key(vertex_id_neighbor, val);
         }
     }
 

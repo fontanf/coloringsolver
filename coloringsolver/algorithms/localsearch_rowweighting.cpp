@@ -73,8 +73,8 @@ LocalSearchRowWeightingOutput coloringsolver::localsearch_rowweighting(
     Counter number_of_improvements = 0;
     std::vector<Penalty> penalties(graph.maximum_degree() + 1, 0);
     std::vector<Penalty> solution_penalties(graph.number_of_edges(), 1);
-    std::vector<std::pair<VertexId, ColorId>> vc_bests;
-    std::vector<std::pair<ColorId, ColorId>> cc_bests;
+    std::vector<std::pair<VertexId, ColorId>> vcolor_id_bests;
+    std::vector<std::pair<ColorId, ColorId>> ccolor_id_bests;
 
     // Structures for the core.
     std::vector<VertexId> removed_vertices;
@@ -107,25 +107,25 @@ LocalSearchRowWeightingOutput coloringsolver::localsearch_rowweighting(
             // Give a color to vertices outside of the core.
             for (auto it_v = removed_vertices.rbegin();
                     it_v != removed_vertices.rend(); ++it_v) {
-                VertexId v = *it_v;
+                VertexId vertex_id = *it_v;
                 optimizationtools::IndexedSet available_colors = colors;
-                auto it = graph.neighbors_begin(v);
-                auto it_end = graph.neighbors_end(v);
+                auto it = graph.neighbors_begin(vertex_id);
+                auto it_end = graph.neighbors_end(vertex_id);
                 for (; it != it_end; ++it) {
-                    VertexId v_neighbor = *it;
-                    if (solution.contains(v_neighbor) == 0)
+                    VertexId vertex_id_neighbor = *it;
+                    if (solution.contains(vertex_id_neighbor) == 0)
                         continue;
-                    ColorId c = solution.color(v_neighbor);
-                    available_colors.remove(c);
+                    ColorId color_id = solution.color(vertex_id_neighbor);
+                    available_colors.remove(color_id);
                 }
                 if (available_colors.empty()) {
                     throw std::runtime_error(
                             "No available color for vertex "
-                            + std::to_string(v)
+                            + std::to_string(vertex_id)
                             + ".");
                 }
-                ColorId c = *(available_colors.begin());
-                solution.set(v, c);
+                ColorId color_id = *(available_colors.begin());
+                solution.set(vertex_id, color_id);
             }
             if (solution.number_of_conflicts() != 0) {
                 throw std::runtime_error("Solution has conflicts.");
@@ -147,66 +147,75 @@ LocalSearchRowWeightingOutput coloringsolver::localsearch_rowweighting(
 
             // Compute positions.
             std::vector<ColorPos> positions(graph.maximum_degree() + 1, -1);
-            for (ColorPos c_pos = 0; c_pos < solution.number_of_colors(); ++c_pos) {
-                ColorId c = *(solution.colors_begin() + c_pos);
-                positions[c] = c_pos;
+            for (ColorPos color_pos = 0; color_pos < solution.number_of_colors(); ++color_pos) {
+                ColorId color_id = *(solution.colors_begin() + color_pos);
+                positions[color_id] = color_pos;
             }
 
             // Initialize penalty structure.
             std::vector<std::vector<Penalty>> penalties(solution.number_of_colors());
-            for (ColorPos c_pos = 0; c_pos < solution.number_of_colors(); ++c_pos)
-                penalties[c_pos].resize(solution.number_of_colors() - c_pos - 1);
+            for (ColorPos color_pos = 0;
+                    color_pos < solution.number_of_colors();
+                    ++color_pos) {
+                penalties[color_pos].resize(
+                        solution.number_of_colors() - color_pos - 1);
+            }
 
             // Compute penalties.
-            for (EdgeId e = 0; e < graph.number_of_edges(); ++e) {
-                VertexId v1 = graph.first_end(e);
-                VertexId v2 = graph.second_end(e);
-                ColorId c1 = solution.color(v1);
-                ColorId c2 = solution.color(v2);
-                ColorPos c1_pos = positions[c1];
-                ColorPos c2_pos = positions[c2];
-                ColorPos i1 = std::min(c1_pos, c2_pos);
-                ColorPos i2 = std::max(c1_pos, c2_pos) - i1 - 1;
-                if (c1 == c2) {
+            for (EdgeId edge_id = 0;
+                    edge_id < graph.number_of_edges();
+                    ++edge_id) {
+                VertexId vertex_id_1 = graph.first_end(edge_id);
+                VertexId vertex_id_2 = graph.second_end(edge_id);
+                ColorId color_id_1 = solution.color(vertex_id_1);
+                ColorId color_id_2 = solution.color(vertex_id_2);
+                ColorPos color_pos_1 = positions[color_id_1];
+                ColorPos color_pos_2 = positions[color_id_2];
+                ColorPos i1 = std::min(color_pos_1, color_pos_2);
+                ColorPos i2 = std::max(color_pos_1, color_pos_2) - i1 - 1;
+                if (color_id_1 == color_id_2) {
                     throw std::runtime_error(
-                            "Vertex " + std::to_string(v1)
+                            "Vertex " + std::to_string(vertex_id_1)
                             + " and its neighbor vertex "
-                            + std::to_string(v2)
+                            + std::to_string(vertex_id_2)
                             + " have the same color "
-                            + std::to_string(c1));
+                            + std::to_string(color_id_1));
                 }
-                if (std::numeric_limits<Penalty>::max() - solution_penalties[e]
+                if (std::numeric_limits<Penalty>::max()
+                        - solution_penalties[edge_id]
                         > penalties[i1][i2]) {
-                    penalties[i1][i2] += solution_penalties[e];
+                    penalties[i1][i2] += solution_penalties[edge_id];
                 } else {
                     penalties[i1][i2] = std::numeric_limits<Penalty>::max();
                 }
             }
 
             // Find best color combination.
-            cc_bests.clear();
-            Penalty p_best = -1;
-            for (ColorPos c1_pos = 0; c1_pos < solution.number_of_colors(); ++c1_pos) {
-                for (ColorPos c2_pos = c1_pos + 1; c2_pos < solution.number_of_colors(); ++c2_pos) {
-                    if (cc_bests.empty() || p_best > penalties[c1_pos][c2_pos - c1_pos - 1]) {
-                        cc_bests.clear();
-                        cc_bests.push_back({c1_pos, c2_pos});
-                        p_best = penalties[c1_pos][c2_pos - c1_pos - 1];
-                    } else if (!cc_bests.empty() && p_best == penalties[c1_pos][c2_pos - c1_pos - 1]) {
-                        cc_bests.push_back({c1_pos, c2_pos});
+            ccolor_id_bests.clear();
+            Penalty penalty_best = -1;
+            for (ColorPos color_pos_1 = 0; color_pos_1 < solution.number_of_colors(); ++color_pos_1) {
+                for (ColorPos color_pos_2 = color_pos_1 + 1; color_pos_2 < solution.number_of_colors(); ++color_pos_2) {
+                    if (ccolor_id_bests.empty() || penalty_best > penalties[color_pos_1][color_pos_2 - color_pos_1 - 1]) {
+                        ccolor_id_bests.clear();
+                        ccolor_id_bests.push_back({color_pos_1, color_pos_2});
+                        penalty_best = penalties[color_pos_1][color_pos_2 - color_pos_1 - 1];
+                    } else if (!ccolor_id_bests.empty() && penalty_best == penalties[color_pos_1][color_pos_2 - color_pos_1 - 1]) {
+                        ccolor_id_bests.push_back({color_pos_1, color_pos_2});
                     }
                 }
             }
 
             // Apply color merge.
-            std::uniform_int_distribution<EdgeId> d_cc(0, cc_bests.size() - 1);
-            auto cc = cc_bests[d_cc(generator)];
-            ColorId c1_best = *(solution.colors_begin() + cc.first);
-            ColorId c2_best = *(solution.colors_begin() + cc.second);
-            for (VertexId v = 0; v < graph.number_of_vertices(); ++v)
-                if (solution.color(v) == c2_best)
-                    solution.set(v, c1_best);
-            colors.remove(c2_best);
+            std::uniform_int_distribution<EdgeId> d_cc(0, ccolor_id_bests.size() - 1);
+            auto cc = ccolor_id_bests[d_cc(generator)];
+            ColorId color_id_1_best = *(solution.colors_begin() + cc.first);
+            ColorId color_id_2_best = *(solution.colors_begin() + cc.second);
+            for (VertexId vertex_id = 0;
+                    vertex_id < graph.number_of_vertices();
+                    ++vertex_id)
+                if (solution.color(vertex_id) == color_id_2_best)
+                    solution.set(vertex_id, color_id_1_best);
+            colors.remove(color_id_2_best);
 
             // Compute core.
             k--;
@@ -223,32 +232,34 @@ LocalSearchRowWeightingOutput coloringsolver::localsearch_rowweighting(
 
         // Draw randomly a conflicting edge.
         std::uniform_int_distribution<EdgeId> d_e(0, solution.number_of_conflicts() - 1);
-        EdgeId e_cur = *std::next(solution.conflicts().begin(), d_e(generator));
+        EdgeId edge_id_cur = *std::next(solution.conflicts().begin(), d_e(generator));
 
         // Find the best swap move.
-        vc_bests.clear();
-        Penalty p_best = -1;
-        for (VertexId v: {graph.first_end(e_cur), graph.second_end(e_cur)}) {
-            for (ColorId c: colors)
-                penalties[c] = 0;
-            for (const auto& edge: graph.edges(v)) {
+        vcolor_id_bests.clear();
+        Penalty penalty_best = -1;
+        for (VertexId vertex_id: {graph.first_end(edge_id_cur), graph.second_end(edge_id_cur)}) {
+            for (ColorId color_id: colors)
+                penalties[color_id] = 0;
+            for (const auto& edge: graph.edges(vertex_id)) {
                 if (solution.contains(edge.v))
                     penalties[solution.color(edge.v)] += solution_penalties[edge.e];
             }
-            for (ColorId c: colors) {
-                if (c == solution.color(v))
+            for (ColorId color_id: colors) {
+                if (color_id == solution.color(vertex_id))
                     continue;
-                if (vc_bests.empty() || p_best > penalties[c]) {
-                    vc_bests.clear();
-                    vc_bests.push_back({v, c});
-                    p_best = penalties[c];
-                } else if (!vc_bests.empty() && p_best == penalties[c]) {
-                    vc_bests.push_back({v, c});
+                if (vcolor_id_bests.empty()
+                        || penalty_best > penalties[color_id]) {
+                    vcolor_id_bests.clear();
+                    vcolor_id_bests.push_back({vertex_id, color_id});
+                    penalty_best = penalties[color_id];
+                } else if (!vcolor_id_bests.empty()
+                        && penalty_best == penalties[color_id]) {
+                    vcolor_id_bests.push_back({vertex_id, color_id});
                 }
             }
         }
-        std::uniform_int_distribution<EdgeId> d_vc(0, vc_bests.size() - 1);
-        auto vc = vc_bests[d_vc(generator)];
+        std::uniform_int_distribution<EdgeId> d_vc(0, vcolor_id_bests.size() - 1);
+        auto vc = vcolor_id_bests[d_vc(generator)];
         // Update vertices structure.
         vertices[vc.first].timestamp = output.number_of_iterations;
         // Update penalties.
@@ -263,8 +274,11 @@ LocalSearchRowWeightingOutput coloringsolver::localsearch_rowweighting(
         }
         if (reduce) {
             //std::cout << "reduce" << std::endl;
-            for (EdgeId e = 0; e < graph.number_of_edges(); ++e)
-                solution_penalties[e] = (solution_penalties[e] - 1) / 2 + 1;
+            for (EdgeId edge_id = 0;
+                    edge_id < graph.number_of_edges();
+                    ++edge_id) {
+                solution_penalties[edge_id] = (solution_penalties[edge_id] - 1) / 2 + 1;
+            }
         }
         // Update solution.
         solution.set(vc.first, vc.second);
@@ -332,8 +346,8 @@ LocalSearchRowWeighting2Output coloringsolver::localsearch_rowweighting_2(
     std::vector<Penalty> penalties(graph.maximum_degree() + 1, 0);
     std::vector<Penalty> vertex_penalties(graph.number_of_vertices(), 1);
     optimizationtools::IndexedSet uncolored_vertices(graph.number_of_vertices());
-    std::vector<std::pair<ColorId, ColorId>> cc_bests;
-    std::vector<ColorId> c_bests;
+    std::vector<std::pair<ColorId, ColorId>> ccolor_id_bests;
+    std::vector<ColorId> color_id_bests;
 
     // Structures for the core.
     std::vector<VertexId> removed_vertices;
@@ -366,25 +380,25 @@ LocalSearchRowWeighting2Output coloringsolver::localsearch_rowweighting_2(
             // Give a color to vertices outside of the core.
             for (auto it_v = removed_vertices.rbegin();
                     it_v != removed_vertices.rend(); ++it_v) {
-                VertexId v = *it_v;
+                VertexId vertex_id = *it_v;
                 optimizationtools::IndexedSet available_colors = colors;
-                auto it = graph.neighbors_begin(v);
-                auto it_end = graph.neighbors_end(v);
+                auto it = graph.neighbors_begin(vertex_id);
+                auto it_end = graph.neighbors_end(vertex_id);
                 for (; it != it_end; ++it) {
-                    VertexId v_neighbor = *it;
-                    if (solution.contains(v_neighbor) == 0)
+                    VertexId vertex_id_neighbor = *it;
+                    if (solution.contains(vertex_id_neighbor) == 0)
                         continue;
-                    ColorId c = solution.color(v_neighbor);
-                    available_colors.remove(c);
+                    ColorId color_id = solution.color(vertex_id_neighbor);
+                    available_colors.remove(color_id);
                 }
                 if (available_colors.empty()) {
                     throw std::runtime_error(
                             "No available color for vertex "
-                            + std::to_string(v)
+                            + std::to_string(vertex_id)
                             + ".");
                 }
-                ColorId c = *(available_colors.begin());
-                solution.set(v, c);
+                ColorId color_id = *(available_colors.begin());
+                solution.set(vertex_id, color_id);
             }
             if (solution.number_of_conflicts() != 0) {
                 throw std::runtime_error("Solution has conflicts.");
@@ -406,42 +420,45 @@ LocalSearchRowWeighting2Output coloringsolver::localsearch_rowweighting_2(
 
             // Compute positions.
             std::vector<ColorPos> positions(graph.maximum_degree() + 1, -1);
-            for (ColorPos c_pos = 0; c_pos < solution.number_of_colors(); ++c_pos) {
-                ColorId c = *(solution.colors_begin() + c_pos);
-                positions[c] = c_pos;
+            for (ColorPos color_pos = 0; color_pos < solution.number_of_colors(); ++color_pos) {
+                ColorId color_id = *(solution.colors_begin() + color_pos);
+                positions[color_id] = color_pos;
             }
 
             // Initialize penalty structure.
             std::vector<std::vector<Penalty>> penalties(solution.number_of_colors());
-            for (ColorPos c_pos = 0; c_pos < solution.number_of_colors(); ++c_pos)
-                penalties[c_pos].resize(solution.number_of_colors() - c_pos - 1);
+            for (ColorPos color_pos = 0;
+                    color_pos < solution.number_of_colors();
+                    ++color_pos) {
+                penalties[color_pos].resize(solution.number_of_colors() - color_pos - 1);
+            }
 
             // Compute penalties.
-            for (VertexId v1 = 0; v1 < graph.number_of_vertices(); ++v1) {
-                auto it = graph.neighbors_begin(v1);
-                auto it_end = graph.neighbors_end(v1);
+            for (VertexId vertex_id_1 = 0; vertex_id_1 < graph.number_of_vertices(); ++vertex_id_1) {
+                auto it = graph.neighbors_begin(vertex_id_1);
+                auto it_end = graph.neighbors_end(vertex_id_1);
                 for (; it != it_end; ++it) {
-                    VertexId v2 = *it;
-                    if (v2 <= v1)
+                    VertexId vertex_id_2 = *it;
+                    if (vertex_id_2 <= vertex_id_1)
                         continue;
-                    ColorId c1 = solution.color(v1);
-                    ColorId c2 = solution.color(v2);
-                    ColorPos c1_pos = positions[c1];
-                    ColorPos c2_pos = positions[c2];
-                    ColorPos i1 = std::min(c1_pos, c2_pos);
-                    ColorPos i2 = std::max(c1_pos, c2_pos) - i1 - 1;
-                    if (c1 == c2) {
+                    ColorId color_id_1 = solution.color(vertex_id_1);
+                    ColorId color_id_2 = solution.color(vertex_id_2);
+                    ColorPos color_pos_1 = positions[color_id_1];
+                    ColorPos color_pos_2 = positions[color_id_2];
+                    ColorPos i1 = std::min(color_pos_1, color_pos_2);
+                    ColorPos i2 = std::max(color_pos_1, color_pos_2) - i1 - 1;
+                    if (color_id_1 == color_id_2) {
                         throw std::runtime_error(
-                                "Vertex " + std::to_string(v1)
+                                "Vertex " + std::to_string(vertex_id_1)
                                 + " and its neighbor vertex "
-                                + std::to_string(v2)
+                                + std::to_string(vertex_id_2)
                                 + " have the same color "
-                                + std::to_string(c1));
+                                + std::to_string(color_id_1));
                     }
                     if (std::numeric_limits<Penalty>::max()
-                            - vertex_penalties[v1] - vertex_penalties[v2]
+                            - vertex_penalties[vertex_id_1] - vertex_penalties[vertex_id_2]
                             > penalties[i1][i2]) {
-                        penalties[i1][i2] += vertex_penalties[v1] + vertex_penalties[v2];
+                        penalties[i1][i2] += vertex_penalties[vertex_id_1] + vertex_penalties[vertex_id_2];
                     } else {
                         penalties[i1][i2] = std::numeric_limits<Penalty>::max();
                     }
@@ -449,48 +466,56 @@ LocalSearchRowWeighting2Output coloringsolver::localsearch_rowweighting_2(
             }
 
             // Find best color combination.
-            cc_bests.clear();
-            Penalty p_best = -1;
-            for (ColorPos c1_pos = 0; c1_pos < solution.number_of_colors(); ++c1_pos) {
-                for (ColorPos c2_pos = c1_pos + 1; c2_pos < solution.number_of_colors(); ++c2_pos) {
-                    if (cc_bests.empty() || p_best > penalties[c1_pos][c2_pos - c1_pos - 1]) {
-                        cc_bests.clear();
-                        cc_bests.push_back({c1_pos, c2_pos});
-                        p_best = penalties[c1_pos][c2_pos - c1_pos - 1];
-                    } else if (!cc_bests.empty() && p_best == penalties[c1_pos][c2_pos - c1_pos - 1]) {
-                        cc_bests.push_back({c1_pos, c2_pos});
+            ccolor_id_bests.clear();
+            Penalty penalty_best = -1;
+            for (ColorPos color_pos_1 = 0;
+                    color_pos_1 < solution.number_of_colors();
+                    ++color_pos_1) {
+                for (ColorPos color_pos_2 = color_pos_1 + 1;
+                        color_pos_2 < solution.number_of_colors();
+                        ++color_pos_2) {
+                    if (ccolor_id_bests.empty() || penalty_best > penalties[color_pos_1][color_pos_2 - color_pos_1 - 1]) {
+                        ccolor_id_bests.clear();
+                        ccolor_id_bests.push_back({color_pos_1, color_pos_2});
+                        penalty_best = penalties[color_pos_1][color_pos_2 - color_pos_1 - 1];
+                    } else if (!ccolor_id_bests.empty()
+                            && penalty_best == penalties[color_pos_1][color_pos_2 - color_pos_1 - 1]) {
+                        ccolor_id_bests.push_back({color_pos_1, color_pos_2});
                     }
                 }
             }
 
             // Apply color merge.
-            std::uniform_int_distribution<EdgeId> d_cc(0, cc_bests.size() - 1);
-            auto cc = cc_bests[d_cc(generator)];
-            ColorId c1_best = *(solution.colors_begin() + cc.first);
-            ColorId c2_best = *(solution.colors_begin() + cc.second);
-            for (VertexId v = 0; v < graph.number_of_vertices(); ++v)
-                if (solution.color(v) == c2_best)
-                    solution.set(v, c1_best);
-            colors.remove(c2_best);
+            std::uniform_int_distribution<EdgeId> d_cc(0, ccolor_id_bests.size() - 1);
+            auto cc = ccolor_id_bests[d_cc(generator)];
+            ColorId color_id_1_best = *(solution.colors_begin() + cc.first);
+            ColorId color_id_2_best = *(solution.colors_begin() + cc.second);
+            for (VertexId vertex_id = 0;
+                    vertex_id < graph.number_of_vertices();
+                    ++vertex_id) {
+                if (solution.color(vertex_id) == color_id_2_best)
+                    solution.set(vertex_id, color_id_1_best);
+            }
+            colors.remove(color_id_2_best);
 
             // Compute core.
             k--;
             if (parameters.enable_core_reduction) {
                 removed_vertices = instance.compute_core(k);
-                for (VertexId v: removed_vertices)
-                    solution.set(v, -1);
+                for (VertexId vertex_id: removed_vertices)
+                    solution.set(vertex_id, -1);
             }
 
             // Remove conflicting vertices.
             std::vector<VertexId> vec;
             for (auto p: solution.conflicting_vertices()) {
-                VertexId v = p.first;
-                vec.push_back(v);
+                VertexId vertex_id = p.first;
+                vec.push_back(vertex_id);
             }
-            for (VertexId v: vec) {
-                if (solution.contains(v)) {
-                    solution.set(v, -1);
-                    uncolored_vertices.add(v);
+            for (VertexId vertex_id: vec) {
+                if (solution.contains(vertex_id)) {
+                    solution.set(vertex_id, -1);
+                    uncolored_vertices.add(vertex_id);
                 }
             }
 
@@ -501,63 +526,70 @@ LocalSearchRowWeighting2Output coloringsolver::localsearch_rowweighting_2(
 
         // Draw randomly a conflicting edge.
         std::uniform_int_distribution<VertexId> d_v(0, uncolored_vertices.size() - 1);
-        VertexId v_cur = *std::next(uncolored_vertices.begin(), d_v(generator));
+        VertexId vertex_id_cur = *std::next(uncolored_vertices.begin(), d_v(generator));
 
         // Find the best swap move.
-        c_bests.clear();
-        Penalty p_best = -1;
-        for (ColorId c: colors)
-            penalties[c] = 0;
-        auto it = graph.neighbors_begin(v_cur);
-        auto it_end = graph.neighbors_end(v_cur);
+        color_id_bests.clear();
+        Penalty penalty_best = -1;
+        for (ColorId color_id: colors)
+            penalties[color_id] = 0;
+        auto it = graph.neighbors_begin(vertex_id_cur);
+        auto it_end = graph.neighbors_end(vertex_id_cur);
         for (; it != it_end; ++it) {
-            VertexId v_neighbor = *it;
-            if (solution.contains(v_neighbor))
-                penalties[solution.color(v_neighbor)] += vertex_penalties[v_neighbor];
-        }
-        for (ColorId c: colors) {
-            if (c_bests.empty() || p_best > penalties[c]) {
-                c_bests.clear();
-                c_bests.push_back(c);
-                p_best = penalties[c];
-            } else if (!c_bests.empty() && p_best == penalties[c]) {
-                c_bests.push_back(c);
+            VertexId vertex_id_neighbor = *it;
+            if (solution.contains(vertex_id_neighbor)) {
+                penalties[solution.color(vertex_id_neighbor)]
+                    += vertex_penalties[vertex_id_neighbor];
             }
         }
-        std::uniform_int_distribution<EdgeId> d_c(0, c_bests.size() - 1);
-        ColorId c_best = c_bests[d_c(generator)];
+        for (ColorId color_id: colors) {
+            if (color_id_bests.empty() || penalty_best > penalties[color_id]) {
+                color_id_bests.clear();
+                color_id_bests.push_back(color_id);
+                penalty_best = penalties[color_id];
+            } else if (!color_id_bests.empty()
+                    && penalty_best == penalties[color_id]) {
+                color_id_bests.push_back(color_id);
+            }
+        }
+        std::uniform_int_distribution<EdgeId> d_c(0, color_id_bests.size() - 1);
+        ColorId color_id_best = color_id_bests[d_c(generator)];
         // Update penalties.
         bool reduce = false;
-        it = graph.neighbors_begin(v_cur);
-        it_end = graph.neighbors_end(v_cur);
+        it = graph.neighbors_begin(vertex_id_cur);
+        it_end = graph.neighbors_end(vertex_id_cur);
         for (; it != it_end; ++it) {
-            VertexId v_neighbor = *it;
-            if (solution.color(v_neighbor) == c_best) {
-                vertex_penalties[v_neighbor]++;
-                if (vertex_penalties[v_neighbor] > std::numeric_limits<Penalty>::max() / 2)
+            VertexId vertex_id_neighbor = *it;
+            if (solution.color(vertex_id_neighbor) == color_id_best) {
+                vertex_penalties[vertex_id_neighbor]++;
+                if (vertex_penalties[vertex_id_neighbor]
+                        > std::numeric_limits<Penalty>::max() / 2)
                     reduce = true;
             }
         }
         if (reduce) {
             //std::cout << "reduce" << std::endl;
-            for (VertexId v = 0; v < graph.number_of_vertices(); ++v)
-                vertex_penalties[v] = (vertex_penalties[v] - 1) / 2 + 1;
-        }
-        // Update solution.
-        solution.set(v_cur, c_best);
-        uncolored_vertices.remove(v_cur);
-        std::vector<VertexId> vertices_to_remove;
-        it = graph.neighbors_begin(v_cur);
-        it_end = graph.neighbors_end(v_cur);
-        for (; it != it_end; ++it) {
-            VertexId v_neighbor = *it;
-            if (solution.color(v_neighbor) == c_best) {
-                vertices_to_remove.push_back(v_neighbor);
-                uncolored_vertices.add(v_neighbor);
+            for (VertexId vertex_id = 0;
+                    vertex_id < graph.number_of_vertices();
+                    ++vertex_id) {
+                vertex_penalties[vertex_id] = (vertex_penalties[vertex_id] - 1) / 2 + 1;
             }
         }
-        for (VertexId v: vertices_to_remove)
-            solution.set(v, -1);
+        // Update solution.
+        solution.set(vertex_id_cur, color_id_best);
+        uncolored_vertices.remove(vertex_id_cur);
+        std::vector<VertexId> vertices_to_remove;
+        it = graph.neighbors_begin(vertex_id_cur);
+        it_end = graph.neighbors_end(vertex_id_cur);
+        for (; it != it_end; ++it) {
+            VertexId vertex_id_neighbor = *it;
+            if (solution.color(vertex_id_neighbor) == color_id_best) {
+                vertices_to_remove.push_back(vertex_id_neighbor);
+                uncolored_vertices.add(vertex_id_neighbor);
+            }
+        }
+        for (VertexId vertex_id: vertices_to_remove)
+            solution.set(vertex_id, -1);
     }
 
     return output.algorithm_end(parameters.info);

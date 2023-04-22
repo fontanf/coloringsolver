@@ -37,12 +37,14 @@ ILOMIPINFOCALLBACK5(loggingCallbackAssignment,
     if (!output.solution.feasible()
             || output.solution.number_of_colors() > getIncumbentObjValue() + 0.5) {
         Solution solution(instance);
-        for (VertexId v = 0; v < instance.graph().number_of_vertices(); ++v) {
-            IloNumArray val(x[v].getEnv());
-            getIncumbentValues(val, x[v]);
-            for (ColorId c = 0; c < upper_bound; ++c)
-                if (val[c] > 0.5)
-                    solution.set(v, c);
+        for (VertexId vertex_id = 0;
+                vertex_id < instance.graph().number_of_vertices();
+                ++vertex_id) {
+            IloNumArray val(x[vertex_id].getEnv());
+            getIncumbentValues(val, x[vertex_id]);
+            for (ColorId color_id = 0; color_id < upper_bound; ++color_id)
+                if (val[color_id] > 0.5)
+                    solution.set(vertex_id, color_id);
         }
         output.update_solution(
                 solution,
@@ -78,47 +80,54 @@ MilpAssignmentCplexOutput coloringsolver::milp_assignment_cplex(
     // Variables
     // x[v][c] == 1 iff vertex v has color c.
     std::vector<IloNumVarArray> x;
-    for (VertexId v = 0; v < graph.number_of_vertices(); ++v)
+    for (VertexId vertex_id = 0;
+            vertex_id < graph.number_of_vertices();
+            ++vertex_id)
         x.push_back(IloNumVarArray(env, upper_bound, 0, 1, ILOBOOL));
     // y[c] == 1 iff color c is used.
     IloNumVarArray y(env, upper_bound, 0, 1, ILOBOOL);
 
     // Objective
     IloExpr expr(env);
-    for (ColorId c = 0; c < upper_bound; ++ c)
-        expr += y[c];
+    for (ColorId color_id = 0; color_id < upper_bound; ++ color_id)
+        expr += y[color_id];
     IloObjective obj = IloMinimize(env, expr);
     model.add(obj);
 
     // Edge constraints
-    for (EdgeId e = 0; e < graph.number_of_edges(); ++e) {
-        for (ColorId c = 0; c < upper_bound; ++c) {
+    for (EdgeId edge_id = 0; edge_id < graph.number_of_edges(); ++edge_id) {
+        for (ColorId color_id = 0; color_id < upper_bound; ++color_id) {
             IloExpr expr(env);
-            expr += x[graph.first_end(e)][c];
-            expr += x[graph.second_end(e)][c];
-            expr -= y[c];
+            expr += x[graph.first_end(edge_id)][color_id];
+            expr += x[graph.second_end(edge_id)][color_id];
+            expr -= y[color_id];
             model.add(expr <= 0);
         }
     }
 
     // Each vertex must have a color.
-    for (VertexId v = 0; v < graph.number_of_vertices(); ++v) {
+    for (VertexId vertex_id = 0;
+            vertex_id < graph.number_of_vertices();
+            ++vertex_id) {
         IloExpr expr(env);
-        for (ColorId c = 0; c < upper_bound; ++c)
-            expr += x[v][c];
+        for (ColorId color_id = 0; color_id < upper_bound; ++color_id)
+            expr += x[vertex_id][color_id];
         model.add(expr == 1);
     }
 
     if (parameters.break_symmetries) {
-        for (ColorId c = 0; c < upper_bound; ++c) {
+        for (ColorId color_id = 0; color_id < upper_bound; ++color_id) {
             IloExpr expr(env);
-            expr += y[c];
-            for (VertexId v = 0; v < graph.number_of_vertices(); ++v)
-                expr -= x[v][c];
+            expr += y[color_id];
+            for (VertexId vertex_id = 0;
+                    vertex_id < graph.number_of_vertices();
+                    ++vertex_id) {
+                expr -= x[vertex_id][color_id];
+            }
             model.add(expr <= 0);
         }
-        for (ColorId c = 1; c < upper_bound; ++c)
-            model.add(y[c] <= y[c - 1]);
+        for (ColorId color_id = 1; color_id < upper_bound; ++color_id)
+            model.add(y[color_id] <= y[color_id - 1]);
     }
 
     IloCplex cplex(model);
@@ -151,10 +160,12 @@ MilpAssignmentCplexOutput coloringsolver::milp_assignment_cplex(
         if (!output.solution.feasible()
                 || output.solution.number_of_colors() > cplex.getObjValue() + 0.5) {
             Solution solution(instance);
-            for (VertexId v = 0; v < graph.number_of_vertices(); ++v)
-                for (ColorId c = 0; c < upper_bound; ++c)
-                    if (cplex.getValue(x[v][c]) > 0.5)
-                        solution.set(v, c);
+            for (VertexId vertex_id = 0;
+                    vertex_id < graph.number_of_vertices();
+                    ++vertex_id)
+                for (ColorId color_id = 0; color_id < upper_bound; ++color_id)
+                    if (cplex.getValue(x[vertex_id][color_id]) > 0.5)
+                        solution.set(vertex_id, color_id);
             output.update_solution(
                     solution,
                     std::stringstream(""),
@@ -168,10 +179,12 @@ MilpAssignmentCplexOutput coloringsolver::milp_assignment_cplex(
         if (!output.solution.feasible()
                 || output.solution.number_of_colors() > cplex.getObjValue() + 0.5) {
             Solution solution(instance);
-            for (VertexId v = 0; v < graph.number_of_vertices(); ++v)
-                for (ColorId c = 0; c < upper_bound; ++c)
-                    if (cplex.getValue(x[v][c]) > 0.5)
-                        solution.set(v, c);
+            for (VertexId vertex_id = 0;
+                    vertex_id < graph.number_of_vertices();
+                    ++vertex_id)
+                for (ColorId color_id = 0; color_id < upper_bound; ++color_id)
+                    if (cplex.getValue(x[vertex_id][color_id]) > 0.5)
+                        solution.set(vertex_id, color_id);
             output.update_solution(
                     solution,
                     std::stringstream(""),
@@ -219,10 +232,14 @@ ILOMIPINFOCALLBACK5(loggingCallbackRepresentatives,
     if (!output.solution.feasible()
             || output.solution.number_of_colors() > getIncumbentObjValue() + 0.5) {
         Solution solution(instance);
-        for (VertexId v1 = 0; v1 < graph.number_of_vertices(); ++v1) {
-            for (VertexId v2 = 0; v2 < graph.number_of_vertices(); ++v2) {
-                if (getIncumbentValue(x[v2][v1]) > 0.5) {
-                    solution.set(v1, v2);
+        for (VertexId vertex_id_1 = 0;
+                vertex_id_1 < graph.number_of_vertices();
+                ++vertex_id_1) {
+            for (VertexId vertex_id_2 = 0;
+                    vertex_id_2 < graph.number_of_vertices();
+                    ++vertex_id_2) {
+                if (getIncumbentValue(x[vertex_id_2][vertex_id_1]) > 0.5) {
+                    solution.set(vertex_id_1, vertex_id_2);
                     break;
                 }
             }
@@ -259,31 +276,44 @@ MilpRepresentativesCplexOutput coloringsolver::milp_representatives_cplex(
     // Variables
     // x[u][v] == 1 iff vertex v is represented by u.
     std::vector<IloNumVarArray> x(graph.number_of_vertices());
-    for (VertexId v = 0; v < graph.number_of_vertices(); ++v)
-        x[v] = IloNumVarArray(env, graph.number_of_vertices(), 0, 1, ILOBOOL);
+    for (VertexId vertex_id = 0;
+            vertex_id < graph.number_of_vertices();
+            ++vertex_id)
+        x[vertex_id] = IloNumVarArray(env, graph.number_of_vertices(), 0, 1, ILOBOOL);
 
     // Objective
     IloExpr expr(env);
-    for (VertexId v = 0; v < graph.number_of_vertices(); ++v)
-        expr += x[v][v];
+    for (VertexId vertex_id = 0;
+            vertex_id < graph.number_of_vertices();
+            ++vertex_id)
+        expr += x[vertex_id][vertex_id];
     IloObjective obj = IloMinimize(env, expr);
     model.add(obj);
 
     // Every vertex v must have a representative (possibly v itself).
-    for (VertexId v = 0; v < graph.number_of_vertices(); ++v) {
+    for (VertexId vertex_id = 0;
+            vertex_id < graph.number_of_vertices();
+            ++vertex_id) {
         IloExpr expr(env);
-        expr += x[v][v];
-        for (auto it = complementary_graph.neighbors_begin(v);
-                it != complementary_graph.neighbors_end(v); ++it) {
-            expr += x[*it][v];
+        expr += x[vertex_id][vertex_id];
+        for (auto it = complementary_graph.neighbors_begin(vertex_id);
+                it != complementary_graph.neighbors_end(vertex_id);
+                ++it) {
+            expr += x[*it][vertex_id];
         }
         model.add(expr >= 1);
     }
 
     // A representative can not represent both endpoints of an edge.
-    for (EdgeId e = 0; e < graph.number_of_edges(); ++e) {
-        for (VertexId v = 0; v < graph.number_of_vertices(); ++v)
-            model.add(x[v][graph.first_end(e)] + x[v][graph.second_end(e)] <= x[v][v]);
+    for (EdgeId edge_id = 0; edge_id < graph.number_of_edges(); ++edge_id) {
+        for (VertexId vertex_id = 0;
+                vertex_id < graph.number_of_vertices();
+                ++vertex_id) {
+            model.add(
+                    x[vertex_id][graph.first_end(edge_id)]
+                    + x[vertex_id][graph.second_end(edge_id)]
+                    <= x[vertex_id][vertex_id]);
+        }
     }
 
     IloCplex cplex(model);
@@ -316,10 +346,14 @@ MilpRepresentativesCplexOutput coloringsolver::milp_representatives_cplex(
         if (!output.solution.feasible()
                 || output.solution.number_of_colors() > cplex.getObjValue() + 0.5) {
             Solution solution(instance);
-            for (VertexId v1 = 0; v1 < graph.number_of_vertices(); ++v1) {
-                for (VertexId v2 = 0; v2 < graph.number_of_vertices(); ++v2) {
-                    if (cplex.getValue(x[v2][v1]) > 0.5) {
-                        solution.set(v1, v2);
+            for (VertexId vertex_id_1 = 0;
+                    vertex_id_1 < graph.number_of_vertices();
+                    ++vertex_id_1) {
+                for (VertexId vertex_id_2 = 0;
+                        vertex_id_2 < graph.number_of_vertices();
+                        ++vertex_id_2) {
+                    if (cplex.getValue(x[vertex_id_2][vertex_id_1]) > 0.5) {
+                        solution.set(vertex_id_1, vertex_id_2);
                         break;
                     }
                 }
@@ -337,10 +371,14 @@ MilpRepresentativesCplexOutput coloringsolver::milp_representatives_cplex(
         if (!output.solution.feasible()
                 || output.solution.number_of_colors() > cplex.getObjValue() + 0.5) {
             Solution solution(instance);
-            for (VertexId v1 = 0; v1 < graph.number_of_vertices(); ++v1) {
-                for (VertexId v2 = 0; v2 < graph.number_of_vertices(); ++v2) {
-                    if (cplex.getValue(x[v2][v1]) > 0.5) {
-                        solution.set(v1, v2);
+            for (VertexId vertex_id_1 = 0;
+                    vertex_id_1 < graph.number_of_vertices();
+                    ++vertex_id_1) {
+                for (VertexId vertex_id_2 = 0;
+                        vertex_id_2 < graph.number_of_vertices();
+                        ++vertex_id_2) {
+                    if (cplex.getValue(x[vertex_id_2][vertex_id_1]) > 0.5) {
+                        solution.set(vertex_id_1, vertex_id_2);
                         break;
                     }
                 }
@@ -393,14 +431,16 @@ ILOMIPINFOCALLBACK6(loggingCallbackPartialOrdering,
     if (!output.solution.feasible()
             || output.solution.number_of_colors() > getIncumbentObjValue() + 0.5) {
         Solution solution(instance);
-        for (VertexId v = 0; v < graph.number_of_vertices(); ++v) {
-            IloNumArray val_y(y[v].getEnv());
-            IloNumArray val_z(z[v].getEnv());
-            getIncumbentValues(val_y, y[v]);
-            getIncumbentValues(val_z, z[v]);
-            for (ColorId c = 0; c < upper_bound; ++c)
-                if (val_y[c] + val_z[c] < 0.5)
-                    solution.set(v, c);
+        for (VertexId vertex_id = 0;
+                vertex_id < graph.number_of_vertices();
+                ++vertex_id) {
+            IloNumArray val_y(y[vertex_id].getEnv());
+            IloNumArray val_z(z[vertex_id].getEnv());
+            getIncumbentValues(val_y, y[vertex_id]);
+            getIncumbentValues(val_z, z[vertex_id]);
+            for (ColorId color_id = 0; color_id < upper_bound; ++color_id)
+                if (val_y[color_id] + val_z[color_id] < 0.5)
+                    solution.set(vertex_id, color_id);
         }
         output.update_solution(solution, std::stringstream(""), parameters.info);
     }
@@ -434,47 +474,66 @@ MilpPartialOrderingCplexOutput coloringsolver::milp_partialordering_cplex(
     // y[v][c] == 1 iff vertex v has color > c.
     // z[v][c] == 1 iff vertex v has color < c.
     std::vector<IloNumVarArray> y;
-    for (VertexId v = 0; v < graph.number_of_vertices(); ++v)
+    for (VertexId vertex_id = 0;
+            vertex_id < graph.number_of_vertices();
+            ++vertex_id)
         y.push_back(IloNumVarArray(env, upper_bound, 0, 1, ILOBOOL));
     std::vector<IloNumVarArray> z;
-    for (VertexId v = 0; v < graph.number_of_vertices(); ++v)
+    for (VertexId vertex_id = 0;
+            vertex_id < graph.number_of_vertices();
+            ++vertex_id)
         z.push_back(IloNumVarArray(env, upper_bound, 0, 1, ILOBOOL));
 
     // Objective
     IloExpr expr(env);
     expr += 1;
-    for (ColorId c = 0; c < upper_bound; ++c)
-        expr += y[0][c];
+    for (ColorId color_id = 0; color_id < upper_bound; ++color_id)
+        expr += y[0][color_id];
     IloObjective obj = IloMinimize(env, expr);
     model.add(obj);
 
     // y and z extreme values
-    for (VertexId v = 0; v < graph.number_of_vertices(); ++v) {
-        model.add(y[v][upper_bound - 1] == 0);
-        model.add(z[v][0]               == 0);
+    for (VertexId vertex_id = 0;
+            vertex_id < graph.number_of_vertices();
+            ++vertex_id) {
+        model.add(y[vertex_id][upper_bound - 1] == 0);
+        model.add(z[vertex_id][0]               == 0);
     }
 
     // If the color of v is > c + 1, then it is > c.
-    for (VertexId v = 0; v < graph.number_of_vertices(); ++v)
-        for (ColorId c = 0; c < upper_bound - 1; ++c)
-            model.add(y[v][c + 1] <= y[v][c]);
-
-    // A vertex has a color either > c or < c + 1
-    for (VertexId v = 0; v < graph.number_of_vertices(); ++v)
-        for (ColorId c = 0; c < upper_bound - 1; ++c)
-            model.add(y[v][c] + z[v][c + 1] == 1);
-
-    // Prevent assigning the same color to two adjacent vertices.
-    for (EdgeId e = 0; e < graph.number_of_edges(); ++e) {
-        VertexId v1 = graph.first_end(e);
-        VertexId v2 = graph.second_end(e);
-        for (ColorId c = 0; c < upper_bound; ++c)
-            model.add(y[v1][c] + z[v1][c] + y[v2][c] + z[v2][c] >= 1);
+    for (VertexId vertex_id = 0;
+            vertex_id < graph.number_of_vertices();
+            ++vertex_id) {
+        for (ColorId color_id = 0; color_id < upper_bound - 1; ++color_id)
+            model.add(y[vertex_id][color_id + 1] <= y[vertex_id][color_id]);
     }
 
-    for (VertexId v = 0; v < graph.number_of_vertices(); ++v)
-        for (ColorId c = 0; c < upper_bound - 1; ++c)
-            model.add(y[0][c] - y[v][c] >= 0);
+    // A vertex has a color either > c or < c + 1
+    for (VertexId vertex_id = 0;
+            vertex_id < graph.number_of_vertices();
+            ++vertex_id) {
+        for (ColorId color_id = 0; color_id < upper_bound - 1; ++color_id)
+            model.add(y[vertex_id][color_id] + z[vertex_id][color_id + 1] == 1);
+    }
+
+    // Prevent assigning the same color to two adjacent vertices.
+    for (EdgeId edge_id = 0; edge_id < graph.number_of_edges(); ++edge_id) {
+        VertexId vertex_id_1 = graph.first_end(edge_id);
+        VertexId vertex_id_2 = graph.second_end(edge_id);
+        for (ColorId color_id = 0; color_id < upper_bound; ++color_id)
+            model.add(
+                    y[vertex_id_1][color_id]
+                    + z[vertex_id_1][color_id]
+                    + y[vertex_id_2][color_id]
+                    + z[vertex_id_2][color_id] >= 1);
+    }
+
+    for (VertexId vertex_id = 0;
+            vertex_id < graph.number_of_vertices();
+            ++vertex_id) {
+        for (ColorId color_id = 0; color_id < upper_bound - 1; ++color_id)
+            model.add(y[0][color_id] - y[vertex_id][color_id] >= 0);
+    }
 
     IloCplex cplex(model);
 
@@ -507,10 +566,15 @@ MilpPartialOrderingCplexOutput coloringsolver::milp_partialordering_cplex(
         if (!output.solution.feasible()
                 || output.solution.number_of_colors() > cplex.getObjValue() + 0.5) {
             Solution solution(instance);
-            for (VertexId v = 0; v < graph.number_of_vertices(); ++v)
-                for (ColorId c = 0; c < upper_bound; ++c)
-                    if (cplex.getValue(y[v][c]) + cplex.getValue(z[v][c]) < 0.5)
-                        solution.set(v, c);
+            for (VertexId vertex_id = 0;
+                    vertex_id < graph.number_of_vertices();
+                    ++vertex_id) {
+                for (ColorId color_id = 0; color_id < upper_bound; ++color_id)
+                    if (cplex.getValue(y[vertex_id][color_id])
+                            + cplex.getValue(z[vertex_id][color_id]) < 0.5) {
+                        solution.set(vertex_id, color_id);
+                    }
+            }
             output.update_solution(
                     solution,
                     std::stringstream(""),
@@ -524,10 +588,15 @@ MilpPartialOrderingCplexOutput coloringsolver::milp_partialordering_cplex(
         if (!output.solution.feasible()
                 || output.solution.number_of_colors() > cplex.getObjValue() + 0.5) {
             Solution solution(instance);
-            for (VertexId v = 0; v < graph.number_of_vertices(); ++v)
-                for (ColorId c = 0; c < upper_bound; ++c)
-                    if (cplex.getValue(y[v][c]) + cplex.getValue(z[v][c]) < 0.5)
-                        solution.set(v, c);
+            for (VertexId vertex_id = 0;
+                    vertex_id < graph.number_of_vertices();
+                    ++vertex_id) {
+                for (ColorId color_id = 0; color_id < upper_bound; ++color_id)
+                    if (cplex.getValue(y[vertex_id][color_id])
+                            + cplex.getValue(z[vertex_id][color_id]) < 0.5) {
+                        solution.set(vertex_id, color_id);
+                    }
+            }
             output.update_solution(
                     solution,
                     std::stringstream(""),
@@ -576,14 +645,16 @@ ILOMIPINFOCALLBACK6(loggingCallbackPartialOrdering2,
     if (!output.solution.feasible()
             || output.solution.number_of_colors() > getIncumbentObjValue() + 0.5) {
         Solution solution(instance);
-        for (VertexId v = 0; v < graph.number_of_vertices(); ++v) {
-            IloNumArray val_y(y[v].getEnv());
-            IloNumArray val_z(z[v].getEnv());
-            getIncumbentValues(val_y, y[v]);
-            getIncumbentValues(val_z, z[v]);
-            for (ColorId c = 0; c < upper_bound; ++c)
-                if (val_y[c] + val_z[c] < 0.5)
-                    solution.set(v, c);
+        for (VertexId vertex_id = 0;
+                vertex_id < graph.number_of_vertices();
+                ++vertex_id) {
+            IloNumArray val_y(y[vertex_id].getEnv());
+            IloNumArray val_z(z[vertex_id].getEnv());
+            getIncumbentValues(val_y, y[vertex_id]);
+            getIncumbentValues(val_z, z[vertex_id]);
+            for (ColorId color_id = 0; color_id < upper_bound; ++color_id)
+                if (val_y[color_id] + val_z[color_id] < 0.5)
+                    solution.set(vertex_id, color_id);
         }
         output.update_solution(
                 solution,
@@ -619,57 +690,84 @@ MilpPartialOrdering2CplexOutput coloringsolver::milp_partialordering2_cplex(
     // Variables
     // x[v][c] == 1 iff vertex v has color c.
     std::vector<IloNumVarArray> x;
-    for (VertexId v = 0; v < graph.number_of_vertices(); ++v)
+    for (VertexId vertex_id = 0;
+            vertex_id < graph.number_of_vertices();
+            ++vertex_id) {
         x.push_back(IloNumVarArray(env, upper_bound, 0, 1, ILOBOOL));
+    }
     // y[v][c] == 1 iff vertex v has color > c.
     // z[v][c] == 1 iff vertex v has color < c.
     std::vector<IloNumVarArray> y;
-    for (VertexId v = 0; v < graph.number_of_vertices(); ++v)
+    for (VertexId vertex_id = 0;
+            vertex_id < graph.number_of_vertices();
+            ++vertex_id) {
         y.push_back(IloNumVarArray(env, upper_bound, 0, 1, ILOBOOL));
+    }
     std::vector<IloNumVarArray> z;
-    for (VertexId v = 0; v < graph.number_of_vertices(); ++v)
+    for (VertexId vertex_id = 0;
+            vertex_id < graph.number_of_vertices();
+            ++vertex_id) {
         z.push_back(IloNumVarArray(env, upper_bound, 0, 1, ILOBOOL));
+    }
 
     // Objective
     IloExpr expr(env);
     expr += 1;
-    for (ColorId c = 0; c < upper_bound; ++c)
-        expr += y[0][c];
+    for (ColorId color_id = 0; color_id < upper_bound; ++color_id)
+        expr += y[0][color_id];
     IloObjective obj = IloMinimize(env, expr);
     model.add(obj);
 
     // y and z extreme values
-    for (VertexId v = 0; v < graph.number_of_vertices(); ++v) {
-        model.add(y[v][upper_bound - 1] == 0);
-        model.add(z[v][0]               == 0);
+    for (VertexId vertex_id = 0;
+            vertex_id < graph.number_of_vertices();
+            ++vertex_id) {
+        model.add(y[vertex_id][upper_bound - 1] == 0);
+        model.add(z[vertex_id][0]               == 0);
     }
 
     // If the color of v is > c + 1, then it is > c.
-    for (VertexId v = 0; v < graph.number_of_vertices(); ++v)
-        for (ColorId c = 0; c < upper_bound - 1; ++c)
-            model.add(y[v][c + 1] <= y[v][c]);
-
-    // A vertex has a color either > c or < c + 1
-    for (VertexId v = 0; v < graph.number_of_vertices(); ++v)
-        for (ColorId c = 0; c < upper_bound - 1; ++c)
-            model.add(y[v][c] + z[v][c + 1] == 1);
-
-    // Link x with y and z.
-    for (VertexId v = 0; v < graph.number_of_vertices(); ++v)
-        for (ColorId c = 0; c < upper_bound; ++c)
-            model.add(x[v][c] + y[v][c] + z[v][c] == 1);
-
-    // Prevent assigning the same color to two adjacent vertices.
-    for (EdgeId e = 0; e < graph.number_of_edges(); ++e) {
-        VertexId v1 = graph.first_end(e);
-        VertexId v2 = graph.second_end(e);
-        for (ColorId c = 0; c < upper_bound; ++c)
-            model.add(x[v1][c] + x[v2][c] <= 1);
+    for (VertexId vertex_id = 0;
+            vertex_id < graph.number_of_vertices();
+            ++vertex_id) {
+        for (ColorId color_id = 0; color_id < upper_bound - 1; ++color_id)
+            model.add(y[vertex_id][color_id + 1] <= y[vertex_id][color_id]);
     }
 
-    for (VertexId v = 0; v < graph.number_of_vertices(); ++v)
-        for (ColorId c = 0; c < upper_bound - 1; ++c)
-            model.add(y[0][c] - y[v][c] >= 0);
+    // A vertex has a color either > c or < c + 1
+    for (VertexId vertex_id = 0;
+            vertex_id < graph.number_of_vertices();
+            ++vertex_id) {
+        for (ColorId color_id = 0; color_id < upper_bound - 1; ++color_id)
+            model.add(y[vertex_id][color_id] + z[vertex_id][color_id + 1] == 1);
+    }
+
+    // Link x with y and z.
+    for (VertexId vertex_id = 0;
+            vertex_id < graph.number_of_vertices();
+            ++vertex_id) {
+        for (ColorId color_id = 0; color_id < upper_bound; ++color_id) {
+            model.add(
+                    x[vertex_id][color_id]
+                    + y[vertex_id][color_id]
+                    + z[vertex_id][color_id] == 1);
+        }
+    }
+
+    // Prevent assigning the same color to two adjacent vertices.
+    for (EdgeId edge_id = 0; edge_id < graph.number_of_edges(); ++edge_id) {
+        VertexId vertex_id_1 = graph.first_end(edge_id);
+        VertexId vertex_id_2 = graph.second_end(edge_id);
+        for (ColorId color_id = 0; color_id < upper_bound; ++color_id)
+            model.add(x[vertex_id_1][color_id] + x[vertex_id_2][color_id] <= 1);
+    }
+
+    for (VertexId vertex_id = 0;
+            vertex_id < graph.number_of_vertices();
+            ++vertex_id) {
+        for (ColorId color_id = 0; color_id < upper_bound - 1; ++color_id)
+            model.add(y[0][color_id] - y[vertex_id][color_id] >= 0);
+    }
 
     IloCplex cplex(model);
 
@@ -702,10 +800,16 @@ MilpPartialOrdering2CplexOutput coloringsolver::milp_partialordering2_cplex(
         if (!output.solution.feasible()
                 || output.solution.number_of_colors() > cplex.getObjValue() + 0.5) {
             Solution solution(instance);
-            for (VertexId v = 0; v < graph.number_of_vertices(); ++v)
-                for (ColorId c = 0; c < upper_bound; ++c)
-                    if (cplex.getValue(y[v][c]) + cplex.getValue(z[v][c]) < 0.5)
-                        solution.set(v, c);
+            for (VertexId vertex_id = 0;
+                    vertex_id < graph.number_of_vertices();
+                    ++vertex_id) {
+                for (ColorId color_id = 0; color_id < upper_bound; ++color_id) {
+                    if (cplex.getValue(y[vertex_id][color_id])
+                            + cplex.getValue(z[vertex_id][color_id]) < 0.5) {
+                        solution.set(vertex_id, color_id);
+                    }
+                }
+            }
             output.update_solution(
                     solution,
                     std::stringstream(""),
@@ -719,10 +823,15 @@ MilpPartialOrdering2CplexOutput coloringsolver::milp_partialordering2_cplex(
         if (!output.solution.feasible()
                 || output.solution.number_of_colors() > cplex.getObjValue() + 0.5) {
             Solution solution(instance);
-            for (VertexId v = 0; v < graph.number_of_vertices(); ++v)
-                for (ColorId c = 0; c < upper_bound; ++c)
-                    if (cplex.getValue(y[v][c]) + cplex.getValue(z[v][c]) < 0.5)
-                        solution.set(v, c);
+            for (VertexId vertex_id = 0;
+                    vertex_id < graph.number_of_vertices();
+                    ++vertex_id) {
+                for (ColorId color_id = 0; color_id < upper_bound; ++color_id) {
+                    if (cplex.getValue(y[vertex_id][color_id])
+                            + cplex.getValue(z[vertex_id][color_id]) < 0.5)
+                        solution.set(vertex_id, color_id);
+                }
+            }
             output.update_solution(
                     solution,
                     std::stringstream(""),

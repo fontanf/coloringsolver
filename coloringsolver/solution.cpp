@@ -29,11 +29,13 @@ Solution::Solution(
     }
 
     ColorId number_of_colors;
-    ColorId c;
+    ColorId color_id;
     file >> number_of_colors;
-    for (VertexId v = 0; v < instance.graph().number_of_vertices(); ++v) {
-        file >> c;
-        set(v, c);
+    for (VertexId vertex_id = 0;
+            vertex_id < instance.graph().number_of_vertices();
+            ++vertex_id) {
+        file >> color_id;
+        set(vertex_id, color_id);
     }
 }
 
@@ -47,8 +49,10 @@ void Solution::write(std::string certificate_path) const
                 "Unable to open file \"" + certificate_path + "\".");
     }
 
-    for (VertexId v = 0; v < instance().graph().number_of_vertices(); ++v)
-        file << color(v) << std::endl;
+    for (VertexId vertex_id = 0;
+            vertex_id < instance().graph().number_of_vertices();
+            ++vertex_id)
+        file << color(vertex_id) << std::endl;
     file.close();
 }
 
@@ -57,8 +61,10 @@ std::ostream& coloringsolver::operator<<(
         const Solution& solution)
 {
     os << solution.number_of_colors() << std::endl;
-    for (VertexId v = 0; v < solution.instance().graph().number_of_vertices(); ++v)
-        os << v << "|" << solution.color(v) << " ";
+    for (VertexId vertex_id = 0;
+            vertex_id < solution.instance().graph().number_of_vertices();
+            ++vertex_id)
+        os << vertex_id << "|" << solution.color(vertex_id) << " ";
     return os;
 }
 
@@ -123,9 +129,12 @@ void Output::update_solution(
         if (solution.number_of_vertices() == 0) {
             solution = solution_new;
         } else {
-            for (VertexId v = 0; v < solution.instance().graph().number_of_vertices(); ++v)
-                if (solution.color(v) != solution_new.color(v))
-                    solution.set(v, solution_new.color(v));
+            for (VertexId vertex_id = 0;
+                    vertex_id < solution.instance().graph().number_of_vertices();
+                    ++vertex_id) {
+                if (solution.color(vertex_id) != solution_new.color(vertex_id))
+                    solution.set(vertex_id, solution_new.color(vertex_id));
+            }
         }
         print(info, s);
 
@@ -194,23 +203,5 @@ Output& Output::algorithm_end(optimizationtools::Info& info)
     info.write_json_output();
     solution.write(info.output->certificate_path);
     return *this;
-}
-
-ColorId coloringsolver::algorithm_end(
-        ColorId lower_bound,
-        optimizationtools::Info& info)
-{
-    double t = round(info.elapsed_time() * 10000) / 10000;
-    info.add_to_json("Bound", "Value", lower_bound);
-    info.add_to_json("Bound", "Time", t);
-    info.os()
-        << std::endl
-        << "Final statistics" << std::endl
-        << "----------------" << std::endl
-        << "Bound:                 " << lower_bound << std::endl
-        << "Time (s):              " << t << std::endl;
-
-    info.write_json_output();
-    return lower_bound;
 }
 

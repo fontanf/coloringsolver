@@ -10,23 +10,28 @@
 namespace coloringsolver
 {
 
+/**
+ * Solution class for a 'coloringsolver' problem.
+ */
 class Solution
 {
 
 public:
 
     /*
-     * Constructors and destructor.
+     * Constructors and destructor
      */
 
     /** Create an empty solution. */
     Solution(const Instance& instance);
 
     /** Create a solution from a certificate file. */
-    Solution(const Instance& instance, std::string certificate_path);
+    Solution(
+            const Instance& instance,
+            std::string certificate_path);
 
     /*
-     * Getters.
+     * Getters
      */
 
     /** Get the instance. */
@@ -39,16 +44,16 @@ public:
     ColorId number_of_colors() const { return map_.number_of_values(); }
 
     /** Return 'true' iff a color is assigned to vertex v in the solution. */
-    bool contains(VertexId v) const { return map_.contains(v); }
+    bool contains(VertexId vertex_id) const { return map_.contains(vertex_id); }
 
     /** Get the color of vertex v. */
-    ColorId color(VertexId v) const { return map_[v]; }
+    ColorId color(VertexId vertex_id) const { return map_[vertex_id]; }
 
     /** Get the number of vertices with an assigned color. */
     VertexPos number_of_vertices() const { return map_.number_of_elements(); }
 
     /** Get the number of vertices with color c. */
-    VertexPos number_of_vertices(ColorId c) const { return map_.number_of_elements(c); }
+    VertexPos number_of_vertices(ColorId color_id) const { return map_.number_of_elements(color_id); }
 
     /** Get the number of conflitcs in the solution. */
     EdgeId number_of_conflicts() const { return total_number_of_conflicts_; }
@@ -66,7 +71,7 @@ public:
     const optimizationtools::IndexedMap<VertexPos>& conflicting_vertices() const { return number_of_conflicts_; }
 
     /*
-     * Setters.
+     * Setters
      */
 
     /**
@@ -76,10 +81,13 @@ public:
      * method faster, but should only be used if this change of color doesn't
      * remove or add any conflict.
      */
-    inline void set(VertexId v, ColorId c, bool check = true);
+    inline void set(
+            VertexId vertex_id,
+            ColorId color_id,
+            bool check = true);
 
     /*
-     * Export.
+     * Export
      */
 
     /** Write the solution to a file. */
@@ -88,7 +96,7 @@ public:
 private:
 
     /*
-     * Private attributes.
+     * Private attributes
      */
 
     /** Instance. */
@@ -111,15 +119,18 @@ private:
 /** Stream insertion operator. */
 std::ostream& operator<<(std::ostream& os, const Solution& solution);
 
-void Solution::set(VertexId v, ColorId c, bool check)
+void Solution::set(
+        VertexId vertex_id,
+        ColorId color_id,
+        bool check)
 {
     const optimizationtools::AbstractGraph& graph = instance().graph();
 
     // Checks.
-    graph.check_vertex_index(v);
-    if (c < -1 || c >= graph.number_of_vertices()) {
+    graph.check_vertex_index(vertex_id);
+    if (color_id < -1 || color_id >= graph.number_of_vertices()) {
         throw std::out_of_range(
-                "Invalid color value: \"" + std::to_string(c) + "\"."
+                "Invalid color value: \"" + std::to_string(color_id) + "\"."
                 + " Color values should belong to [-1, "
                 + std::to_string(number_of_vertices() - 1) + "].");
     }
@@ -127,46 +138,46 @@ void Solution::set(VertexId v, ColorId c, bool check)
     // Update conflicts_.
     if (check) {
         if (instance().adjacency_list_graph() != nullptr) {
-            for (const auto& edge: instance().adjacency_list_graph()->edges(v)) {
+            for (const auto& edge: instance().adjacency_list_graph()->edges(vertex_id)) {
                 // Remove old conflicts.
-                if (contains(edge.v) && color(edge.v) == color(v)) {
+                if (contains(edge.v) && color(edge.v) == color(vertex_id)) {
                     total_number_of_conflicts_--;
                     conflicts_.erase(edge.e);
-                    number_of_conflicts_.set(v, number_of_conflicts_[v] - 1);
+                    number_of_conflicts_.set(vertex_id, number_of_conflicts_[vertex_id] - 1);
                     number_of_conflicts_.set(edge.v, number_of_conflicts_[edge.v] - 1);
                 }
                 // Add new conflicts.
-                if (c != -1 && color(edge.v) == c) {
+                if (color_id != -1 && color(edge.v) == color_id) {
                     total_number_of_conflicts_++;
                     conflicts_.insert(edge.e);
-                    number_of_conflicts_.set(v, number_of_conflicts_[v] + 1);
+                    number_of_conflicts_.set(vertex_id, number_of_conflicts_[vertex_id] + 1);
                     number_of_conflicts_.set(edge.v, number_of_conflicts_[edge.v] + 1);
                 }
             }
         } else {
-            auto it = graph.neighbors_begin(v);
-            auto it_end = graph.neighbors_end(v);
+            auto it = graph.neighbors_begin(vertex_id);
+            auto it_end = graph.neighbors_end(vertex_id);
             for (; it != it_end; ++it) {
                 // Remove old conflicts.
-                if (contains(*it) && color(*it) == color(v)) {
+                if (contains(*it) && color(*it) == color(vertex_id)) {
                     total_number_of_conflicts_--;
-                    number_of_conflicts_.set(v, number_of_conflicts_[v] - 1);
+                    number_of_conflicts_.set(vertex_id, number_of_conflicts_[vertex_id] - 1);
                     number_of_conflicts_.set(*it, number_of_conflicts_[*it] - 1);
                 }
                 // Add new conflicts.
-                if (c != -1 && color(*it) == c) {
+                if (color_id != -1 && color(*it) == color_id) {
                     total_number_of_conflicts_++;
-                    number_of_conflicts_.set(v, number_of_conflicts_[v] + 1);
+                    number_of_conflicts_.set(vertex_id, number_of_conflicts_[vertex_id] + 1);
                     number_of_conflicts_.set(*it, number_of_conflicts_[*it] + 1);
                 }
             }
         }
     }
     // Update map_.
-    if (c != -1) {
-        map_.set(v, c);
+    if (color_id != -1) {
+        map_.set(vertex_id, color_id);
     } else {
-        map_.unset(v);
+        map_.unset(vertex_id);
     }
 }
 
@@ -174,37 +185,52 @@ void Solution::set(VertexId v, ColorId c, bool check)
 //////////////////////////////////// Output ////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+ * Output structure for a 'graphcoloring' problem.
+ */
 struct Output
 {
+    /** Constructor. */
     Output(
             const Instance& instance,
             optimizationtools::Info& info);
 
+    /** Solution. */
     Solution solution;
+
+    /** Lower bound. */
     ColorId lower_bound = 0;
+
+    /** Elapsed time. */
     double time = -1;
 
+    /** Return 'true' iff the solution is optimal. */
     bool optimal() const { return solution.feasible() && solution.number_of_colors() == lower_bound; }
+
+    /** Get the upper bound. */
     ColorId upper_bound() const { return (solution.feasible())? solution.number_of_colors(): solution.instance().graph().maximum_degree() + 1; }
+
+    /** Get the optimality gap. */
     double gap() const;
+
+    /** Print current state. */
     void print(optimizationtools::Info& info, const std::stringstream& s) const;
 
+    /** Update the solution. */
     void update_solution(
             const Solution& solution_new,
             const std::stringstream& s,
             optimizationtools::Info& info);
 
+    /** Update the lower bound. */
     void update_lower_bound(
             ColorId lower_bound_new,
             const std::stringstream& s,
             optimizationtools::Info& info);
 
+    /** Method to call at the end of the algorithm. */
     Output& algorithm_end(optimizationtools::Info& info);
 };
-
-ColorId algorithm_end(
-        ColorId lower_bound,
-        optimizationtools::Info& info);
 
 }
 

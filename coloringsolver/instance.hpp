@@ -20,17 +20,22 @@ using Penalty = int16_t; // p
 using Counter = int64_t;
 using Seed = int64_t;
 
+/**
+ * Instance class for a 'coloringsolver' problem.
+ */
 class Instance
 {
 
 public:
 
     /*
-     * Constructors and destructor.
+     * Constructors and destructor
      */
 
     /** Create an instance from a file. */
-    Instance(std::string instance_path, std::string format);
+    Instance(
+            std::string instance_path,
+            std::string format);
 
     /** Create an instance manually. */
     Instance(VertexId number_of_vertices = 0);
@@ -39,10 +44,10 @@ public:
     VertexId add_vertex(Weight weight = 1) { return adjacency_list_graph_->add_vertex(weight); }
 
     /** Set the weight of vertex 'v' to 'weight'. */
-    void set_weight(VertexId v, Weight weight) { return adjacency_list_graph_->set_weight(v, weight); }
+    void set_weight(VertexId vertex_id, Weight weight) { return adjacency_list_graph_->set_weight(vertex_id, weight); }
 
     /** Add an edge between vertex 'v1' and vertex 'v2'. */
-    void add_edge(VertexId v1, VertexId v2) { adjacency_list_graph_->add_edge(v1, v2); }
+    void add_edge(VertexId vertex_id_1, VertexId vertex_id_2) { adjacency_list_graph_->add_edge(vertex_id_1, vertex_id_2); }
 
     /** Set the weight of all vertices to 1. */
     void set_unweighted() { adjacency_list_graph_->set_unweighted(); }
@@ -61,7 +66,7 @@ public:
     std::vector<VertexId> compute_core(ColorId k) const;
 
     /*
-     * Getters.
+     * Getters
      */
 
     /** Get graph. */
@@ -73,7 +78,7 @@ public:
 private:
 
     /*
-     * Private attributes.
+     * Private attributes
      */
 
     /** Graph. */
