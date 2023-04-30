@@ -52,12 +52,12 @@ Examples:
 
 Instance
 --------
-Name:                data/graphcoloring/1-FullIns_3.col
-Number of vertices:  30
-Number of edges:     100
-Density:             0.229885
-Average degree:      6.66667
-Maximum degree:      11
+Number of vertices:              30
+Number of edges:                 100
+Density:                         0.222222
+Average degree:                  6.66667
+Maximum degree:                  11
+Total weight:                    30
 
 Algorithm
 ---------
@@ -65,8 +65,8 @@ DSATUR
 
        T (s)          UB          LB         GAP     GAP (%)                 Comment
        -----          --          --         ---     -------                 -------
-      0.0001          12           0          12         inf                        
-      0.0001           4           0           4         inf                        
+       0.000          12           0          12         inf                        
+       0.000           4           0           4         inf                        
 
 Final statistics
 ----------------
@@ -74,7 +74,14 @@ Value:                 4
 Bound:                 0
 Gap:                   4
 Gap (%):               inf
-Time (s):              0.0002
+Time (s):              0.0012
+
+Solution
+--------
+Number of vertices:              30 / 30 (100%)
+Number of conflicts:             0
+Feasible:                        1
+Number of colors:                4
 ```
 
 ```shell
@@ -87,11 +94,12 @@ Time (s):              0.0002
 
 Instance
 --------
-Number of vertices:  1000
-Number of edges:     238267
-Density:             0.477011
-Average degree:      476.534
-Maximum degree:      781
+Number of vertices:              1000
+Number of edges:                 238267
+Density:                         0.476534
+Average degree:                  476.534
+Maximum degree:                  781
+Total weight:                    1000
 
 Algorithm
 ---------
@@ -106,24 +114,24 @@ Goal:                                              0
 
        T (s)          UB          LB         GAP     GAP (%)                 Comment
        -----          --          --         ---     -------                 -------
-      0.0002         782           0         782         inf                        
-      0.0068         250           0         250         inf        initial solution
-      0.0088         249           0         249         inf            iteration 29
-      0.0105         248           0         248         inf            iteration 34
-      0.0238         247           0         247         inf          iteration 2473
-      0.0258         246           0         246         inf          iteration 2524
-      0.0289         245           0         245         inf          iteration 2865
-      0.0335         244           0         244         inf          iteration 3514
-      0.0359         243           0         243         inf          iteration 3699
-      0.0383         242           0         242         inf          iteration 3842
-      0.0414         241           0         241         inf          iteration 4197
-      0.0461         240           0         240         inf          iteration 4939
-      0.0565         239           0         239         inf          iteration 7201
-      0.0606         238           0         238         inf          iteration 7791
-      0.0704         237           0         237         inf         iteration 10040
-      0.0775         236           0         236         inf         iteration 11477
-      0.1262         235           0         235         inf         iteration 24907
-      0.1899         234           0         234         inf         iteration 42727
+       0.000         782           0         782         inf                        
+       0.007         250           0         250         inf        initial solution
+       0.009         249           0         249         inf            iteration 29
+       0.011         248           0         248         inf            iteration 34
+       0.022         247           0         247         inf          iteration 2473
+       0.024         246           0         246         inf          iteration 2524
+       0.027         245           0         245         inf          iteration 2865
+       0.031         244           0         244         inf          iteration 3514
+       0.034         243           0         243         inf          iteration 3699
+       0.036         242           0         242         inf          iteration 3842
+       0.039         241           0         241         inf          iteration 4197
+       0.043         240           0         240         inf          iteration 4939
+       0.052         239           0         239         inf          iteration 7201
+       0.056         238           0         238         inf          iteration 7791
+       0.064         237           0         237         inf         iteration 10040
+       0.071         236           0         236         inf         iteration 11477
+       0.113         235           0         235         inf         iteration 24907
+       0.167         234           0         234         inf         iteration 42727
 
 Final statistics
 ----------------
@@ -131,8 +139,15 @@ Value:                 234
 Bound:                 0
 Gap:                   234
 Gap (%):               inf
-Time (s):              0.2167
+Time (s):              0.1905
 Number of iterations:  50000
+
+Solution
+--------
+Number of vertices:              1000 / 1000 (100%)
+Number of conflicts:             0
+Feasible:                        1
+Number of colors:                234
 ```
 
 Benchmarks:
