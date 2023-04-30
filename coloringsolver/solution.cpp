@@ -39,6 +39,40 @@ Solution::Solution(
     }
 }
 
+std::ostream& Solution::print(
+        std::ostream& os,
+        int verbose) const
+{
+    if (verbose >= 1) {
+        os
+            << "Number of vertices:              " << optimizationtools::Ratio<VertexId>(number_of_vertices(), instance().graph().number_of_vertices()) << std::endl
+            << "Number of conflicts:             " << number_of_conflicts() << std::endl
+            << "Feasible:                        " << feasible() << std::endl
+            << "Number of colors:                " << number_of_colors() << std::endl
+            ;
+    }
+
+    if (verbose >= 2) {
+        os << std::endl
+            << std::setw(12) << "VertexId"
+            << std::setw(12) << "Color"
+            << std::endl
+            << std::setw(12) << "--------"
+            << std::setw(12) << "------"
+            << std::endl;
+        for (VertexId vertex_id = 0;
+                vertex_id < instance().graph().number_of_vertices();
+                ++vertex_id) {
+            os
+                << std::setw(12) << vertex_id
+                << std::setw(12) << color(vertex_id)
+                << std::endl;
+        }
+    }
+
+    return os;
+}
+
 void Solution::write(std::string certificate_path) const 
 {
     if (certificate_path.empty())
@@ -54,18 +88,6 @@ void Solution::write(std::string certificate_path) const
             ++vertex_id)
         file << color(vertex_id) << std::endl;
     file.close();
-}
-
-std::ostream& coloringsolver::operator<<(
-        std::ostream& os,
-        const Solution& solution)
-{
-    os << solution.number_of_colors() << std::endl;
-    for (VertexId vertex_id = 0;
-            vertex_id < solution.instance().graph().number_of_vertices();
-            ++vertex_id)
-        os << vertex_id << "|" << solution.color(vertex_id) << " ";
-    return os;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -199,6 +221,11 @@ Output& Output::algorithm_end(optimizationtools::Info& info)
         << "Gap:                   " << upper_bound() - lower_bound << std::endl
         << "Gap (%):               " << gap << std::endl
         << "Time (s):              " << t << std::endl;
+    print_statistics(info);
+    info.os() << std::endl
+        << "Solution" << std::endl
+        << "--------" << std::endl ;
+    solution.print(info.os(), info.verbosity_level());
 
     info.write_json_output();
     solution.write(info.output->certificate_path);

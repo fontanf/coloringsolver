@@ -21,7 +21,7 @@ using Counter = int64_t;
 using Seed = int64_t;
 
 /**
- * Instance class for a 'coloringsolver' problem.
+ * Instance class for a graph coloring problem.
  */
 class Instance
 {
@@ -75,6 +75,15 @@ public:
     /** Get the adjacency list graph. */
     inline const optimizationtools::AdjacencyListGraph* adjacency_list_graph() const { return adjacency_list_graph_; }
 
+    /*
+     * Export
+     */
+
+    /** Print the instance. */
+    std::ostream& print(
+            std::ostream& os,
+            int verbose = 1) const;
+
 private:
 
     /*
@@ -92,9 +101,6 @@ private:
     optimizationtools::AdjacencyListGraph* adjacency_list_graph_ = nullptr;
 
 };
-
-/** Stream insertion operator. */
-std::ostream& operator<<(std::ostream &os, const Instance& ins);
 
 void init_display(
         const Instance& instance,

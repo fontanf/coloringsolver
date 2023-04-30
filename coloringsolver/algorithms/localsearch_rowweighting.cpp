@@ -10,13 +10,13 @@ using namespace coloringsolver;
 /////////////////////////// localsearch_rowweighting ///////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
-LocalSearchRowWeightingOutput& LocalSearchRowWeightingOutput::algorithm_end(
-        optimizationtools::Info& info)
+void LocalSearchRowWeightingOutput::print_statistics(
+        optimizationtools::Info& info) const
 {
+    if (info.verbosity_level() >= 1) {
+        info.os() << "Number of iterations:  " << number_of_iterations << std::endl;
+    }
     info.add_to_json("Algorithm", "NumberOfIterations", number_of_iterations);
-    Output::algorithm_end(info);
-    info.os() << "Number of iterations:  " << number_of_iterations << std::endl;
-    return *this;
 }
 
 struct LocalSearchRowWeightingVertex
@@ -62,10 +62,14 @@ LocalSearchRowWeightingOutput coloringsolver::localsearch_rowweighting(
     parameters.info.lock();
     parameters.new_solution_callback(output);
     parameters.info.unlock();
-    if (output.solution.number_of_colors() <= parameters.goal)
-        return output.algorithm_end(parameters.info);
-    if (output.solution.number_of_colors() == 1)
-        return output.algorithm_end(parameters.info);
+    if (output.solution.number_of_colors() <= parameters.goal) {
+        output.algorithm_end(parameters.info);
+        return output;
+    }
+    if (output.solution.number_of_colors() == 1) {
+        output.algorithm_end(parameters.info);
+        return output;
+    }
 
     // Initialize local search structures.
     std::vector<LocalSearchRowWeightingVertex> vertices(graph.number_of_vertices());
@@ -226,8 +230,10 @@ LocalSearchRowWeightingOutput coloringsolver::localsearch_rowweighting(
             }
 
             if (output.solution.number_of_colors() == 2
-                    && !solution.feasible())
-                return output.algorithm_end(parameters.info);
+                    && !solution.feasible()) {
+                output.algorithm_end(parameters.info);
+                return output;
+            }
         }
 
         // Draw randomly a conflicting edge.
@@ -241,8 +247,10 @@ LocalSearchRowWeightingOutput coloringsolver::localsearch_rowweighting(
             for (ColorId color_id: colors)
                 penalties[color_id] = 0;
             for (const auto& edge: graph.edges(vertex_id)) {
-                if (solution.contains(edge.v))
-                    penalties[solution.color(edge.v)] += solution_penalties[edge.e];
+                if (solution.contains(edge.vertex_id)) {
+                    penalties[solution.color(edge.vertex_id)]
+                        += solution_penalties[edge.edge_id];
+                }
             }
             for (ColorId color_id: colors) {
                 if (color_id == solution.color(vertex_id))
@@ -266,9 +274,9 @@ LocalSearchRowWeightingOutput coloringsolver::localsearch_rowweighting(
         bool reduce = false;
 
         for (const auto& edge: graph.edges(vc.first)) {
-            if (solution.color(edge.v) == vc.second) {
-                solution_penalties[edge.e]++;
-                if (solution_penalties[edge.e] > std::numeric_limits<Penalty>::max() / 2)
+            if (solution.color(edge.vertex_id) == vc.second) {
+                solution_penalties[edge.edge_id]++;
+                if (solution_penalties[edge.edge_id] > std::numeric_limits<Penalty>::max() / 2)
                     reduce = true;
             }
         }
@@ -284,21 +292,22 @@ LocalSearchRowWeightingOutput coloringsolver::localsearch_rowweighting(
         solution.set(vc.first, vc.second);
     }
 
-    return output.algorithm_end(parameters.info);
-}
-
-LocalSearchRowWeighting2Output& LocalSearchRowWeighting2Output::algorithm_end(
-        optimizationtools::Info& info)
-{
-    info.add_to_json("Algorithm", "NumberOfIterations", number_of_iterations);
-    Output::algorithm_end(info);
-    info.os() << "Number of iterations:  " << number_of_iterations << std::endl;
-    return *this;
+    output.algorithm_end(parameters.info);
+    return output;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////// localsearch_rowweighting_2 //////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
+
+void LocalSearchRowWeighting2Output::print_statistics(
+        optimizationtools::Info& info) const
+{
+    if (info.verbosity_level() >= 1) {
+        info.os() << "Number of iterations:  " << number_of_iterations << std::endl;
+    }
+    info.add_to_json("Algorithm", "NumberOfIterations", number_of_iterations);
+}
 
 LocalSearchRowWeighting2Output coloringsolver::localsearch_rowweighting_2(
         const Instance& instance,
@@ -335,10 +344,14 @@ LocalSearchRowWeighting2Output coloringsolver::localsearch_rowweighting_2(
     parameters.info.lock();
     parameters.new_solution_callback(output);
     parameters.info.unlock();
-    if (output.solution.number_of_colors() <= parameters.goal)
-        return output.algorithm_end(parameters.info);
-    if (output.solution.number_of_colors() == 1)
-        return output.algorithm_end(parameters.info);
+    if (output.solution.number_of_colors() <= parameters.goal) {
+        output.algorithm_end(parameters.info);
+        return output;
+    }
+    if (output.solution.number_of_colors() == 1) {
+        output.algorithm_end(parameters.info);
+        return output;
+    }
 
     // Initialize local search structures.
     Counter number_of_iterations_without_improvement = 0;
@@ -520,8 +533,10 @@ LocalSearchRowWeighting2Output coloringsolver::localsearch_rowweighting_2(
             }
 
             if (output.solution.number_of_colors() == 2
-                    && !solution.feasible())
-                return output.algorithm_end(parameters.info);
+                    && !solution.feasible()) {
+                output.algorithm_end(parameters.info);
+                return output;
+            }
         }
 
         // Draw randomly a conflicting edge.
@@ -592,6 +607,7 @@ LocalSearchRowWeighting2Output coloringsolver::localsearch_rowweighting_2(
             solution.set(vertex_id, -1);
     }
 
-    return output.algorithm_end(parameters.info);
+    output.algorithm_end(parameters.info);
+    return output;
 }
 

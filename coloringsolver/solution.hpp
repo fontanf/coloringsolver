@@ -11,7 +11,7 @@ namespace coloringsolver
 {
 
 /**
- * Solution class for a 'coloringsolver' problem.
+ * Solution class for a graph coloring problem.
  */
 class Solution
 {
@@ -46,13 +46,13 @@ public:
     /** Return 'true' iff a color is assigned to vertex v in the solution. */
     bool contains(VertexId vertex_id) const { return map_.contains(vertex_id); }
 
-    /** Get the color of vertex v. */
+    /** Get the color of a vertex. */
     ColorId color(VertexId vertex_id) const { return map_[vertex_id]; }
 
     /** Get the number of vertices with an assigned color. */
     VertexPos number_of_vertices() const { return map_.number_of_elements(); }
 
-    /** Get the number of vertices with color c. */
+    /** Get the number of vertices with a given color. */
     VertexPos number_of_vertices(ColorId color_id) const { return map_.number_of_elements(color_id); }
 
     /** Get the number of conflitcs in the solution. */
@@ -90,6 +90,11 @@ public:
      * Export
      */
 
+    /** Print the instance. */
+    std::ostream& print(
+            std::ostream& os,
+            int verbose = 1) const;
+
     /** Write the solution to a file. */
     void write(std::string certificate_path) const;
 
@@ -116,9 +121,6 @@ private:
 
 };
 
-/** Stream insertion operator. */
-std::ostream& operator<<(std::ostream& os, const Solution& solution);
-
 void Solution::set(
         VertexId vertex_id,
         ColorId color_id,
@@ -140,18 +142,28 @@ void Solution::set(
         if (instance().adjacency_list_graph() != nullptr) {
             for (const auto& edge: instance().adjacency_list_graph()->edges(vertex_id)) {
                 // Remove old conflicts.
-                if (contains(edge.v) && color(edge.v) == color(vertex_id)) {
+                if (contains(edge.vertex_id)
+                        && color(edge.vertex_id) == color(vertex_id)) {
                     total_number_of_conflicts_--;
-                    conflicts_.erase(edge.e);
-                    number_of_conflicts_.set(vertex_id, number_of_conflicts_[vertex_id] - 1);
-                    number_of_conflicts_.set(edge.v, number_of_conflicts_[edge.v] - 1);
+                    conflicts_.erase(edge.edge_id);
+                    number_of_conflicts_.set(
+                            vertex_id,
+                            number_of_conflicts_[vertex_id] - 1);
+                    number_of_conflicts_.set(
+                            edge.vertex_id,
+                            number_of_conflicts_[edge.vertex_id] - 1);
                 }
                 // Add new conflicts.
-                if (color_id != -1 && color(edge.v) == color_id) {
+                if (color_id != -1
+                        && color(edge.vertex_id) == color_id) {
                     total_number_of_conflicts_++;
-                    conflicts_.insert(edge.e);
-                    number_of_conflicts_.set(vertex_id, number_of_conflicts_[vertex_id] + 1);
-                    number_of_conflicts_.set(edge.v, number_of_conflicts_[edge.v] + 1);
+                    conflicts_.insert(edge.edge_id);
+                    number_of_conflicts_.set(
+                            vertex_id,
+                            number_of_conflicts_[vertex_id] + 1);
+                    number_of_conflicts_.set(
+                            edge.vertex_id,
+                            number_of_conflicts_[edge.vertex_id] + 1);
                 }
             }
         } else {
@@ -159,16 +171,26 @@ void Solution::set(
             auto it_end = graph.neighbors_end(vertex_id);
             for (; it != it_end; ++it) {
                 // Remove old conflicts.
-                if (contains(*it) && color(*it) == color(vertex_id)) {
+                if (contains(*it)
+                        && color(*it) == color(vertex_id)) {
                     total_number_of_conflicts_--;
-                    number_of_conflicts_.set(vertex_id, number_of_conflicts_[vertex_id] - 1);
-                    number_of_conflicts_.set(*it, number_of_conflicts_[*it] - 1);
+                    number_of_conflicts_.set(
+                            vertex_id,
+                            number_of_conflicts_[vertex_id] - 1);
+                    number_of_conflicts_.set(
+                            *it,
+                            number_of_conflicts_[*it] - 1);
                 }
                 // Add new conflicts.
-                if (color_id != -1 && color(*it) == color_id) {
+                if (color_id != -1
+                        && color(*it) == color_id) {
                     total_number_of_conflicts_++;
-                    number_of_conflicts_.set(vertex_id, number_of_conflicts_[vertex_id] + 1);
-                    number_of_conflicts_.set(*it, number_of_conflicts_[*it] + 1);
+                    number_of_conflicts_.set(
+                            vertex_id,
+                            number_of_conflicts_[vertex_id] + 1);
+                    number_of_conflicts_.set(
+                            *it,
+                            number_of_conflicts_[*it] + 1);
                 }
             }
         }
@@ -186,7 +208,7 @@ void Solution::set(
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
- * Output structure for a 'graphcoloring' problem.
+ * Output structure for a graph coloring problem.
  */
 struct Output
 {
@@ -214,7 +236,9 @@ struct Output
     double gap() const;
 
     /** Print current state. */
-    void print(optimizationtools::Info& info, const std::stringstream& s) const;
+    void print(
+            optimizationtools::Info& info,
+            const std::stringstream& s) const;
 
     /** Update the solution. */
     void update_solution(
@@ -227,6 +251,10 @@ struct Output
             ColorId lower_bound_new,
             const std::stringstream& s,
             optimizationtools::Info& info);
+
+    /** Print the algorithm statistics. */
+    virtual void print_statistics(
+            optimizationtools::Info& info) const { (void)info; }
 
     /** Method to call at the end of the algorithm. */
     Output& algorithm_end(optimizationtools::Info& info);

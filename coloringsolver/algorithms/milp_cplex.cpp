@@ -12,19 +12,10 @@ ILOSTLBEGIN
 ////////////////////////// Assignment-based ILP model //////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
-MilpAssignmentCplexOutput& MilpAssignmentCplexOutput::algorithm_end(
-        optimizationtools::Info& info)
-{
-    //info.add_to_json("Algorithm", "Iterations", it);
-    Output::algorithm_end(info);
-    //info.os() << "Iterations: " << it << std::endl;
-    return *this;
-}
-
 ILOMIPINFOCALLBACK5(loggingCallbackAssignment,
                     const Instance&, instance,
                     MilpAssignmentCplexOptionalParameters&, parameters,
-                    MilpAssignmentCplexOutput&, output,
+                    Output&, output,
                     ColorId, upper_bound,
                     std::vector<IloNumVarArray>&, x)
 {
@@ -53,7 +44,7 @@ ILOMIPINFOCALLBACK5(loggingCallbackAssignment,
     }
 }
 
-MilpAssignmentCplexOutput coloringsolver::milp_assignment_cplex(
+Output coloringsolver::milp_assignment_cplex(
         const Instance& instance,
         MilpAssignmentCplexOptionalParameters parameters)
 {
@@ -70,7 +61,7 @@ MilpAssignmentCplexOutput coloringsolver::milp_assignment_cplex(
     }
     const optimizationtools::AdjacencyListGraph& graph = *instance.adjacency_list_graph();
 
-    MilpAssignmentCplexOutput output(instance, parameters.info);
+    Output output(instance, parameters.info);
 
     IloEnv env;
     IloModel model(env);
@@ -206,19 +197,10 @@ MilpAssignmentCplexOutput coloringsolver::milp_assignment_cplex(
 ////////////////////////// Representatives ILP model ///////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
-MilpRepresentativesCplexOutput& MilpRepresentativesCplexOutput::algorithm_end(
-        optimizationtools::Info& info)
-{
-    //info.add_to_json("Algorithm", "Iterations", it);
-    Output::algorithm_end(info);
-    //info.os() "Iterations: " << it << std::endl;
-    return *this;
-}
-
 ILOMIPINFOCALLBACK5(loggingCallbackRepresentatives,
                     const Instance&, instance,
                     MilpRepresentativesCplexOptionalParameters&, parameters,
-                    MilpRepresentativesCplexOutput&, output,
+                    Output&, output,
                     const optimizationtools::AdjacencyListGraph&, complementary_graph,
                     std::vector<IloNumVarArray>&, x)
 {
@@ -248,7 +230,7 @@ ILOMIPINFOCALLBACK5(loggingCallbackRepresentatives,
     }
 }
 
-MilpRepresentativesCplexOutput coloringsolver::milp_representatives_cplex(
+Output coloringsolver::milp_representatives_cplex(
         const Instance& instance,
         MilpRepresentativesCplexOptionalParameters parameters)
 {
@@ -265,7 +247,7 @@ MilpRepresentativesCplexOutput coloringsolver::milp_representatives_cplex(
     }
     const optimizationtools::AdjacencyListGraph& graph = *instance.adjacency_list_graph();
 
-    MilpRepresentativesCplexOutput output(instance, parameters.info);
+    Output output(instance, parameters.info);
 
     IloEnv env;
     IloModel model(env);
@@ -404,19 +386,10 @@ MilpRepresentativesCplexOutput coloringsolver::milp_representatives_cplex(
 /////////////////////// Partial-ordering based ILP model ///////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
-MilpPartialOrderingCplexOutput& MilpPartialOrderingCplexOutput::algorithm_end(
-        optimizationtools::Info& info)
-{
-    //info.add_to_json("Algorithm", "Iterations", it);
-    Output::algorithm_end(info);
-    //info.os() << "Iterations: " << it << std::endl;
-    return *this;
-}
-
 ILOMIPINFOCALLBACK6(loggingCallbackPartialOrdering,
                     const Instance&, instance,
                     MilpPartialOrderingCplexOptionalParameters&, parameters,
-                    MilpPartialOrderingCplexOutput&, output,
+                    Output&, output,
                     ColorId, upper_bound,
                     std::vector<IloNumVarArray>&, y,
                     std::vector<IloNumVarArray>&, z)
@@ -446,7 +419,7 @@ ILOMIPINFOCALLBACK6(loggingCallbackPartialOrdering,
     }
 }
 
-MilpPartialOrderingCplexOutput coloringsolver::milp_partialordering_cplex(
+Output coloringsolver::milp_partialordering_cplex(
         const Instance& instance,
         MilpPartialOrderingCplexOptionalParameters parameters)
 {
@@ -463,7 +436,7 @@ MilpPartialOrderingCplexOutput coloringsolver::milp_partialordering_cplex(
     }
     const optimizationtools::AdjacencyListGraph& graph = *instance.adjacency_list_graph();
 
-    MilpPartialOrderingCplexOutput output(instance, parameters.info);
+    Output output(instance, parameters.info);
 
     IloEnv env;
     IloModel model(env);
@@ -618,19 +591,10 @@ MilpPartialOrderingCplexOutput coloringsolver::milp_partialordering_cplex(
 ////////////////////// Partial-ordering based ILP model 2 //////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
-MilpPartialOrdering2CplexOutput& MilpPartialOrdering2CplexOutput::algorithm_end(
-        optimizationtools::Info& info)
-{
-    //info.add_to_json("Algorithm", "Iterations", it);
-    Output::algorithm_end(info);
-    //info.os() << "Iterations: " << it << std::endl;
-    return *this;
-}
-
 ILOMIPINFOCALLBACK6(loggingCallbackPartialOrdering2,
                     const Instance&, instance,
                     MilpPartialOrdering2CplexOptionalParameters&, parameters,
-                    MilpPartialOrdering2CplexOutput&, output,
+                    Output&, output,
                     ColorId, upper_bound,
                     std::vector<IloNumVarArray>&, y,
                     std::vector<IloNumVarArray>&, z)
@@ -663,7 +627,7 @@ ILOMIPINFOCALLBACK6(loggingCallbackPartialOrdering2,
     }
 }
 
-MilpPartialOrdering2CplexOutput coloringsolver::milp_partialordering2_cplex(
+Output coloringsolver::milp_partialordering2_cplex(
         const Instance& instance,
         MilpPartialOrdering2CplexOptionalParameters parameters)
 {
@@ -680,7 +644,7 @@ MilpPartialOrdering2CplexOutput coloringsolver::milp_partialordering2_cplex(
     }
     const optimizationtools::AdjacencyListGraph& graph = *instance.adjacency_list_graph();
 
-    MilpPartialOrdering2CplexOutput output(instance, parameters.info);
+    Output output(instance, parameters.info);
 
     IloEnv env;
     IloModel model(env);

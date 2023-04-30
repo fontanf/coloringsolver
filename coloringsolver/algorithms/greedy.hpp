@@ -18,9 +18,13 @@ std::ostream& operator<<(std::ostream &os, Ordering ordering);
 
 struct GreedyOptionalParameters
 {
+    /** Ordering. */
     Ordering ordering = Ordering::DynamicLargestFirst;
+
+    /** Reverse ordering. */
     bool reverse = false;
 
+    /** Info structure. */
     optimizationtools::Info info = optimizationtools::Info();
 };
 

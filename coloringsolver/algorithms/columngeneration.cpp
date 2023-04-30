@@ -40,27 +40,6 @@ using ColIdx = columngenerationsolver::ColIdx;
 using Value = columngenerationsolver::Value;
 using Column = columngenerationsolver::Column;
 
-ColumnGenerationHeuristicGreedyOutput& ColumnGenerationHeuristicGreedyOutput::algorithm_end(
-        optimizationtools::Info& info)
-{
-    Output::algorithm_end(info);
-    return *this;
-}
-
-ColumnGenerationHeuristicLimitedDiscrepancySearchOutput& ColumnGenerationHeuristicLimitedDiscrepancySearchOutput::algorithm_end(
-        optimizationtools::Info& info)
-{
-    Output::algorithm_end(info);
-    return *this;
-}
-
-ColumnGenerationHeuristicHeuristicTreeSearchOutput& ColumnGenerationHeuristicHeuristicTreeSearchOutput::algorithm_end(
-        optimizationtools::Info& info)
-{
-    Output::algorithm_end(info);
-    return *this;
-}
-
 class PricingSolver: public columngenerationsolver::PricingSolver
 {
 
@@ -220,7 +199,7 @@ std::vector<Column> PricingSolver::solve_pricing(
     return {column};
 }
 
-ColumnGenerationHeuristicGreedyOutput coloringsolver::columngenerationheuristic_greedy(
+Output coloringsolver::columngenerationheuristic_greedy(
         const Instance& instance, ColumnGenerationOptionalParameters parameters)
 {
     init_display(instance, parameters.info);
@@ -229,7 +208,7 @@ ColumnGenerationHeuristicGreedyOutput coloringsolver::columngenerationheuristic_
         << "---------" << std::endl
         << "Column generation heuristic - Greedy" << std::endl
         << std::endl;
-    ColumnGenerationHeuristicGreedyOutput output(instance, parameters.info);
+    Output output(instance, parameters.info);
 
     columngenerationsolver::Parameters p = get_parameters(instance);
     columngenerationsolver::GreedyOptionalParameters op;
@@ -260,7 +239,7 @@ ColumnGenerationHeuristicGreedyOutput coloringsolver::columngenerationheuristic_
     return output.algorithm_end(parameters.info);
 }
 
-ColumnGenerationHeuristicLimitedDiscrepancySearchOutput coloringsolver::columngenerationheuristic_limiteddiscrepancysearch(
+Output coloringsolver::columngenerationheuristic_limiteddiscrepancysearch(
         const Instance& instance, ColumnGenerationOptionalParameters parameters)
 {
     init_display(instance, parameters.info);
@@ -269,7 +248,7 @@ ColumnGenerationHeuristicLimitedDiscrepancySearchOutput coloringsolver::columnge
         << "---------" << std::endl
         << "Column generation heuristic - Limited discrepancy search" << std::endl
         << std::endl;
-    ColumnGenerationHeuristicLimitedDiscrepancySearchOutput output(instance, parameters.info);
+    Output output(instance, parameters.info);
 
     columngenerationsolver::Parameters p = get_parameters(instance);
     columngenerationsolver::LimitedDiscrepancySearchOptionalParameters op;
@@ -303,7 +282,7 @@ ColumnGenerationHeuristicLimitedDiscrepancySearchOutput coloringsolver::columnge
     return output.algorithm_end(parameters.info);
 }
 
-ColumnGenerationHeuristicHeuristicTreeSearchOutput coloringsolver::columngenerationheuristic_heuristictreesearch(
+Output coloringsolver::columngenerationheuristic_heuristictreesearch(
         const Instance& instance, ColumnGenerationOptionalParameters parameters)
 {
     init_display(instance, parameters.info);
@@ -312,7 +291,7 @@ ColumnGenerationHeuristicHeuristicTreeSearchOutput coloringsolver::columngenerat
         << "---------" << std::endl
         << "Column generation heuristic - Heuristic tree search" << std::endl
         << std::endl;
-    ColumnGenerationHeuristicHeuristicTreeSearchOutput output(instance, parameters.info);
+    Output output(instance, parameters.info);
 
     columngenerationsolver::Parameters p = get_parameters(instance);
     columngenerationsolver::HeuristicTreeSearchOptionalParameters op;

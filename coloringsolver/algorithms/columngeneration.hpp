@@ -7,69 +7,22 @@ namespace coloringsolver
 
 struct ColumnGenerationOptionalParameters
 {
-    optimizationtools::Info info = optimizationtools::Info();
-
+    /** Linear programming solver. */
     std::string linear_programming_solver = "CLP";
+
+    /** Info structure. */
+    optimizationtools::Info info = optimizationtools::Info();
 };
 
-////////////////////////////////////////////////////////////////////////////////
-///////////////////// Column Generation Heuristic: Greedy //////////////////////
-////////////////////////////////////////////////////////////////////////////////
-
-struct ColumnGenerationHeuristicGreedyOutput: Output
-{
-    ColumnGenerationHeuristicGreedyOutput(const Instance& instance, optimizationtools::Info& info): Output(instance, info) { }
-    ColumnGenerationHeuristicGreedyOutput& algorithm_end(optimizationtools::Info& info);
-
-    std::vector<double> solution;
-    std::vector<std::vector<double>> x;
-};
-
-ColumnGenerationHeuristicGreedyOutput columngenerationheuristic_greedy(
+Output columngenerationheuristic_greedy(
         const Instance& instance,
         ColumnGenerationOptionalParameters parameters = {});
 
-////////////////////////////////////////////////////////////////////////////////
-/////////// Column Generation Heuristic: Limited Discrepancy Search ////////////
-////////////////////////////////////////////////////////////////////////////////
-
-struct ColumnGenerationHeuristicLimitedDiscrepancySearchOutput: Output
-{
-    ColumnGenerationHeuristicLimitedDiscrepancySearchOutput(
-            const Instance& instance,
-            optimizationtools::Info& info):
-        Output(instance, info) { }
-
-    ColumnGenerationHeuristicLimitedDiscrepancySearchOutput& algorithm_end(
-            optimizationtools::Info& info);
-
-    std::vector<double> solution;
-    std::vector<std::vector<double>> x;
-};
-
-ColumnGenerationHeuristicLimitedDiscrepancySearchOutput columngenerationheuristic_limiteddiscrepancysearch(
+Output columngenerationheuristic_limiteddiscrepancysearch(
         const Instance& instance,
         ColumnGenerationOptionalParameters parameters = {});
 
-////////////////////////////////////////////////////////////////////////////////
-////////////// Column Generation Heuristic: Heuristic Tree Search //////////////
-////////////////////////////////////////////////////////////////////////////////
-
-struct ColumnGenerationHeuristicHeuristicTreeSearchOutput: Output
-{
-    ColumnGenerationHeuristicHeuristicTreeSearchOutput(
-            const Instance& instance,
-            optimizationtools::Info& info):
-        Output(instance, info) { }
-
-    ColumnGenerationHeuristicHeuristicTreeSearchOutput& algorithm_end(
-            optimizationtools::Info& info);
-
-    std::vector<double> solution;
-    std::vector<std::vector<double>> x;
-};
-
-ColumnGenerationHeuristicHeuristicTreeSearchOutput columngenerationheuristic_heuristictreesearch(
+Output columngenerationheuristic_heuristictreesearch(
         const Instance& instance,
         ColumnGenerationOptionalParameters parameters = {});
 
