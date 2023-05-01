@@ -20,7 +20,7 @@ ILOMIPINFOCALLBACK5(loggingCallbackAssignment,
                     std::vector<IloNumVarArray>&, x)
 {
     ColorId lb = std::ceil(getBestObjValue() - FFOT_TOL);
-    output.update_lower_bound(lb, std::stringstream(""), parameters.info);
+    output.update_bound(lb, std::stringstream(""), parameters.info);
 
     if (!hasIncumbent())
         return;
@@ -162,7 +162,7 @@ Output coloringsolver::milp_assignment_cplex(
                     std::stringstream(""),
                     parameters.info);
         }
-        output.update_lower_bound(
+        output.update_bound(
                 output.solution.number_of_colors(),
                 std::stringstream(""),
                 parameters.info);
@@ -182,10 +182,10 @@ Output coloringsolver::milp_assignment_cplex(
                     parameters.info);
         }
         ColorId lb = std::ceil(cplex.getBestObjValue() - FFOT_TOL);
-        output.update_lower_bound(lb, std::stringstream(""), parameters.info);
+        output.update_bound(lb, std::stringstream(""), parameters.info);
     } else {
         ColorId lb = std::ceil(cplex.getBestObjValue() - FFOT_TOL);
-        output.update_lower_bound(lb, std::stringstream(""), parameters.info);
+        output.update_bound(lb, std::stringstream(""), parameters.info);
     }
 
     env.end();
@@ -205,7 +205,7 @@ ILOMIPINFOCALLBACK5(loggingCallbackRepresentatives,
                     std::vector<IloNumVarArray>&, x)
 {
     ColorId lb = std::ceil(getBestObjValue() - FFOT_TOL);
-    output.update_lower_bound(lb, std::stringstream(""), parameters.info);
+    output.update_bound(lb, std::stringstream(""), parameters.info);
 
     if (!hasIncumbent())
         return;
@@ -345,7 +345,7 @@ Output coloringsolver::milp_representatives_cplex(
                     std::stringstream(""),
                     parameters.info);
         }
-        output.update_lower_bound(
+        output.update_bound(
                 output.solution.number_of_colors(),
                 std::stringstream(""),
                 parameters.info);
@@ -371,10 +371,10 @@ Output coloringsolver::milp_representatives_cplex(
                     parameters.info);
         }
         ColorId lb = std::ceil(cplex.getBestObjValue() - FFOT_TOL);
-        output.update_lower_bound(lb, std::stringstream(""), parameters.info);
+        output.update_bound(lb, std::stringstream(""), parameters.info);
     } else {
         ColorId lb = std::ceil(cplex.getBestObjValue() - FFOT_TOL);
-        output.update_lower_bound(lb, std::stringstream(""), parameters.info);
+        output.update_bound(lb, std::stringstream(""), parameters.info);
     }
 
     env.end();
@@ -395,7 +395,7 @@ ILOMIPINFOCALLBACK6(loggingCallbackPartialOrdering,
                     std::vector<IloNumVarArray>&, z)
 {
     ColorId lb = std::ceil(getBestObjValue() - FFOT_TOL);
-    output.update_lower_bound(lb, std::stringstream(""), parameters.info);
+    output.update_bound(lb, std::stringstream(""), parameters.info);
 
     if (!hasIncumbent())
         return;
@@ -553,7 +553,7 @@ Output coloringsolver::milp_partialordering_cplex(
                     std::stringstream(""),
                     parameters.info);
         }
-        output.update_lower_bound(
+        output.update_bound(
                 output.solution.number_of_colors(),
                 std::stringstream(""),
                 parameters.info);
@@ -576,10 +576,10 @@ Output coloringsolver::milp_partialordering_cplex(
                     parameters.info);
         }
         ColorId lb = std::ceil(cplex.getBestObjValue() - FFOT_TOL);
-        output.update_lower_bound(lb, std::stringstream(""), parameters.info);
+        output.update_bound(lb, std::stringstream(""), parameters.info);
     } else {
         ColorId lb = std::ceil(cplex.getBestObjValue() - FFOT_TOL);
-        output.update_lower_bound(lb, std::stringstream(""), parameters.info);
+        output.update_bound(lb, std::stringstream(""), parameters.info);
     }
 
     env.end();
@@ -600,7 +600,7 @@ ILOMIPINFOCALLBACK6(loggingCallbackPartialOrdering2,
                     std::vector<IloNumVarArray>&, z)
 {
     ColorId lb = std::ceil(getBestObjValue() - FFOT_TOL);
-    output.update_lower_bound(lb, std::stringstream(""), parameters.info);
+    output.update_bound(lb, std::stringstream(""), parameters.info);
 
     if (!hasIncumbent())
         return;
@@ -779,7 +779,7 @@ Output coloringsolver::milp_partialordering2_cplex(
                     std::stringstream(""),
                     parameters.info);
         }
-        output.update_lower_bound(
+        output.update_bound(
                 output.solution.number_of_colors(),
                 std::stringstream(""),
                 parameters.info);
@@ -802,10 +802,10 @@ Output coloringsolver::milp_partialordering2_cplex(
                     parameters.info);
         }
         ColorId lb = std::ceil(cplex.getBestObjValue() - FFOT_TOL);
-        output.update_lower_bound(lb, std::stringstream(""), parameters.info);
+        output.update_bound(lb, std::stringstream(""), parameters.info);
     } else {
         ColorId lb = std::ceil(cplex.getBestObjValue() - FFOT_TOL);
-        output.update_lower_bound(lb, std::stringstream(""), parameters.info);
+        output.update_bound(lb, std::stringstream(""), parameters.info);
     }
 
     env.end();

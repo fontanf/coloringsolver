@@ -14,7 +14,7 @@ void LocalSearchRowWeightingOutput::print_statistics(
         optimizationtools::Info& info) const
 {
     if (info.verbosity_level() >= 1) {
-        info.os() << "Number of iterations:  " << number_of_iterations << std::endl;
+        info.os() << "Number of iterations:         " << number_of_iterations << std::endl;
     }
     info.add_to_json("Algorithm", "NumberOfIterations", number_of_iterations);
 }
@@ -304,7 +304,9 @@ void LocalSearchRowWeighting2Output::print_statistics(
         optimizationtools::Info& info) const
 {
     if (info.verbosity_level() >= 1) {
-        info.os() << "Number of iterations:  " << number_of_iterations << std::endl;
+        info.os()
+            << "Number of iterations:         " << number_of_iterations << std::endl
+            ;
     }
     info.add_to_json("Algorithm", "NumberOfIterations", number_of_iterations);
 }

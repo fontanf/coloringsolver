@@ -220,20 +220,14 @@ struct Output
     /** Solution. */
     Solution solution;
 
-    /** Lower bound. */
-    ColorId lower_bound = 0;
+    /** Bound. */
+    ColorId bound = 0;
 
     /** Elapsed time. */
     double time = -1;
 
     /** Return 'true' iff the solution is optimal. */
-    bool optimal() const { return solution.feasible() && solution.number_of_colors() == lower_bound; }
-
-    /** Get the upper bound. */
-    ColorId upper_bound() const { return (solution.feasible())? solution.number_of_colors(): solution.instance().graph().maximum_degree() + 1; }
-
-    /** Get the optimality gap. */
-    double gap() const;
+    bool optimal() const { return solution.feasible() && solution.number_of_colors() == bound; }
 
     /** Print current state. */
     void print(
@@ -246,9 +240,9 @@ struct Output
             const std::stringstream& s,
             optimizationtools::Info& info);
 
-    /** Update the lower bound. */
-    void update_lower_bound(
-            ColorId lower_bound_new,
+    /** Update the bound. */
+    void update_bound(
+            ColorId bound_new,
             const std::stringstream& s,
             optimizationtools::Info& info);
 

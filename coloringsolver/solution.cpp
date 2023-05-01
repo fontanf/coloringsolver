@@ -45,20 +45,20 @@ std::ostream& Solution::print(
 {
     if (verbose >= 1) {
         os
-            << "Number of vertices:              " << optimizationtools::Ratio<VertexId>(number_of_vertices(), instance().graph().number_of_vertices()) << std::endl
-            << "Number of conflicts:             " << number_of_conflicts() << std::endl
-            << "Feasible:                        " << feasible() << std::endl
-            << "Number of colors:                " << number_of_colors() << std::endl
+            << "Number of vertices:   " << optimizationtools::Ratio<VertexId>(number_of_vertices(), instance().graph().number_of_vertices()) << std::endl
+            << "Number of conflicts:  " << number_of_conflicts() << std::endl
+            << "Feasible:             " << feasible() << std::endl
+            << "Number of colors:     " << number_of_colors() << std::endl
             ;
     }
 
     if (verbose >= 2) {
         os << std::endl
-            << std::setw(12) << "VertexId"
+            << std::setw(12) << "Vertex"
             << std::setw(12) << "Color"
             << std::endl
-            << std::setw(12) << "--------"
             << std::setw(12) << "------"
+            << std::setw(12) << "-----"
             << std::endl;
         for (VertexId vertex_id = 0;
                 vertex_id < instance().graph().number_of_vertices();
@@ -117,20 +117,33 @@ Output::Output(
     print(info, std::stringstream(""));
 }
 
-void Output::print(optimizationtools::Info& info, const std::stringstream& s) const
+void Output::print(
+        optimizationtools::Info& info,
+        const std::stringstream& s) const
 {
-    double gap = (lower_bound == 0)?
-        std::numeric_limits<double>::infinity():
-        (double)(upper_bound() - lower_bound) / lower_bound * 100;
+    std::string solution_value = optimizationtools::solution_value(
+            optimizationtools::ObjectiveDirection::Minimize,
+            solution.feasible(),
+            solution.number_of_colors());
+    double absolute_optimality_gap = optimizationtools::absolute_optimality_gap(
+            optimizationtools::ObjectiveDirection::Minimize,
+            solution.feasible(),
+            solution.number_of_colors(),
+            bound);
+    double relative_optimality_gap = optimizationtools::relative_optimality_gap(
+            optimizationtools::ObjectiveDirection::Minimize,
+            solution.feasible(),
+            solution.number_of_colors(),
+            bound);
     double t = info.elapsed_time();
     std::streamsize precision = std::cout.precision();
 
     info.os()
         << std::setw(12) << std::fixed << std::setprecision(3) << t << std::defaultfloat << std::setprecision(precision)
-        << std::setw(12) << upper_bound()
-        << std::setw(12) << lower_bound
-        << std::setw(12) << upper_bound() - lower_bound
-        << std::setw(12) << std::fixed << std::setprecision(2) << gap << std::defaultfloat << std::setprecision(precision)
+        << std::setw(12) << solution_value
+        << std::setw(12) << bound
+        << std::setw(12) << absolute_optimality_gap
+        << std::setw(12) << std::fixed << std::setprecision(2) << relative_optimality_gap * 100 << std::defaultfloat << std::setprecision(precision)
         << std::setw(24) << s.str()
         << std::endl;
 
@@ -160,10 +173,15 @@ void Output::update_solution(
         }
         print(info, s);
 
+        std::string solution_value = optimizationtools::solution_value(
+                optimizationtools::ObjectiveDirection::Minimize,
+                solution.feasible(),
+                solution.number_of_colors());
+        double t = info.elapsed_time();
+
         info.output->number_of_solutions++;
-        double t = round(info.elapsed_time() * 10000) / 10000;
         std::string sol_str = "Solution" + std::to_string(info.output->number_of_solutions);
-        info.add_to_json(sol_str, "Value", solution.number_of_colors());
+        info.add_to_json(sol_str, "Value", solution_value);
         info.add_to_json(sol_str, "Time", t);
         info.add_to_json(sol_str, "String", s.str());
         if (!info.output->only_write_at_the_end) {
@@ -175,24 +193,25 @@ void Output::update_solution(
     info.unlock();
 }
 
-void Output::update_lower_bound(
-        ColorId lower_bound_new,
+void Output::update_bound(
+        ColorId bound_new,
         const std::stringstream& s,
         optimizationtools::Info& info)
 {
-    if (lower_bound >= lower_bound_new)
+    if (bound >= bound_new)
         return;
 
     info.lock();
 
-    if (lower_bound < lower_bound_new) {
-        lower_bound = lower_bound_new;
+    if (bound < bound_new) {
+        bound = bound_new;
         print(info, s);
 
+        double t = info.elapsed_time();
+
         info.output->number_of_bounds++;
-        double t = round(info.elapsed_time() * 10000) / 10000;
         std::string sol_str = "Bound" + std::to_string(info.output->number_of_bounds);
-        info.add_to_json(sol_str, "Bound", lower_bound);
+        info.add_to_json(sol_str, "Bound", bound);
         info.add_to_json(sol_str, "Time", t);
         info.add_to_json(sol_str, "String", s.str());
         if (!info.output->only_write_at_the_end)
@@ -204,23 +223,36 @@ void Output::update_lower_bound(
 
 Output& Output::algorithm_end(optimizationtools::Info& info)
 {
-    double t = round(info.elapsed_time() * 10000) / 10000;
-    double gap = (lower_bound == 0)?
-        std::numeric_limits<double>::infinity():
-        (double)(upper_bound() - lower_bound) / lower_bound * 100;
-    info.add_to_json("Solution", "Value", upper_bound());
-    info.add_to_json("Bound", "Value", lower_bound);
-    info.add_to_json("Solution", "Time", t);
-    info.add_to_json("Bound", "Time", t);
+    std::string solution_value = optimizationtools::solution_value(
+            optimizationtools::ObjectiveDirection::Minimize,
+            solution.feasible(),
+            solution.number_of_colors());
+    double absolute_optimality_gap = optimizationtools::absolute_optimality_gap(
+            optimizationtools::ObjectiveDirection::Minimize,
+            solution.feasible(),
+            solution.number_of_colors(),
+            bound);
+    double relative_optimality_gap = optimizationtools::relative_optimality_gap(
+            optimizationtools::ObjectiveDirection::Minimize,
+            solution.feasible(),
+            solution.number_of_colors(),
+            bound);
+    time = info.elapsed_time();
+
+    info.add_to_json("Solution", "Value", solution_value);
+    info.add_to_json("Bound", "Value", bound);
+    info.add_to_json("Solution", "Time", time);
+    info.add_to_json("Bound", "Time", time);
     info.os()
         << std::endl
         << "Final statistics" << std::endl
         << "----------------" << std::endl
-        << "Value:                 " << upper_bound() << std::endl
-        << "Bound:                 " << lower_bound << std::endl
-        << "Gap:                   " << upper_bound() - lower_bound << std::endl
-        << "Gap (%):               " << gap << std::endl
-        << "Time (s):              " << t << std::endl;
+        << "Value:                        " << solution_value << std::endl
+        << "Bound:                        " << bound << std::endl
+        << "Absolute optimality gap:      " << absolute_optimality_gap << std::endl
+        << "Relative optimality gap (%):  " << relative_optimality_gap * 100 << std::endl
+        << "Time (s):                     " << time << std::endl
+        ;
     print_statistics(info);
     info.os() << std::endl
         << "Solution" << std::endl
@@ -231,4 +263,3 @@ Output& Output::algorithm_end(optimizationtools::Info& info)
     solution.write(info.output->certificate_path);
     return *this;
 }
-

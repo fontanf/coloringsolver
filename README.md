@@ -65,23 +65,23 @@ DSATUR
 
        T (s)          UB          LB         GAP     GAP (%)                 Comment
        -----          --          --         ---     -------                 -------
-       0.000          12           0          12         inf                        
+       0.000         inf           0         inf         inf                        
        0.000           4           0           4         inf                        
 
 Final statistics
 ----------------
-Value:                 4
-Bound:                 0
-Gap:                   4
-Gap (%):               inf
-Time (s):              0.0012
+Value:                        4
+Bound:                        0
+Absolute optimality gap:      4
+Relative optimality gap (%):  inf
+Time (s):                     0.00102545
 
 Solution
 --------
-Number of vertices:              30 / 30 (100%)
-Number of conflicts:             0
-Feasible:                        1
-Number of colors:                4
+Number of vertices:   30 / 30 (100%)
+Number of conflicts:  0
+Feasible:             1
+Number of colors:     4
 ```
 
 ```shell
@@ -114,40 +114,40 @@ Goal:                                              0
 
        T (s)          UB          LB         GAP     GAP (%)                 Comment
        -----          --          --         ---     -------                 -------
-       0.000         782           0         782         inf                        
+       0.000         inf           0         inf         inf                        
        0.007         250           0         250         inf        initial solution
        0.009         249           0         249         inf            iteration 29
-       0.011         248           0         248         inf            iteration 34
+       0.010         248           0         248         inf            iteration 34
        0.022         247           0         247         inf          iteration 2473
        0.024         246           0         246         inf          iteration 2524
        0.027         245           0         245         inf          iteration 2865
        0.031         244           0         244         inf          iteration 3514
-       0.034         243           0         243         inf          iteration 3699
-       0.036         242           0         242         inf          iteration 3842
-       0.039         241           0         241         inf          iteration 4197
-       0.043         240           0         240         inf          iteration 4939
-       0.052         239           0         239         inf          iteration 7201
-       0.056         238           0         238         inf          iteration 7791
-       0.064         237           0         237         inf         iteration 10040
-       0.071         236           0         236         inf         iteration 11477
-       0.113         235           0         235         inf         iteration 24907
-       0.167         234           0         234         inf         iteration 42727
+       0.033         243           0         243         inf          iteration 3699
+       0.035         242           0         242         inf          iteration 3842
+       0.038         241           0         241         inf          iteration 4197
+       0.042         240           0         240         inf          iteration 4939
+       0.051         239           0         239         inf          iteration 7201
+       0.055         238           0         238         inf          iteration 7791
+       0.063         237           0         237         inf         iteration 10040
+       0.069         236           0         236         inf         iteration 11477
+       0.111         235           0         235         inf         iteration 24907
+       0.164         234           0         234         inf         iteration 42727
 
 Final statistics
 ----------------
-Value:                 234
-Bound:                 0
-Gap:                   234
-Gap (%):               inf
-Time (s):              0.1905
-Number of iterations:  50000
+Value:                        234
+Bound:                        0
+Absolute optimality gap:      234
+Relative optimality gap (%):  inf
+Time (s):                     0.186423
+Number of iterations:         50000
 
 Solution
 --------
-Number of vertices:              1000 / 1000 (100%)
-Number of conflicts:             0
-Feasible:                        1
-Number of colors:                234
+Number of vertices:   1000 / 1000 (100%)
+Number of conflicts:  0
+Feasible:             1
+Number of colors:     234
 ```
 
 Benchmarks:
