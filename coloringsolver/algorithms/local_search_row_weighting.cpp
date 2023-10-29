@@ -1,4 +1,4 @@
-#include "coloringsolver/algorithms/localsearch_rowweighting.hpp"
+#include "coloringsolver/algorithms/local_search_row_weighting.hpp"
 
 #include "coloringsolver/algorithms/greedy.hpp"
 
@@ -24,7 +24,7 @@ struct LocalSearchRowWeightingVertex
     Counter timestamp = -1;
 };
 
-LocalSearchRowWeightingOutput coloringsolver::localsearch_rowweighting(
+LocalSearchRowWeightingOutput coloringsolver::local_search_row_weighting(
         const Instance& instance,
         std::mt19937_64& generator,
         LocalSearchRowWeightingOptionalParameters parameters)
@@ -33,7 +33,7 @@ LocalSearchRowWeightingOutput coloringsolver::localsearch_rowweighting(
     parameters.info.os()
         << "Algorithm" << std::endl
         << "---------" << std::endl
-        << "Row Weighting Local Search" << std::endl
+        << "Row weighting local search" << std::endl
         << std::endl
         << "Parameters" << std::endl
         << "----------" << std::endl
@@ -311,7 +311,7 @@ void LocalSearchRowWeighting2Output::print_statistics(
     info.add_to_json("Algorithm", "NumberOfIterations", number_of_iterations);
 }
 
-LocalSearchRowWeighting2Output coloringsolver::localsearch_rowweighting_2(
+LocalSearchRowWeighting2Output coloringsolver::local_search_row_weighting_2(
         const Instance& instance,
         std::mt19937_64& generator,
         LocalSearchRowWeighting2OptionalParameters parameters)
@@ -320,7 +320,7 @@ LocalSearchRowWeighting2Output coloringsolver::localsearch_rowweighting_2(
     parameters.info.os()
         << "Algorithm" << std::endl
         << "---------" << std::endl
-        << "Row Weighting Local Search 2" << std::endl
+        << "Row weighting local search 2" << std::endl
         << std::endl
         << "Parameters" << std::endl
         << "----------" << std::endl

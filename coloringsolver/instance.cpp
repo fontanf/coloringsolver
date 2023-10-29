@@ -33,12 +33,12 @@ std::ostream& Instance::print(
 {
     if (verbose >= 1) {
         os
-            << "Number of vertices:              " << graph().number_of_vertices() << std::endl
-            << "Number of edges:                 " << graph().number_of_edges() << std::endl
-            << "Density:                         " << graph().density() << std::endl
-            << "Average degree:                  " << graph().average_degree() << std::endl
-            << "Maximum degree:                  " << graph().maximum_degree() << std::endl
-            << "Total weight:                    " << graph().total_weight() << std::endl
+            << "Number of vertices:  " << graph().number_of_vertices() << std::endl
+            << "Number of edges:     " << graph().number_of_edges() << std::endl
+            << "Density:             " << graph().density() << std::endl
+            << "Average degree:      " << graph().average_degree() << std::endl
+            << "Maximum degree:      " << graph().maximum_degree() << std::endl
+            << "Total weight:        " << graph().total_weight() << std::endl
             ;
     }
 
@@ -127,9 +127,9 @@ void coloringsolver::init_display(
         optimizationtools::Info& info)
 {
     info.os()
-        << "=====================================" << std::endl
-        << "           Coloring Solver           " << std::endl
-        << "=====================================" << std::endl
+        << "====================================" << std::endl
+        << "           ColoringSolver           " << std::endl
+        << "====================================" << std::endl
         << std::endl
         << "Instance" << std::endl
         << "--------" << std::endl;

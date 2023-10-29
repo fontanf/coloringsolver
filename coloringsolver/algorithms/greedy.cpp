@@ -10,13 +10,13 @@ std::istream& coloringsolver::operator>>(std::istream& in, Ordering& ordering)
     in >> token;
     if (token == "default") {
         ordering = Ordering::Default;
-    } else if (token == "largestfirst" || token == "lf") {
+    } else if (token == "largest-first" || token == "lf") {
         ordering = Ordering::LargestFirst;
-    } else if (token == "incidencedegree" || token == "id") {
+    } else if (token == "incidence-degree" || token == "id") {
         ordering = Ordering::IncidenceDegree;
-    } else if (token == "smallestlast" || token == "sl") {
+    } else if (token == "smallest-last" || token == "sl") {
         ordering = Ordering::SmallestLast;
-    } else if (token == "dynamiclargestfirst" || token == "dlf") {
+    } else if (token == "dynamic-largest-first" || token == "dlf") {
         ordering = Ordering::DynamicLargestFirst;
     } else  {
         in.setstate(std::ios_base::failbit);

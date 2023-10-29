@@ -25,7 +25,7 @@ GreedyOptionalParameters read_greedy_args(const std::vector<char*>& argv)
     return parameters;
 }
 
-LocalSearchRowWeightingOptionalParameters read_localsearch_rowweighting_args(const std::vector<char*>& argv)
+LocalSearchRowWeightingOptionalParameters read_local_search_row_weighting_args(const std::vector<char*>& argv)
 {
     LocalSearchRowWeightingOptionalParameters parameters;
     po::options_description desc("Allowed options");
@@ -45,7 +45,7 @@ LocalSearchRowWeightingOptionalParameters read_localsearch_rowweighting_args(con
     return parameters;
 }
 
-LocalSearchRowWeighting2OptionalParameters read_localsearch_rowweighting_2_args(const std::vector<char*>& argv)
+LocalSearchRowWeighting2OptionalParameters read_local_search_row_weighting_2_args(const std::vector<char*>& argv)
 {
     LocalSearchRowWeighting2OptionalParameters parameters;
     po::options_description desc("Allowed options");
@@ -65,7 +65,7 @@ LocalSearchRowWeighting2OptionalParameters read_localsearch_rowweighting_2_args(
     return parameters;
 }
 
-ColumnGenerationOptionalParameters read_columngeneration_args(const std::vector<char*>& argv)
+ColumnGenerationOptionalParameters read_column_generation_args(const std::vector<char*>& argv)
 {
     ColumnGenerationOptionalParameters parameters;
     po::options_description desc("Allowed options");
@@ -124,48 +124,48 @@ Output coloringsolver::run(
         auto parameters = read_greedy_args(algorithm_argv);
         parameters.info = info;
         return greedy(instance, parameters);
-    } else if (algorithm_args[0] == "greedy_dsatur") {
+    } else if (algorithm_args[0] == "greedy-dsatur") {
         return greedy_dsatur(instance, info);
 #if CPLEX_FOUND
-    } else if (algorithm_args[0] == "milp_assignment_cplex") {
+    } else if (algorithm_args[0] == "milp-assignment-cplex") {
         auto parameters = read_milp_assignment_cplex_args(algorithm_argv);
         parameters.info = info;
         return milp_assignment_cplex(instance, parameters);
-    } else if (algorithm_args[0] == "milp_representatives_cplex") {
+    } else if (algorithm_args[0] == "milp-representatives-cplex") {
         MilpRepresentativesCplexOptionalParameters parameters;
         parameters.info = info;
         return milp_representatives_cplex(instance, parameters);
-    } else if (algorithm_args[0] == "milp_partialordering_cplex") {
+    } else if (algorithm_args[0] == "milp-partial-ordering-cplex") {
         MilpPartialOrderingCplexOptionalParameters parameters;
         parameters.info = info;
         return milp_partialordering_cplex(instance, parameters);
-    } else if (algorithm_args[0] == "milp_partialordering2_cplex") {
+    } else if (algorithm_args[0] == "milp-partial-ordering-2-cplex") {
         MilpPartialOrdering2CplexOptionalParameters parameters;
         parameters.info = info;
         return milp_partialordering2_cplex(instance, parameters);
 #endif
-    } else if (algorithm_args[0] == "localsearch_rowweighting") {
-        auto parameters = read_localsearch_rowweighting_args(algorithm_argv);
+    } else if (algorithm_args[0] == "local-search-row-weighting") {
+        auto parameters = read_local_search_row_weighting_args(algorithm_argv);
         parameters.info = info;
         parameters.goal = goal;
-        return localsearch_rowweighting(instance, generator, parameters);
-    } else if (algorithm_args[0] == "localsearch_rowweighting_2") {
-        auto parameters = read_localsearch_rowweighting_2_args(algorithm_argv);
+        return local_search_row_weighting(instance, generator, parameters);
+    } else if (algorithm_args[0] == "local-search-row-weighting-2") {
+        auto parameters = read_local_search_row_weighting_2_args(algorithm_argv);
         parameters.info = info;
         parameters.goal = goal;
-        return localsearch_rowweighting_2(instance, generator, parameters);
-    } else if (algorithm_args[0] == "columngenerationheuristic_greedy") {
-        auto parameters = read_columngeneration_args(algorithm_argv);
+        return local_search_row_weighting_2(instance, generator, parameters);
+    } else if (algorithm_args[0] == "column-generation-heuristic-greedy") {
+        auto parameters = read_column_generation_args(algorithm_argv);
         parameters.info = info;
-        return columngenerationheuristic_greedy(instance, parameters);
-    } else if (algorithm_args[0] == "columngenerationheuristic_limiteddiscrepancysearch") {
-        auto parameters = read_columngeneration_args(algorithm_argv);
+        return column_generation_heuristic_greedy(instance, parameters);
+    } else if (algorithm_args[0] == "column-generation-heuristic-limited-discrepancy-search") {
+        auto parameters = read_column_generation_args(algorithm_argv);
         parameters.info = info;
-        return columngenerationheuristic_limiteddiscrepancysearch(instance, parameters);
-    } else if (algorithm_args[0] == "columngenerationheuristic_heuristictreesearch") {
-        auto parameters = read_columngeneration_args(algorithm_argv);
+        return column_generation_heuristic_limited_discrepancy_search(instance, parameters);
+    } else if (algorithm_args[0] == "column-generation-heuristic-heuristic-tree-search") {
+        auto parameters = read_column_generation_args(algorithm_argv);
         parameters.info = info;
-        return columngenerationheuristic_heuristictreesearch(instance, parameters);
+        return column_generation_heuristic_heuristic_tree_search(instance, parameters);
 
     } else {
         throw std::invalid_argument(

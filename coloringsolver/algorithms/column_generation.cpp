@@ -1,4 +1,4 @@
-#include "coloringsolver/algorithms/columngeneration.hpp"
+#include "coloringsolver/algorithms/column_generation.hpp"
 
 #include "columngenerationsolver/algorithms/column_generation.hpp"
 #include "columngenerationsolver/algorithms/greedy.hpp"
@@ -199,7 +199,7 @@ std::vector<Column> PricingSolver::solve_pricing(
     return {column};
 }
 
-Output coloringsolver::columngenerationheuristic_greedy(
+Output coloringsolver::column_generation_heuristic_greedy(
         const Instance& instance, ColumnGenerationOptionalParameters parameters)
 {
     init_display(instance, parameters.info);
@@ -239,7 +239,7 @@ Output coloringsolver::columngenerationheuristic_greedy(
     return output.algorithm_end(parameters.info);
 }
 
-Output coloringsolver::columngenerationheuristic_limiteddiscrepancysearch(
+Output coloringsolver::column_generation_heuristic_limited_discrepancy_search(
         const Instance& instance, ColumnGenerationOptionalParameters parameters)
 {
     init_display(instance, parameters.info);
@@ -282,7 +282,7 @@ Output coloringsolver::columngenerationheuristic_limiteddiscrepancysearch(
     return output.algorithm_end(parameters.info);
 }
 
-Output coloringsolver::columngenerationheuristic_heuristictreesearch(
+Output coloringsolver::column_generation_heuristic_heuristic_tree_search(
         const Instance& instance, ColumnGenerationOptionalParameters parameters)
 {
     init_display(instance, parameters.info);

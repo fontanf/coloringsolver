@@ -10,9 +10,9 @@ cc_library(
 )
 
 cc_library(
-        name = "localsearch_rowweighting",
-        hdrs = ["localsearch_rowweighting.hpp"],
-        srcs = ["localsearch_rowweighting.cpp"],
+        name = "local_search_row_weighting",
+        hdrs = ["local_search_row_weighting.hpp"],
+        srcs = ["local_search_row_weighting.cpp"],
         deps = [
                 ":greedy",
                 "//coloringsolver:coloringsolver",
@@ -32,9 +32,9 @@ cc_library(
 )
 
 cc_library(
-        name = "columngeneration",
-        hdrs = ["columngeneration.hpp"],
-        srcs = ["columngeneration.cpp"],
+        name = "column_generation",
+        hdrs = ["column_generation.hpp"],
+        srcs = ["column_generation.cpp"],
         deps = [
                 "//coloringsolver:coloringsolver",
                 "@columngenerationsolver//columngenerationsolver:columngenerationsolver",
@@ -50,9 +50,9 @@ cc_library(
         srcs = ["algorithms.cpp"],
         deps = [
                 ":greedy",
-                ":localsearch_rowweighting",
+                ":local_search_row_weighting",
                 ":milp_cplex",
-                ":columngeneration",
+                ":column_generation",
                 "@boost//:program_options",
         ] + CPLEX_DEP,
         copts = CPLEX_COPTS,

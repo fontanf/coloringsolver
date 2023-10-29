@@ -53,7 +53,7 @@ struct LocalSearchRowWeightingOptionalParameters
     optimizationtools::Info info = optimizationtools::Info();
 };
 
-LocalSearchRowWeightingOutput localsearch_rowweighting(
+LocalSearchRowWeightingOutput local_search_row_weighting(
         const Instance& instance,
         std::mt19937_64& generator,
         LocalSearchRowWeightingOptionalParameters parameters = {});
@@ -105,7 +105,7 @@ struct LocalSearchRowWeighting2OptionalParameters
     optimizationtools::Info info = optimizationtools::Info();
 };
 
-LocalSearchRowWeighting2Output localsearch_rowweighting_2(
+LocalSearchRowWeighting2Output local_search_row_weighting_2(
         const Instance& instance,
         std::mt19937_64& generator,
         LocalSearchRowWeighting2OptionalParameters parameters = {});

@@ -3,9 +3,9 @@
 #include "coloringsolver/solution.hpp"
 
 #include "coloringsolver/algorithms/greedy.hpp"
-#include "coloringsolver/algorithms/localsearch_rowweighting.hpp"
+#include "coloringsolver/algorithms/local_search_row_weighting.hpp"
 #include "coloringsolver/algorithms/milp_cplex.hpp"
-#include "coloringsolver/algorithms/columngeneration.hpp"
+#include "coloringsolver/algorithms/column_generation.hpp"
 
 namespace coloringsolver
 {

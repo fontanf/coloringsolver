@@ -14,15 +14,15 @@ struct ColumnGenerationOptionalParameters
     optimizationtools::Info info = optimizationtools::Info();
 };
 
-Output columngenerationheuristic_greedy(
+Output column_generation_heuristic_greedy(
         const Instance& instance,
         ColumnGenerationOptionalParameters parameters = {});
 
-Output columngenerationheuristic_limiteddiscrepancysearch(
+Output column_generation_heuristic_limited_discrepancy_search(
         const Instance& instance,
         ColumnGenerationOptionalParameters parameters = {});
 
-Output columngenerationheuristic_heuristictreesearch(
+Output column_generation_heuristic_heuristic_tree_search(
         const Instance& instance,
         ColumnGenerationOptionalParameters parameters = {});
 
