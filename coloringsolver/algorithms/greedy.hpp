@@ -16,25 +16,21 @@ enum class Ordering {
 std::istream& operator>>(std::istream& in, Ordering& problem_type);
 std::ostream& operator<<(std::ostream &os, Ordering ordering);
 
-struct GreedyOptionalParameters
+struct GreedyParameters: Parameters
 {
     /** Ordering. */
     Ordering ordering = Ordering::DynamicLargestFirst;
 
     /** Reverse ordering. */
     bool reverse = false;
-
-    /** Info structure. */
-    optimizationtools::Info info = optimizationtools::Info();
 };
 
-Output greedy(
+const Output greedy(
         const Instance& instance,
-        GreedyOptionalParameters = {});
+        const GreedyParameters& parameters = {});
 
-Output greedy_dsatur(
+const Output greedy_dsatur(
         const Instance& instance,
-        optimizationtools::Info info = optimizationtools::Info());
+        const Parameters& parameters = {});
 
 }
-

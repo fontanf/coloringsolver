@@ -2,47 +2,47 @@
 
 #include "optimizationtools/graph/clique_graph.hpp"
 
-#include <sstream>
 #include <iomanip>
-#include <thread>
 
 using namespace coloringsolver;
 
-Instance::Instance(std::string instance_path, std::string format)
+Instance::Instance(
+        const std::string& instance_path,
+        const std::string& format)
 {
     if (format == "cliquegraph") {
-        graph_ = std::unique_ptr<optimizationtools::AbstractGraph>(
-                    new optimizationtools::CliqueGraph(instance_path, format));
+        optimizationtools::CliqueGraphBuilder graph_builder;
+        graph_builder.read(instance_path, format);
+        graph_ = std::shared_ptr<const optimizationtools::AbstractGraph>(
+                new optimizationtools::CliqueGraph(graph_builder.build()));
     } else {
-        graph_ = std::unique_ptr<optimizationtools::AbstractGraph>(
-                    new optimizationtools::AdjacencyListGraph(instance_path, format));
-        adjacency_list_graph_ = static_cast<optimizationtools::AdjacencyListGraph*>(graph_.get());
+        optimizationtools::AdjacencyListGraphBuilder graph_builder;
+        graph_builder.read(instance_path, format);
+        graph_ = std::shared_ptr<const optimizationtools::AbstractGraph>(
+                new optimizationtools::AdjacencyListGraph(graph_builder.build()));
+        adjacency_list_graph_ = static_cast<const optimizationtools::AdjacencyListGraph*>(graph_.get());
     }
 }
 
-Instance::Instance(
-        VertexId number_of_vertices):
-    graph_(std::unique_ptr<optimizationtools::AbstractGraph>(
-                new optimizationtools::AdjacencyListGraph(number_of_vertices))),
-    adjacency_list_graph_(static_cast<optimizationtools::AdjacencyListGraph*>(graph_.get())) { }
+Instance::Instance(const std::shared_ptr<const optimizationtools::AbstractGraph>& abstract_graph):
+    graph_(abstract_graph),
+    adjacency_list_graph_(dynamic_cast<const optimizationtools::AdjacencyListGraph*>(graph_.get())) { }
 
-
-std::ostream& Instance::print(
+std::ostream& Instance::format(
         std::ostream& os,
-        int verbose) const
+        int verbosity_level) const
 {
-    if (verbose >= 1) {
+    if (verbosity_level >= 1) {
         os
             << "Number of vertices:  " << graph().number_of_vertices() << std::endl
             << "Number of edges:     " << graph().number_of_edges() << std::endl
             << "Density:             " << graph().density() << std::endl
             << "Average degree:      " << graph().average_degree() << std::endl
-            << "Maximum degree:      " << graph().maximum_degree() << std::endl
-            << "Total weight:        " << graph().total_weight() << std::endl
+            << "Highest degree:      " << graph().highest_degree() << std::endl
             ;
     }
 
-    if (verbose >= 2) {
+    if (verbosity_level >= 2) {
         os << std::endl
             << std::setw(12) << "VertexId"
             << std::setw(12) << "Weight"
@@ -63,7 +63,7 @@ std::ostream& Instance::print(
         }
     }
 
-    if (verbose >= 3) {
+    if (verbosity_level >= 3) {
         os << std::endl
             << std::setw(12) << "Edge"
             << std::setw(12) << "Vertex 1"
@@ -121,19 +121,3 @@ std::vector<VertexId> Instance::compute_core(ColorId k) const
     //std::cout << "k " << k << " removed_vertices.size() " << removed_vertices.size() << std::endl;
     return removed_vertices;
 }
-
-void coloringsolver::init_display(
-        const Instance& instance,
-        optimizationtools::Info& info)
-{
-    info.os()
-        << "====================================" << std::endl
-        << "           ColoringSolver           " << std::endl
-        << "====================================" << std::endl
-        << std::endl
-        << "Instance" << std::endl
-        << "--------" << std::endl;
-    instance.print(info.os(), info.verbosity_level());
-    info.os() << std::endl;
-}
-

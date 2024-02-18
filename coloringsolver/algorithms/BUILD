@@ -38,24 +38,8 @@ cc_library(
         deps = [
                 "//coloringsolver:coloringsolver",
                 "@columngenerationsolver//columngenerationsolver:columngenerationsolver",
-                "@stablesolver//stablesolver/algorithms:localsearch",
+                "@stablesolver//stablesolver/stable/algorithms:local_search",
         ] + CPLEX_DEP,
         copts = CPLEX_COPTS,
         visibility = ["//visibility:public"],
 )
-
-cc_library(
-        name = "algorithms",
-        hdrs = ["algorithms.hpp"],
-        srcs = ["algorithms.cpp"],
-        deps = [
-                ":greedy",
-                ":local_search_row_weighting",
-                ":milp_cplex",
-                ":column_generation",
-                "@boost//:program_options",
-        ] + CPLEX_DEP,
-        copts = CPLEX_COPTS,
-        visibility = ["//visibility:public"],
-)
-

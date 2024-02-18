@@ -5,9 +5,9 @@
 using namespace coloringsolver;
 namespace po = boost::program_options;
 
-GreedyOptionalParameters read_greedy_args(const std::vector<char*>& argv)
+GreedyParameters read_greedy_args(const std::vector<char*>& argv)
 {
-    GreedyOptionalParameters parameters;
+    GreedyParameters parameters;
     po::options_description desc("Allowed options");
     desc.add_options()
         ("ordering,o", po::value<Ordering>(&parameters.ordering), "")
@@ -25,9 +25,9 @@ GreedyOptionalParameters read_greedy_args(const std::vector<char*>& argv)
     return parameters;
 }
 
-LocalSearchRowWeightingOptionalParameters read_local_search_row_weighting_args(const std::vector<char*>& argv)
+LocalSearchRowWeightingParameters read_local_search_row_weighting_args(const std::vector<char*>& argv)
 {
-    LocalSearchRowWeightingOptionalParameters parameters;
+    LocalSearchRowWeightingParameters parameters;
     po::options_description desc("Allowed options");
     desc.add_options()
         ("iterations,i", po::value<Counter>(&parameters.maximum_number_of_iterations), "")
@@ -45,9 +45,9 @@ LocalSearchRowWeightingOptionalParameters read_local_search_row_weighting_args(c
     return parameters;
 }
 
-LocalSearchRowWeighting2OptionalParameters read_local_search_row_weighting_2_args(const std::vector<char*>& argv)
+LocalSearchRowWeighting2Parameters read_local_search_row_weighting_2_args(const std::vector<char*>& argv)
 {
-    LocalSearchRowWeighting2OptionalParameters parameters;
+    LocalSearchRowWeighting2Parameters parameters;
     po::options_description desc("Allowed options");
     desc.add_options()
         ("iterations,i", po::value<Counter>(&parameters.maximum_number_of_iterations), "")
@@ -65,9 +65,9 @@ LocalSearchRowWeighting2OptionalParameters read_local_search_row_weighting_2_arg
     return parameters;
 }
 
-ColumnGenerationOptionalParameters read_column_generation_args(const std::vector<char*>& argv)
+ColumnGenerationParameters read_column_generation_args(const std::vector<char*>& argv)
 {
-    ColumnGenerationOptionalParameters parameters;
+    ColumnGenerationParameters parameters;
     po::options_description desc("Allowed options");
     desc.add_options()
         ("linear-programming-solver,s", po::value<std::string>(&parameters.linear_programming_solver), "")
@@ -84,9 +84,9 @@ ColumnGenerationOptionalParameters read_column_generation_args(const std::vector
 }
 
 #if CPLEX_FOUND
-MilpAssignmentCplexOptionalParameters read_milp_assignment_cplex_args(const std::vector<char*>& argv)
+MilpAssignmentCplexParameters read_milp_assignment_cplex_args(const std::vector<char*>& argv)
 {
-    MilpAssignmentCplexOptionalParameters parameters;
+    MilpAssignmentCplexParameters parameters;
     po::options_description desc("Allowed options");
     desc.add_options()
         ("break-symmetries,s", po::value<bool>(&parameters.break_symmetries), "")
@@ -132,15 +132,15 @@ Output coloringsolver::run(
         parameters.info = info;
         return milp_assignment_cplex(instance, parameters);
     } else if (algorithm_args[0] == "milp-representatives-cplex") {
-        MilpRepresentativesCplexOptionalParameters parameters;
+        MilpRepresentativesCplexParameters parameters;
         parameters.info = info;
         return milp_representatives_cplex(instance, parameters);
     } else if (algorithm_args[0] == "milp-partial-ordering-cplex") {
-        MilpPartialOrderingCplexOptionalParameters parameters;
+        MilpPartialOrderingCplexParameters parameters;
         parameters.info = info;
         return milp_partialordering_cplex(instance, parameters);
     } else if (algorithm_args[0] == "milp-partial-ordering-2-cplex") {
-        MilpPartialOrdering2CplexOptionalParameters parameters;
+        MilpPartialOrdering2CplexParameters parameters;
         parameters.info = info;
         return milp_partialordering2_cplex(instance, parameters);
 #endif

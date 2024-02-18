@@ -11,74 +11,61 @@ namespace coloringsolver
 ////////////////////////// Assignment-based ILP model //////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
-struct MilpAssignmentCplexOptionalParameters
+struct MilpAssignmentCplexParameters: Parameters
 {
     /** Initial solution. */
     const Solution* initial_solution = NULL;
 
     /** Break symmetries. */
     bool break_symmetries = true;
-
-    /** Info structure. */
-    optimizationtools::Info info = optimizationtools::Info();
 };
 
-Output milp_assignment_cplex(
+const Output milp_assignment_cplex(
         const Instance& instance,
-        MilpAssignmentCplexOptionalParameters parameters = {});
+        const MilpAssignmentCplexParameters& parameters = {});
 
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////// Representatives ILP model ///////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
-struct MilpRepresentativesCplexOptionalParameters
+struct MilpRepresentativesCplexParameters: Parameters
 {
     /** Initial solution. */
     const Solution* initial_solution = NULL;
-
-    /** Info structure. */
-    optimizationtools::Info info = optimizationtools::Info();
 };
 
-Output milp_representatives_cplex(
+const Output milp_representatives_cplex(
         const Instance& instance,
-        MilpRepresentativesCplexOptionalParameters parameters = {});
+        const MilpRepresentativesCplexParameters& parameters = {});
 
 ////////////////////////////////////////////////////////////////////////////////
 /////////////////////// Partial-ordering based ILP model ///////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
-struct MilpPartialOrderingCplexOptionalParameters
+struct MilpPartialOrderingCplexParameters: Parameters
 {
     /** Initial solution. */
     const Solution* initial_solution = NULL;
-
-    /** Info structure. */
-    optimizationtools::Info info = optimizationtools::Info();
 };
 
-Output milp_partialordering_cplex(
+const Output milp_partialordering_cplex(
         const Instance& instance,
-        MilpPartialOrderingCplexOptionalParameters parameters = {});
+        const MilpPartialOrderingCplexParameters& parameters = {});
 
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////// Partial-ordering based ILP model 2 //////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
-struct MilpPartialOrdering2CplexOptionalParameters
+struct MilpPartialOrdering2CplexParameters: Parameters
 {
     /** Initial solution. */
     const Solution* initial_solution = NULL;
-
-    /** Info structure. */
-    optimizationtools::Info info = optimizationtools::Info();
 };
 
-Output milp_partialordering2_cplex(
+const Output milp_partialordering2_cplex(
         const Instance& instance,
-        MilpPartialOrdering2CplexOptionalParameters parameters = {});
+        const MilpPartialOrdering2CplexParameters& parameters = {});
 
 }
 
 #endif
-

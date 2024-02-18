@@ -12,20 +12,15 @@ namespace coloringsolver
 struct LocalSearchRowWeightingOutput: Output
 {
     LocalSearchRowWeightingOutput(
-            const Instance& instance,
-            optimizationtools::Info& info):
-        Output(instance, info) { }
+            const Instance& instance):
+        Output(instance) { }
 
-    void print_statistics(
-            optimizationtools::Info& info) const override;
 
     /** Number of iterations. */
     Counter number_of_iterations = 0;
 };
 
-using LocalSearchRowWeightingCallback = std::function<void(const LocalSearchRowWeightingOutput&)>;
-
-struct LocalSearchRowWeightingOptionalParameters
+struct LocalSearchRowWeightingParameters: Parameters
 {
     /** Maximum number of iterations. */
     Counter maximum_number_of_iterations = -1;
@@ -44,19 +39,12 @@ struct LocalSearchRowWeightingOptionalParameters
 
     /** Initial solution. */
     Solution* initial_solution = nullptr;
-
-    /** Callback function called when a new best solution is found. */
-    LocalSearchRowWeightingCallback new_solution_callback
-        = [](const LocalSearchRowWeightingOutput&) { };
-
-    /** Info structure. */
-    optimizationtools::Info info = optimizationtools::Info();
 };
 
-LocalSearchRowWeightingOutput local_search_row_weighting(
+const LocalSearchRowWeightingOutput local_search_row_weighting(
         const Instance& instance,
         std::mt19937_64& generator,
-        LocalSearchRowWeightingOptionalParameters parameters = {});
+        const LocalSearchRowWeightingParameters& parameters = {});
 
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////// localsearch_rowweighting_2 //////////////////////////
@@ -65,19 +53,15 @@ LocalSearchRowWeightingOutput local_search_row_weighting(
 struct LocalSearchRowWeighting2Output: Output
 {
     LocalSearchRowWeighting2Output(
-            const Instance& instance,
-            optimizationtools::Info& info):
-        Output(instance, info) { }
+            const Instance& instance):
+        Output(instance) { }
 
-    void print_statistics(
-            optimizationtools::Info& info) const override;
 
+    /** Number of iterations. */
     Counter number_of_iterations = 0;
 };
 
-using LocalSearchRowWeighting2Callback = std::function<void(const LocalSearchRowWeighting2Output&)>;
-
-struct LocalSearchRowWeighting2OptionalParameters
+struct LocalSearchRowWeighting2Parameters: Parameters
 {
     /** Maximum number of iterations. */
     Counter maximum_number_of_iterations = -1;
@@ -96,19 +80,11 @@ struct LocalSearchRowWeighting2OptionalParameters
 
     /** Initial solution. */
     Solution* initial_solution = nullptr;
-
-    /** Callback function called when a new best solution is found. */
-    LocalSearchRowWeighting2Callback new_solution_callback
-        = [](const LocalSearchRowWeighting2Output&) { };
-
-    /** Info structure. */
-    optimizationtools::Info info = optimizationtools::Info();
 };
 
-LocalSearchRowWeighting2Output local_search_row_weighting_2(
+const LocalSearchRowWeighting2Output local_search_row_weighting_2(
         const Instance& instance,
         std::mt19937_64& generator,
-        LocalSearchRowWeighting2OptionalParameters parameters = {});
+        const LocalSearchRowWeighting2Parameters& parameters = {});
 
 }
-

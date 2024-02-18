@@ -1,8 +1,8 @@
 #include "coloringsolver/algorithms/local_search_row_weighting.hpp"
 
-#include "coloringsolver/algorithms/greedy.hpp"
+#include "coloringsolver/algorithm_formatter.hpp"
 
-#include <thread>
+#include "coloringsolver/algorithms/greedy.hpp"
 
 using namespace coloringsolver;
 
@@ -10,38 +10,20 @@ using namespace coloringsolver;
 /////////////////////////// localsearch_rowweighting ///////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
-void LocalSearchRowWeightingOutput::print_statistics(
-        optimizationtools::Info& info) const
-{
-    if (info.verbosity_level() >= 1) {
-        info.os() << "Number of iterations:         " << number_of_iterations << std::endl;
-    }
-    info.add_to_json("Algorithm", "NumberOfIterations", number_of_iterations);
-}
-
 struct LocalSearchRowWeightingVertex
 {
     Counter timestamp = -1;
 };
 
-LocalSearchRowWeightingOutput coloringsolver::local_search_row_weighting(
+const LocalSearchRowWeightingOutput coloringsolver::local_search_row_weighting(
         const Instance& instance,
         std::mt19937_64& generator,
-        LocalSearchRowWeightingOptionalParameters parameters)
+        const LocalSearchRowWeightingParameters& parameters)
 {
-    init_display(instance, parameters.info);
-    parameters.info.os()
-        << "Algorithm" << std::endl
-        << "---------" << std::endl
-        << "Row weighting local search" << std::endl
-        << std::endl
-        << "Parameters" << std::endl
-        << "----------" << std::endl
-        << "Maximum number of iterations:                      " << parameters.maximum_number_of_iterations << std::endl
-        << "Maximum number of iterations without improvement:  " << parameters.maximum_number_of_iterations_without_improvement << std::endl
-        << "Maximum number of improvements:                    " << parameters.maximum_number_of_improvements << std::endl
-        << "Goal:                                              " << parameters.goal << std::endl
-        << std::endl;
+    LocalSearchRowWeightingOutput output(instance);
+    AlgorithmFormatter algorithm_formatter(parameters, output);
+    algorithm_formatter.start("Row weighting local search");
+    algorithm_formatter.print_header();
 
     if (instance.adjacency_list_graph() == nullptr) {
         throw std::runtime_error(
@@ -49,25 +31,22 @@ LocalSearchRowWeightingOutput coloringsolver::local_search_row_weighting(
     }
     const optimizationtools::AdjacencyListGraph& graph = *instance.adjacency_list_graph();
 
-    LocalSearchRowWeightingOutput output(instance, parameters.info);
-
     // Get initial solution.
+    Parameters greedy_parameters;
+    greedy_parameters.verbosity_level = 0;
     Solution solution = (parameters.initial_solution != nullptr)?
         *parameters.initial_solution:
-        greedy_dsatur(instance).solution;
+        greedy_dsatur(instance, greedy_parameters).solution;
 
     std::stringstream ss;
     ss << "initial solution";
-    output.update_solution(solution, ss, parameters.info);
-    parameters.info.lock();
-    parameters.new_solution_callback(output);
-    parameters.info.unlock();
+    algorithm_formatter.update_solution(solution, ss.str());
     if (output.solution.number_of_colors() <= parameters.goal) {
-        output.algorithm_end(parameters.info);
+        algorithm_formatter.end();
         return output;
     }
     if (output.solution.number_of_colors() == 1) {
-        output.algorithm_end(parameters.info);
+        algorithm_formatter.end();
         return output;
     }
 
@@ -75,7 +54,7 @@ LocalSearchRowWeightingOutput coloringsolver::local_search_row_weighting(
     std::vector<LocalSearchRowWeightingVertex> vertices(graph.number_of_vertices());
     Counter number_of_iterations_without_improvement = 0;
     Counter number_of_improvements = 0;
-    std::vector<Penalty> penalties(graph.maximum_degree() + 1, 0);
+    std::vector<Penalty> penalties(graph.highest_degree() + 1, 0);
     std::vector<Penalty> solution_penalties(graph.number_of_edges(), 1);
     std::vector<std::pair<VertexId, ColorId>> vcolor_id_bests;
     std::vector<std::pair<ColorId, ColorId>> ccolor_id_bests;
@@ -86,7 +65,8 @@ LocalSearchRowWeightingOutput coloringsolver::local_search_row_weighting(
     optimizationtools::IndexedSet colors(solution.number_of_colors());
     colors.fill();
 
-    for (output.number_of_iterations = 0; !parameters.info.needs_to_end();
+    for (output.number_of_iterations = 0;
+            !parameters.timer.needs_to_end();
             ++output.number_of_iterations,
             ++number_of_iterations_without_improvement) {
         // Check stop criteria.
@@ -139,10 +119,7 @@ LocalSearchRowWeightingOutput coloringsolver::local_search_row_weighting(
             if (output.solution.number_of_colors() > solution.number_of_colors()) {
                 std::stringstream ss;
                 ss << "iteration " << output.number_of_iterations;
-                output.update_solution(solution, ss, parameters.info);
-                parameters.info.lock();
-                parameters.new_solution_callback(output);
-                parameters.info.unlock();
+                algorithm_formatter.update_solution(solution, ss.str());
                 number_of_improvements++;
             }
 
@@ -150,7 +127,7 @@ LocalSearchRowWeightingOutput coloringsolver::local_search_row_weighting(
             number_of_iterations_without_improvement = 0;
 
             // Compute positions.
-            std::vector<ColorPos> positions(graph.maximum_degree() + 1, -1);
+            std::vector<ColorPos> positions(graph.highest_degree() + 1, -1);
             for (ColorPos color_pos = 0; color_pos < solution.number_of_colors(); ++color_pos) {
                 ColorId color_id = *(solution.colors_begin() + color_pos);
                 positions[color_id] = color_pos;
@@ -231,7 +208,7 @@ LocalSearchRowWeightingOutput coloringsolver::local_search_row_weighting(
 
             if (output.solution.number_of_colors() == 2
                     && !solution.feasible()) {
-                output.algorithm_end(parameters.info);
+                algorithm_formatter.end();
                 return output;
             }
         }
@@ -292,7 +269,7 @@ LocalSearchRowWeightingOutput coloringsolver::local_search_row_weighting(
         solution.set(vc.first, vc.second);
     }
 
-    output.algorithm_end(parameters.info);
+    algorithm_formatter.end();
     return output;
 }
 
@@ -300,65 +277,42 @@ LocalSearchRowWeightingOutput coloringsolver::local_search_row_weighting(
 ////////////////////////// localsearch_rowweighting_2 //////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
-void LocalSearchRowWeighting2Output::print_statistics(
-        optimizationtools::Info& info) const
-{
-    if (info.verbosity_level() >= 1) {
-        info.os()
-            << "Number of iterations:         " << number_of_iterations << std::endl
-            ;
-    }
-    info.add_to_json("Algorithm", "NumberOfIterations", number_of_iterations);
-}
-
-LocalSearchRowWeighting2Output coloringsolver::local_search_row_weighting_2(
+const LocalSearchRowWeighting2Output coloringsolver::local_search_row_weighting_2(
         const Instance& instance,
         std::mt19937_64& generator,
-        LocalSearchRowWeighting2OptionalParameters parameters)
+        const LocalSearchRowWeighting2Parameters& parameters)
 {
-    init_display(instance, parameters.info);
-    parameters.info.os()
-        << "Algorithm" << std::endl
-        << "---------" << std::endl
-        << "Row weighting local search 2" << std::endl
-        << std::endl
-        << "Parameters" << std::endl
-        << "----------" << std::endl
-        << "Maximum number of iterations:                      " << parameters.maximum_number_of_iterations << std::endl
-        << "Maximum number of iterations without improvement:  " << parameters.maximum_number_of_iterations_without_improvement << std::endl
-        << "Maximum number of improvements:                    " << parameters.maximum_number_of_improvements << std::endl
-        << "Goal:                                              " << parameters.goal << std::endl
-        << std::endl;
+    LocalSearchRowWeighting2Output output(instance);
+    AlgorithmFormatter algorithm_formatter(parameters, output);
+    algorithm_formatter.start("Row weighting local search 2");
+    algorithm_formatter.print_header();
 
     const optimizationtools::AbstractGraph& graph = instance.graph();
 
     // Compute initial greedy solution.
-    LocalSearchRowWeighting2Output output(instance, parameters.info);
-
     // Get initial solution.
+    Parameters greedy_parameters;
+    greedy_parameters.verbosity_level = 0;
     Solution solution = (parameters.initial_solution != nullptr)?
         *parameters.initial_solution:
-        greedy_dsatur(instance).solution;
+        greedy_dsatur(instance, greedy_parameters).solution;
 
     std::stringstream ss;
     ss << "initial solution";
-    output.update_solution(solution, ss, parameters.info);
-    parameters.info.lock();
-    parameters.new_solution_callback(output);
-    parameters.info.unlock();
+    algorithm_formatter.update_solution(solution, ss.str());
     if (output.solution.number_of_colors() <= parameters.goal) {
-        output.algorithm_end(parameters.info);
+        algorithm_formatter.end();
         return output;
     }
     if (output.solution.number_of_colors() == 1) {
-        output.algorithm_end(parameters.info);
+        algorithm_formatter.end();
         return output;
     }
 
     // Initialize local search structures.
     Counter number_of_iterations_without_improvement = 0;
     Counter number_of_improvements = 0;
-    std::vector<Penalty> penalties(graph.maximum_degree() + 1, 0);
+    std::vector<Penalty> penalties(graph.highest_degree() + 1, 0);
     std::vector<Penalty> vertex_penalties(graph.number_of_vertices(), 1);
     optimizationtools::IndexedSet uncolored_vertices(graph.number_of_vertices());
     std::vector<std::pair<ColorId, ColorId>> ccolor_id_bests;
@@ -370,7 +324,8 @@ LocalSearchRowWeighting2Output coloringsolver::local_search_row_weighting_2(
     optimizationtools::IndexedSet colors(solution.number_of_colors());
     colors.fill();
 
-    for (output.number_of_iterations = 0; !parameters.info.needs_to_end();
+    for (output.number_of_iterations = 0;
+            !parameters.timer.needs_to_end();
             ++output.number_of_iterations,
             ++number_of_iterations_without_improvement) {
         // Check stop criteria.
@@ -423,10 +378,7 @@ LocalSearchRowWeighting2Output coloringsolver::local_search_row_weighting_2(
             if (output.solution.number_of_colors() > solution.number_of_colors()) {
                 std::stringstream ss;
                 ss << "iteration " << output.number_of_iterations;
-                output.update_solution(solution, ss, parameters.info);
-                parameters.info.lock();
-                parameters.new_solution_callback(output);
-                parameters.info.unlock();
+                algorithm_formatter.update_solution(solution, ss.str());
                 number_of_improvements++;
             }
 
@@ -434,7 +386,7 @@ LocalSearchRowWeighting2Output coloringsolver::local_search_row_weighting_2(
             number_of_iterations_without_improvement = 0;
 
             // Compute positions.
-            std::vector<ColorPos> positions(graph.maximum_degree() + 1, -1);
+            std::vector<ColorPos> positions(graph.highest_degree() + 1, -1);
             for (ColorPos color_pos = 0; color_pos < solution.number_of_colors(); ++color_pos) {
                 ColorId color_id = *(solution.colors_begin() + color_pos);
                 positions[color_id] = color_pos;
@@ -536,7 +488,7 @@ LocalSearchRowWeighting2Output coloringsolver::local_search_row_weighting_2(
 
             if (output.solution.number_of_colors() == 2
                     && !solution.feasible()) {
-                output.algorithm_end(parameters.info);
+                algorithm_formatter.end();
                 return output;
             }
         }
@@ -609,7 +561,6 @@ LocalSearchRowWeighting2Output coloringsolver::local_search_row_weighting_2(
             solution.set(vertex_id, -1);
     }
 
-    output.algorithm_end(parameters.info);
+    algorithm_formatter.end();
     return output;
 }
-

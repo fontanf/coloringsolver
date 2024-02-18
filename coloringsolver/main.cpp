@@ -1,45 +1,167 @@
-#include "coloringsolver/algorithms/algorithms.hpp"
+#include "coloringsolver/algorithms/greedy.hpp"
+#include "coloringsolver/algorithms/milp_cplex.hpp"
+#include "coloringsolver/algorithms/local_search_row_weighting.hpp"
+#include "coloringsolver/algorithms/column_generation.hpp"
 
 #include <boost/program_options.hpp>
 
 using namespace coloringsolver;
 
+namespace po = boost::program_options;
+
+void read_args(
+        Parameters& parameters,
+        const po::variables_map& vm)
+{
+    parameters.timer.set_sigint_handler();
+    parameters.messages_to_stdout = true;
+    if (vm.count("time-limit"))
+        parameters.timer.set_time_limit(vm["time-limit"].as<double>());
+    if (vm.count("verbosity-level"))
+        parameters.verbosity_level = vm["verbosity-level"].as<int>();
+    if (vm.count("log"))
+        parameters.log_path = vm["log"].as<std::string>();
+    parameters.log_to_stderr = vm.count("log-to-stderr");
+    bool only_write_at_the_end = vm.count("only-write-at-the-end");
+    if (!only_write_at_the_end) {
+
+        std::string certificate_path;
+        if (vm.count("certificate"))
+            certificate_path = vm["certificate"].as<std::string>();
+
+        std::string json_output_path;
+        if (vm.count("output"))
+            json_output_path = vm["output"].as<std::string>();
+
+        parameters.new_solution_callback = [
+            json_output_path,
+            certificate_path](
+                    const Output& output,
+                    const std::string&)
+        {
+            if (!certificate_path.empty())
+                output.solution.write(certificate_path);
+            if (!json_output_path.empty())
+                output.write_json_output(json_output_path);
+        };
+    }
+}
+
+Output run(
+        const Instance& instance,
+        const po::variables_map& vm)
+{
+    std::mt19937_64 generator(0);
+    if (vm.count("seed"))
+        generator.seed(vm["seed"].as<Seed>());
+    Solution solution = (vm.count("initial-solution"))?
+            Solution(instance, vm["initial-solution"].as<std::string>()):
+            Solution(instance);
+
+    // Run algorithm.
+    std::string algorithm = vm["algorithm"].as<std::string>();
+    if (algorithm == "greedy") {
+        GreedyParameters parameters;
+        read_args(parameters, vm);
+        if (vm.count("ordering"))
+            parameters.ordering = vm["ordering"].as<Ordering>();
+        if (vm.count("reverse"))
+            parameters.reverse = vm["reverse"].as<bool>();
+        return greedy(instance, parameters);
+    } else if (algorithm == "greedy-dsatur"
+            || algorithm == "dsatur") {
+        Parameters parameters;
+        read_args(parameters, vm);
+        return greedy_dsatur(instance, parameters);
+#if CPLEX_FOUND
+    } else if (algorithm == "milp-assignment-cplex") {
+        MilpAssignmentCplexParameters parameters;
+        read_args(parameters, vm);
+        return milp_assignment_cplex(instance, parameters);
+    } else if (algorithm == "milp-representatives-cplex") {
+        MilpRepresentativesCplexParameters parameters;
+        read_args(parameters, vm);
+        return milp_representatives_cplex(instance, parameters);
+    } else if (algorithm == "milp-partial-ordering-cplex") {
+        MilpPartialOrderingCplexParameters parameters;
+        read_args(parameters, vm);
+        return milp_partialordering_cplex(instance, parameters);
+    } else if (algorithm == "MilpPartialOrdering2CplexParameters") {
+        MilpCplexParameters parameters;
+        read_args(parameters, vm);
+        return milp_partialordering2_cplex(instance, parameters);
+#endif
+    } else if (algorithm == "local-search-row-weighting") {
+        LocalSearchRowWeightingParameters parameters;
+        read_args(parameters, vm);
+        if (vm.count("maximum-number-of-iterations")) {
+            parameters.maximum_number_of_iterations
+                = vm["maximum-number-of-iterations"].as<int>();
+        }
+        if (vm.count("maximum-number-of-iterations-without-improvement")) {
+            parameters.maximum_number_of_iterations_without_improvement
+                = vm["maximum-number-of-iterations-without-improvement"].as<int>();
+        }
+        return local_search_row_weighting(instance, generator, parameters);
+    } else if (algorithm == "local-search-row-weighting-2") {
+        LocalSearchRowWeighting2Parameters parameters;
+        read_args(parameters, vm);
+        if (vm.count("maximum-number-of-iterations")) {
+            parameters.maximum_number_of_iterations
+                = vm["maximum-number-of-iterations"].as<int>();
+        }
+        if (vm.count("maximum-number-of-iterations-without-improvement")) {
+            parameters.maximum_number_of_iterations_without_improvement
+                = vm["maximum-number-of-iterations-without-improvement"].as<int>();
+        }
+        return local_search_row_weighting_2(instance, generator, parameters);
+    } else if (algorithm == "column-generation-greedy") {
+        ColumnGenerationParameters parameters;
+        read_args(parameters, vm);
+        if (vm.count("linear-programming-solver")) {
+            parameters.linear_programming_solver
+                = vm["linear-programming-solver"].as<std::string>();
+        }
+        return column_generation_heuristic_greedy(instance, parameters);
+    } else if (algorithm == "column-generation-limited-discrepancy-search") {
+        ColumnGenerationParameters parameters;
+        read_args(parameters, vm);
+        if (vm.count("linear-programming-solver")) {
+            parameters.linear_programming_solver
+                = vm["linear-programming-solver"].as<std::string>();
+        }
+        return column_generation_heuristic_limited_discrepancy_search(instance, parameters);
+
+    } else {
+        throw std::invalid_argument(
+                "Unknown algorithm \"" + algorithm + "\".");
+    }
+}
+
 int main(int argc, char *argv[])
 {
-    namespace po = boost::program_options;
-
     // Parse program options
-
-    std::string algorithm = "";
-    std::string instance_path = "";
-    std::string format = "dimacs";
-    std::string initial_solution_path = "";
-    std::string output_path = "";
-    std::string certificate_path = "";
-    std::string log_path = "";
-    int loglevelmax = 999;
-    int seed = 0;
-    int verbosity_level = 1;
-    double time_limit = std::numeric_limits<double>::infinity();
-    double goal = 0;
-
     po::options_description desc("Allowed options");
     desc.add_options()
         ("help,h", "produce help message")
-        ("algorithm,a", po::value<std::string>(&algorithm), "set algorithm")
-        ("input,i", po::value<std::string>(&instance_path)->required(), "set input file (required)")
-        ("format,f", po::value<std::string>(&format), "set input file format (default: standard)")
-        ("output,o", po::value<std::string>(&output_path), "set JSON output file")
-        ("initial-solution,", po::value<std::string>(&initial_solution_path), "")
-        ("certificate,c", po::value<std::string>(&certificate_path), "set certificate file")
-        ("time-limit,t", po::value<double>(&time_limit), "Time limit in seconds")
-        ("seed,s", po::value<int>(&seed), "set seed")
-        ("goal,g", po::value<double>(&goal), "set goal")
-        ("verbosity-level,v", po::value<int>(&verbosity_level), "set verbosity level")
-        ("remove-duplicate-edges,", "remove duplicate edges")
-        ("log,l", po::value<std::string>(&log_path), "set log file")
-        ("loglevelmax", po::value<int>(&loglevelmax), "set log max level")
-        ("log2stderr", "write log to stderr")
+        ("algorithm,a", po::value<std::string>()->required(), "set algorithm")
+        ("input,i", po::value<std::string>()->required(), "set input file (required)")
+        ("format,f", po::value<std::string>(), "set input file format (default: standard)")
+        ("output,o", po::value<std::string>(), "set JSON output file")
+        ("initial-solution,", po::value<std::string>(), "")
+        ("certificate,c", po::value<std::string>(), "set certificate file")
+        ("seed,s", po::value<Seed>(), "set seed")
+        ("time-limit,t", po::value<double>(), "set time limit in seconds")
+        ("verbosity-level,v", po::value<int>(), "set verbosity level")
+        ("only-write-at-the-end,e", "only write output and certificate files at the end")
+        ("log,l", po::value<std::string>(), "set log file")
+        ("log-to-stderr", "write log to stderr")
+
+        ("ordering,", po::value<Ordering>(), "set the ordering")
+        ("reverse,", po::value<bool>(), "set reverse")
+        ("maximum-number-of-iterations,", po::value<int>(), "set the maximum number of iterations")
+        ("maximum-number-of-iterations-without-improvement,", po::value<int>(), "set the maximum number of iterations without improvement")
+        ("linear-programming-solver", po::value<std::string>(), "set linear programming solver")
         ;
     po::variables_map vm;
     po::store(po::parse_command_line(argc, argv, desc), vm);
@@ -54,35 +176,19 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    // Run algorithm
+    // Build instance.
+    const Instance instance(
+            vm["input"].as<std::string>(),
+            (vm.count("format")? vm["format"].as<std::string>(): "dimacs"));
 
-    Instance instance(instance_path, format);
-    if (vm.count("remove-duplicate-edges"))
-        instance.remove_duplicate_edges();
+    // Run.
+    Output output = run(instance, vm);
 
-    optimizationtools::Info info = optimizationtools::Info()
-        .set_verbosity_level(verbosity_level)
-        .set_time_limit(time_limit)
-        .set_certificate_path(certificate_path)
-        .set_json_output_path(output_path)
-        .set_only_write_at_the_end(false)
-        .set_log_path(log_path)
-        .set_log2stderr(vm.count("log2stderr"))
-        .set_maximum_log_level(loglevelmax)
-        .set_sigint_handler()
-        ;
-
-    std::mt19937_64 generator(seed);
-    Solution solution(instance, initial_solution_path);
-
-    auto output = run(
-            algorithm,
-            instance,
-            solution,
-            std::ceil(goal - FFOT_TOL),
-            generator,
-            info);
+    // Write outputs.
+    if (vm.count("certificate"))
+        output.solution.write(vm["certificate"].as<std::string>());
+    if (vm.count("output"))
+        output.write_json_output(vm["output"].as<std::string>());
 
     return 0;
 }
-

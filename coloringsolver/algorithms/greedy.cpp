@@ -1,10 +1,14 @@
 #include "coloringsolver/algorithms/greedy.hpp"
 
+#include "coloringsolver/algorithm_formatter.hpp"
+
 #include "optimizationtools/containers/indexed_binary_heap.hpp"
 
 using namespace coloringsolver;
 
-std::istream& coloringsolver::operator>>(std::istream& in, Ordering& ordering)
+std::istream& coloringsolver::operator>>(
+        std::istream& in,
+        Ordering& ordering)
 {
     std::string token;
     in >> token;
@@ -24,7 +28,9 @@ std::istream& coloringsolver::operator>>(std::istream& in, Ordering& ordering)
     return in;
 }
 
-std::ostream& coloringsolver::operator<<(std::ostream &os, Ordering ordering)
+std::ostream& coloringsolver::operator<<(
+        std::ostream &os,
+        Ordering ordering)
 {
     switch (ordering) {
     case Ordering::Default: {
@@ -53,11 +59,11 @@ std::vector<VertexId> largestfirst(const Instance& instance)
     VertexId n = graph.number_of_vertices();
 
     std::vector<VertexId> ordered_vertices(n);
-    std::vector<std::vector<VertexId>> vertices(graph.maximum_degree() + 1);
+    std::vector<std::vector<VertexId>> vertices(graph.highest_degree() + 1);
     for (VertexId vertex_id = 0; vertex_id < n; ++vertex_id)
         vertices[graph.degree(vertex_id)].push_back(vertex_id);
 
-    VertexId d_cur = graph.maximum_degree();
+    VertexId d_cur = graph.highest_degree();
     for (VertexPos vertex_pos = 0; vertex_pos < n; ++vertex_pos) {
         while (vertices[d_cur].empty())
             d_cur--;
@@ -75,7 +81,7 @@ std::vector<VertexId> incidencedegree(const Instance& instance)
 
     std::vector<VertexId> ordered_vertices(n);
     std::vector<uint8_t> added(n, 0);
-    std::vector<std::vector<VertexId>> vertices(graph.maximum_degree() + 1);
+    std::vector<std::vector<VertexId>> vertices(graph.highest_degree() + 1);
     std::vector<std::pair<VertexId, VertexPos>> positions(n, {-1, -1});
     VertexId vertex_id_best = -1;
     for (VertexId vertex_id = 0; vertex_id < n; ++vertex_id) {
@@ -124,7 +130,7 @@ std::vector<VertexId> smallestlast(const Instance& instance)
     std::vector<VertexId> ordered_vertices(n);
     std::vector<uint8_t> added(n, 0);
 
-    std::vector<std::vector<VertexId>> vertices(graph.maximum_degree() + 1);
+    std::vector<std::vector<VertexId>> vertices(graph.highest_degree() + 1);
     std::vector<std::pair<VertexId, VertexPos>> positions(n, {-1, -1});
     for (VertexId vertex_id = 0; vertex_id < n; ++vertex_id) {
         VertexId dv = graph.degree(vertex_id);
@@ -167,7 +173,7 @@ std::vector<VertexId> dynamiclargestfirst(const Instance& instance)
 
     std::vector<VertexId> ordered_vertices(n);
     std::vector<uint8_t> added(n, 0);
-    std::vector<std::vector<VertexId>> vertices(graph.maximum_degree() + 1);
+    std::vector<std::vector<VertexId>> vertices(graph.highest_degree() + 1);
     std::vector<std::pair<VertexId, VertexPos>> positions(n, {-1, -1});
     for (VertexId vertex_id = 0; vertex_id < n; ++vertex_id) {
         VertexId dv = graph.degree(vertex_id);
@@ -175,7 +181,7 @@ std::vector<VertexId> dynamiclargestfirst(const Instance& instance)
         vertices[dv].push_back(vertex_id);
     }
 
-    VertexId d_cur = graph.maximum_degree();
+    VertexId d_cur = graph.highest_degree();
     for (VertexPos vertex_pos = 0; vertex_pos < n; ++vertex_pos) {
         while (vertices[d_cur].empty())
             d_cur--;
@@ -201,23 +207,17 @@ std::vector<VertexId> dynamiclargestfirst(const Instance& instance)
     return ordered_vertices;
 }
 
-Output coloringsolver::greedy(const Instance& instance, GreedyOptionalParameters parameters)
+const Output coloringsolver::greedy(
+        const Instance& instance,
+        const GreedyParameters& parameters)
 {
-    init_display(instance, parameters.info);
-    parameters.info.os()
-        << "Algorithm" << std::endl
-        << "---------" << std::endl
-        << "Greedy" << std::endl
-        << std::endl
-        << "Parameters" << std::endl
-        << "----------" << std::endl
-        << "Ordering:      " << parameters.ordering << std::endl
-        << "Reverse:       " << parameters.reverse << std::endl
-        << std::endl;
+    Output output(instance);
+    AlgorithmFormatter algorithm_formatter(parameters, output);
+    algorithm_formatter.start("Greedy");
+    algorithm_formatter.print_header();
 
     const optimizationtools::AbstractGraph& graph = instance.graph();
     VertexId n = graph.number_of_vertices();
-    Output output(instance, parameters.info);
     Solution solution(instance);
 
     std::vector<VertexId> ordered_vertices;
@@ -242,7 +242,7 @@ Output coloringsolver::greedy(const Instance& instance, GreedyOptionalParameters
     }
     }
 
-    optimizationtools::IndexedSet color_set(graph.maximum_degree() + 1);
+    optimizationtools::IndexedSet color_set(graph.highest_degree() + 1);
     if (!parameters.reverse) {
         for (auto it_v = ordered_vertices.begin(); it_v != ordered_vertices.end(); ++it_v) {
             VertexId vertex_id = *it_v;
@@ -285,24 +285,23 @@ Output coloringsolver::greedy(const Instance& instance, GreedyOptionalParameters
         }
     }
 
-    output.update_solution(solution, std::stringstream(), parameters.info);
-    return output.algorithm_end(parameters.info);
+    algorithm_formatter.update_solution(solution, "");
+
+    algorithm_formatter.end();
+    return output;
 }
 
-Output coloringsolver::greedy_dsatur(
+const Output coloringsolver::greedy_dsatur(
         const Instance& instance,
-        optimizationtools::Info info)
+        const Parameters& parameters)
 {
-    init_display(instance, info);
-    info.os()
-        << "Algorithm" << std::endl
-        << "---------" << std::endl
-        << "DSATUR" << std::endl
-        << std::endl;
+    Output output(instance);
+    AlgorithmFormatter algorithm_formatter(parameters, output);
+    algorithm_formatter.start("DSATUR");
+    algorithm_formatter.print_header();
 
     const optimizationtools::AbstractGraph& graph = instance.graph();
     VertexId n = graph.number_of_vertices();
-    Output output(instance, info);
     Solution solution(instance);
 
     VertexId vertex_id_best = -1;
@@ -315,7 +314,7 @@ Output coloringsolver::greedy_dsatur(
     optimizationtools::IndexedBinaryHeap<double> heap(n, f);
     heap.update_key(vertex_id_best, -1);
 
-    optimizationtools::IndexedSet color_set(graph.maximum_degree() + 1);
+    optimizationtools::IndexedSet color_set(graph.highest_degree() + 1);
 
     std::vector<std::vector<bool>> is_adjacent;
     std::vector<ColorId> number_of_adjacent_colors(n, 0);
@@ -355,12 +354,13 @@ Output coloringsolver::greedy_dsatur(
             is_adjacent[color_id_best][vertex_id_neighbor] = true;
             number_of_adjacent_colors[vertex_id_neighbor]++;
             double val = -number_of_adjacent_colors[vertex_id_neighbor]
-                - (double)graph.degree(vertex_id_neighbor) / (graph.maximum_degree() + 1);
+                - (double)graph.degree(vertex_id_neighbor) / (graph.highest_degree() + 1);
             heap.update_key(vertex_id_neighbor, val);
         }
     }
 
-    output.update_solution(solution, std::stringstream(), info);
-    return output.algorithm_end(info);
-}
+    algorithm_formatter.update_solution(solution, "");
 
+    algorithm_formatter.end();
+    return output;
+}

@@ -2,6 +2,8 @@
 
 #include "coloringsolver/algorithms/milp_cplex.hpp"
 
+#include "coloringsolver/algorithm_formatter.hpp"
+
 #include <ilcplex/ilocplex.h>
 
 using namespace coloringsolver;
@@ -14,13 +16,13 @@ ILOSTLBEGIN
 
 ILOMIPINFOCALLBACK5(loggingCallbackAssignment,
                     const Instance&, instance,
-                    MilpAssignmentCplexOptionalParameters&, parameters,
+                    AlgorithmFormatter&, algorithm_formatter,
                     Output&, output,
                     ColorId, upper_bound,
                     std::vector<IloNumVarArray>&, x)
 {
     ColorId lb = std::ceil(getBestObjValue() - FFOT_TOL);
-    output.update_bound(lb, std::stringstream(""), parameters.info);
+    algorithm_formatter.update_bound(lb, "");
 
     if (!hasIncumbent())
         return;
@@ -37,23 +39,18 @@ ILOMIPINFOCALLBACK5(loggingCallbackAssignment,
                 if (val[color_id] > 0.5)
                     solution.set(vertex_id, color_id);
         }
-        output.update_solution(
-                solution,
-                std::stringstream(""),
-                parameters.info);
+        algorithm_formatter.update_solution(solution, "");
     }
 }
 
-Output coloringsolver::milp_assignment_cplex(
+const Output coloringsolver::milp_assignment_cplex(
         const Instance& instance,
-        MilpAssignmentCplexOptionalParameters parameters)
+        const MilpAssignmentCplexParameters& parameters)
 {
-    init_display(instance, parameters.info);
-    parameters.info.os()
-        << "Algorithm" << std::endl
-        << "---------" << std::endl
-        << "MILP - Assignment model (CPLEX)" << std::endl
-        << std::endl;
+    Output output(instance);
+    AlgorithmFormatter algorithm_formatter(parameters, output);
+    algorithm_formatter.start("MILP - Assignment model (CPLEX)");
+    algorithm_formatter.print_header();
 
     if (instance.adjacency_list_graph() == nullptr) {
         throw std::runtime_error(
@@ -61,12 +58,10 @@ Output coloringsolver::milp_assignment_cplex(
     }
     const optimizationtools::AdjacencyListGraph& graph = *instance.adjacency_list_graph();
 
-    Output output(instance, parameters.info);
-
     IloEnv env;
     IloModel model(env);
 
-    ColorId upper_bound = graph.maximum_degree() + 1;
+    ColorId upper_bound = graph.highest_degree() + 1;
 
     // Variables
     // x[v][c] == 1 iff vertex v has color c.
@@ -131,14 +126,14 @@ Output coloringsolver::milp_assignment_cplex(
     cplex.setParam(IloCplex::Param::MIP::Strategy::File, 2); // Avoid running out of memory
 
     // Time limit
-    if (parameters.info.time_limit != std::numeric_limits<double>::infinity())
-        cplex.setParam(IloCplex::TiLim, parameters.info.remaining_time());
+    if (parameters.timer.remaining_time() != std::numeric_limits<double>::infinity())
+        cplex.setParam(IloCplex::TiLim, parameters.timer.remaining_time());
 
     // Callback
     cplex.use(loggingCallbackAssignment(
                 env,
                 instance,
-                parameters,
+                algorithm_formatter,
                 output,
                 upper_bound,
                 x));
@@ -157,15 +152,11 @@ Output coloringsolver::milp_assignment_cplex(
                 for (ColorId color_id = 0; color_id < upper_bound; ++color_id)
                     if (cplex.getValue(x[vertex_id][color_id]) > 0.5)
                         solution.set(vertex_id, color_id);
-            output.update_solution(
-                    solution,
-                    std::stringstream(""),
-                    parameters.info);
+            algorithm_formatter.update_solution(solution, "");
         }
-        output.update_bound(
+        algorithm_formatter.update_bound(
                 output.solution.number_of_colors(),
-                std::stringstream(""),
-                parameters.info);
+                "");
     } else if (cplex.isPrimalFeasible()) {
         if (!output.solution.feasible()
                 || output.solution.number_of_colors() > cplex.getObjValue() + 0.5) {
@@ -176,21 +167,19 @@ Output coloringsolver::milp_assignment_cplex(
                 for (ColorId color_id = 0; color_id < upper_bound; ++color_id)
                     if (cplex.getValue(x[vertex_id][color_id]) > 0.5)
                         solution.set(vertex_id, color_id);
-            output.update_solution(
-                    solution,
-                    std::stringstream(""),
-                    parameters.info);
+            algorithm_formatter.update_solution(solution, "");
         }
         ColorId lb = std::ceil(cplex.getBestObjValue() - FFOT_TOL);
-        output.update_bound(lb, std::stringstream(""), parameters.info);
+        algorithm_formatter.update_bound(lb, "");
     } else {
         ColorId lb = std::ceil(cplex.getBestObjValue() - FFOT_TOL);
-        output.update_bound(lb, std::stringstream(""), parameters.info);
+        algorithm_formatter.update_bound(lb, "");
     }
 
     env.end();
 
-    return output.algorithm_end(parameters.info);
+    algorithm_formatter.end();
+    return output;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -199,13 +188,13 @@ Output coloringsolver::milp_assignment_cplex(
 
 ILOMIPINFOCALLBACK5(loggingCallbackRepresentatives,
                     const Instance&, instance,
-                    MilpRepresentativesCplexOptionalParameters&, parameters,
+                    AlgorithmFormatter&, algorithm_formatter,
                     Output&, output,
                     const optimizationtools::AdjacencyListGraph&, complementary_graph,
                     std::vector<IloNumVarArray>&, x)
 {
     ColorId lb = std::ceil(getBestObjValue() - FFOT_TOL);
-    output.update_bound(lb, std::stringstream(""), parameters.info);
+    algorithm_formatter.update_bound(lb, "");
 
     if (!hasIncumbent())
         return;
@@ -226,28 +215,24 @@ ILOMIPINFOCALLBACK5(loggingCallbackRepresentatives,
                 }
             }
         }
-        output.update_solution(solution, std::stringstream(""), parameters.info);
+        algorithm_formatter.update_solution(solution, "");
     }
 }
 
-Output coloringsolver::milp_representatives_cplex(
+const Output coloringsolver::milp_representatives_cplex(
         const Instance& instance,
-        MilpRepresentativesCplexOptionalParameters parameters)
+        const MilpRepresentativesCplexParameters& parameters)
 {
-    init_display(instance, parameters.info);
-    parameters.info.os()
-        << "Algorithm" << std::endl
-        << "---------" << std::endl
-        << "MILP - Representative model (CPLEX)" << std::endl
-        << std::endl;
+    Output output(instance);
+    AlgorithmFormatter algorithm_formatter(parameters, output);
+    algorithm_formatter.start("MILP - Representative model (CPLEX)");
+    algorithm_formatter.print_header();
 
     if (instance.adjacency_list_graph() == nullptr) {
         throw std::runtime_error(
                 "The 'milp_representatives_cplex' algorithm requires an AdjacencyListGraph.");
     }
     const optimizationtools::AdjacencyListGraph& graph = *instance.adjacency_list_graph();
-
-    Output output(instance, parameters.info);
 
     IloEnv env;
     IloModel model(env);
@@ -308,14 +293,14 @@ Output coloringsolver::milp_representatives_cplex(
     cplex.setParam(IloCplex::Param::MIP::Strategy::File, 2); // Avoid running out of memory
 
     // Time limit
-    if (parameters.info.time_limit != std::numeric_limits<double>::infinity())
-        cplex.setParam(IloCplex::TiLim, parameters.info.remaining_time());
+    if (parameters.timer.remaining_time() != std::numeric_limits<double>::infinity())
+        cplex.setParam(IloCplex::TiLim, parameters.timer.remaining_time());
 
     // Callback
     cplex.use(loggingCallbackRepresentatives(
                 env,
                 instance,
-                parameters,
+                algorithm_formatter,
                 output,
                 complementary_graph,
                 x));
@@ -340,15 +325,11 @@ Output coloringsolver::milp_representatives_cplex(
                     }
                 }
             }
-            output.update_solution(
-                    solution,
-                    std::stringstream(""),
-                    parameters.info);
+            algorithm_formatter.update_solution(solution, "");
         }
-        output.update_bound(
+        algorithm_formatter.update_bound(
                 output.solution.number_of_colors(),
-                std::stringstream(""),
-                parameters.info);
+                "");
     } else if (cplex.isPrimalFeasible()) {
         if (!output.solution.feasible()
                 || output.solution.number_of_colors() > cplex.getObjValue() + 0.5) {
@@ -365,21 +346,19 @@ Output coloringsolver::milp_representatives_cplex(
                     }
                 }
             }
-            output.update_solution(
-                    solution,
-                    std::stringstream(""),
-                    parameters.info);
+            algorithm_formatter.update_solution(solution, "");
         }
         ColorId lb = std::ceil(cplex.getBestObjValue() - FFOT_TOL);
-        output.update_bound(lb, std::stringstream(""), parameters.info);
+        algorithm_formatter.update_bound(lb, "");
     } else {
         ColorId lb = std::ceil(cplex.getBestObjValue() - FFOT_TOL);
-        output.update_bound(lb, std::stringstream(""), parameters.info);
+        algorithm_formatter.update_bound(lb, "");
     }
 
     env.end();
 
-    return output.algorithm_end(parameters.info);
+    algorithm_formatter.end();
+    return output;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -388,14 +367,14 @@ Output coloringsolver::milp_representatives_cplex(
 
 ILOMIPINFOCALLBACK6(loggingCallbackPartialOrdering,
                     const Instance&, instance,
-                    MilpPartialOrderingCplexOptionalParameters&, parameters,
+                    AlgorithmFormatter&, algorithm_formatter,
                     Output&, output,
                     ColorId, upper_bound,
                     std::vector<IloNumVarArray>&, y,
                     std::vector<IloNumVarArray>&, z)
 {
     ColorId lb = std::ceil(getBestObjValue() - FFOT_TOL);
-    output.update_bound(lb, std::stringstream(""), parameters.info);
+    algorithm_formatter.update_bound(lb, "");
 
     if (!hasIncumbent())
         return;
@@ -415,20 +394,18 @@ ILOMIPINFOCALLBACK6(loggingCallbackPartialOrdering,
                 if (val_y[color_id] + val_z[color_id] < 0.5)
                     solution.set(vertex_id, color_id);
         }
-        output.update_solution(solution, std::stringstream(""), parameters.info);
+        algorithm_formatter.update_solution(solution, "");
     }
 }
 
-Output coloringsolver::milp_partialordering_cplex(
+const Output coloringsolver::milp_partialordering_cplex(
         const Instance& instance,
-        MilpPartialOrderingCplexOptionalParameters parameters)
+        const MilpPartialOrderingCplexParameters& parameters)
 {
-    init_display(instance, parameters.info);
-    parameters.info.os()
-        << "Algorithm" << std::endl
-        << "---------" << std::endl
-        << "MILP - Partial ordering based model (CPLEX)" << std::endl
-        << std::endl;
+    Output output(instance);
+    AlgorithmFormatter algorithm_formatter(parameters, output);
+    algorithm_formatter.start("MILP - Partial ordering based model (CPLEX)");
+    algorithm_formatter.print_header();
 
     if (instance.adjacency_list_graph() == nullptr) {
         throw std::runtime_error(
@@ -436,12 +413,10 @@ Output coloringsolver::milp_partialordering_cplex(
     }
     const optimizationtools::AdjacencyListGraph& graph = *instance.adjacency_list_graph();
 
-    Output output(instance, parameters.info);
-
     IloEnv env;
     IloModel model(env);
 
-    ColorId upper_bound = graph.maximum_degree() + 1;
+    ColorId upper_bound = graph.highest_degree() + 1;
 
     // Variables
     // y[v][c] == 1 iff vertex v has color > c.
@@ -518,14 +493,14 @@ Output coloringsolver::milp_partialordering_cplex(
     cplex.setParam(IloCplex::Param::MIP::Strategy::File, 2); // Avoid running out of memory
 
     // Time limit
-    if (parameters.info.time_limit != std::numeric_limits<double>::infinity())
-        cplex.setParam(IloCplex::TiLim, parameters.info.remaining_time());
+    if (parameters.timer.remaining_time() != std::numeric_limits<double>::infinity())
+        cplex.setParam(IloCplex::TiLim, parameters.timer.remaining_time());
 
     // Callback
     cplex.use(loggingCallbackPartialOrdering(
                 env,
                 instance,
-                parameters,
+                algorithm_formatter,
                 output,
                 upper_bound,
                 y,
@@ -548,15 +523,9 @@ Output coloringsolver::milp_partialordering_cplex(
                         solution.set(vertex_id, color_id);
                     }
             }
-            output.update_solution(
-                    solution,
-                    std::stringstream(""),
-                    parameters.info);
+            algorithm_formatter.update_solution(solution, "");
         }
-        output.update_bound(
-                output.solution.number_of_colors(),
-                std::stringstream(""),
-                parameters.info);
+        algorithm_formatter.update_bound(output.solution.number_of_colors(), "");
     } else if (cplex.isPrimalFeasible()) {
         if (!output.solution.feasible()
                 || output.solution.number_of_colors() > cplex.getObjValue() + 0.5) {
@@ -570,21 +539,19 @@ Output coloringsolver::milp_partialordering_cplex(
                         solution.set(vertex_id, color_id);
                     }
             }
-            output.update_solution(
-                    solution,
-                    std::stringstream(""),
-                    parameters.info);
+            algorithm_formatter.update_solution(solution, "");
         }
         ColorId lb = std::ceil(cplex.getBestObjValue() - FFOT_TOL);
-        output.update_bound(lb, std::stringstream(""), parameters.info);
+        algorithm_formatter.update_bound(lb, "");
     } else {
         ColorId lb = std::ceil(cplex.getBestObjValue() - FFOT_TOL);
-        output.update_bound(lb, std::stringstream(""), parameters.info);
+        algorithm_formatter.update_bound(lb, "");
     }
 
     env.end();
 
-    return output.algorithm_end(parameters.info);
+    algorithm_formatter.end();
+    return output;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -593,14 +560,14 @@ Output coloringsolver::milp_partialordering_cplex(
 
 ILOMIPINFOCALLBACK6(loggingCallbackPartialOrdering2,
                     const Instance&, instance,
-                    MilpPartialOrdering2CplexOptionalParameters&, parameters,
+                    AlgorithmFormatter&, algorithm_formatter,
                     Output&, output,
                     ColorId, upper_bound,
                     std::vector<IloNumVarArray>&, y,
                     std::vector<IloNumVarArray>&, z)
 {
     ColorId lb = std::ceil(getBestObjValue() - FFOT_TOL);
-    output.update_bound(lb, std::stringstream(""), parameters.info);
+    algorithm_formatter.update_bound(lb, "");
 
     if (!hasIncumbent())
         return;
@@ -620,23 +587,18 @@ ILOMIPINFOCALLBACK6(loggingCallbackPartialOrdering2,
                 if (val_y[color_id] + val_z[color_id] < 0.5)
                     solution.set(vertex_id, color_id);
         }
-        output.update_solution(
-                solution,
-                std::stringstream(""),
-                parameters.info);
+        algorithm_formatter.update_solution(solution, "");
     }
 }
 
-Output coloringsolver::milp_partialordering2_cplex(
+const Output coloringsolver::milp_partialordering2_cplex(
         const Instance& instance,
-        MilpPartialOrdering2CplexOptionalParameters parameters)
+        const MilpPartialOrdering2CplexParameters& parameters)
 {
-    init_display(instance, parameters.info);
-    parameters.info.os()
-        << "Algorithm" << std::endl
-        << "---------" << std::endl
-        << "MILP - Partial ordering based model 2 (CPLEX)" << std::endl
-        << std::endl;
+    Output output(instance);
+    AlgorithmFormatter algorithm_formatter(parameters, output);
+    algorithm_formatter.start("MILP - Partial ordering based model 2 (CPLEX)");
+    algorithm_formatter.print_header();
 
     if (instance.adjacency_list_graph() == nullptr) {
         throw std::runtime_error(
@@ -644,12 +606,10 @@ Output coloringsolver::milp_partialordering2_cplex(
     }
     const optimizationtools::AdjacencyListGraph& graph = *instance.adjacency_list_graph();
 
-    Output output(instance, parameters.info);
-
     IloEnv env;
     IloModel model(env);
 
-    ColorId upper_bound = graph.maximum_degree() + 1;
+    ColorId upper_bound = graph.highest_degree() + 1;
 
     // Variables
     // x[v][c] == 1 iff vertex v has color c.
@@ -743,14 +703,14 @@ Output coloringsolver::milp_partialordering2_cplex(
     cplex.setParam(IloCplex::Param::MIP::Strategy::File, 2); // Avoid running out of memory
 
     // Time limit
-    if (parameters.info.time_limit != std::numeric_limits<double>::infinity())
-        cplex.setParam(IloCplex::TiLim, parameters.info.remaining_time());
+    if (parameters.timer.remaining_time() != std::numeric_limits<double>::infinity())
+        cplex.setParam(IloCplex::TiLim, parameters.timer.remaining_time());
 
     // Callback
     cplex.use(loggingCallbackPartialOrdering2(
                 env,
                 instance,
-                parameters,
+                algorithm_formatter,
                 output,
                 upper_bound,
                 y,
@@ -774,15 +734,9 @@ Output coloringsolver::milp_partialordering2_cplex(
                     }
                 }
             }
-            output.update_solution(
-                    solution,
-                    std::stringstream(""),
-                    parameters.info);
+            algorithm_formatter.update_solution(solution, "");
         }
-        output.update_bound(
-                output.solution.number_of_colors(),
-                std::stringstream(""),
-                parameters.info);
+        algorithm_formatter.update_bound(output.solution.number_of_colors(), "");
     } else if (cplex.isPrimalFeasible()) {
         if (!output.solution.feasible()
                 || output.solution.number_of_colors() > cplex.getObjValue() + 0.5) {
@@ -796,22 +750,19 @@ Output coloringsolver::milp_partialordering2_cplex(
                         solution.set(vertex_id, color_id);
                 }
             }
-            output.update_solution(
-                    solution,
-                    std::stringstream(""),
-                    parameters.info);
+            algorithm_formatter.update_solution(solution, "");
         }
         ColorId lb = std::ceil(cplex.getBestObjValue() - FFOT_TOL);
-        output.update_bound(lb, std::stringstream(""), parameters.info);
+        algorithm_formatter.update_bound(lb, "");
     } else {
         ColorId lb = std::ceil(cplex.getBestObjValue() - FFOT_TOL);
-        output.update_bound(lb, std::stringstream(""), parameters.info);
+        algorithm_formatter.update_bound(lb, "");
     }
 
     env.end();
 
-    return output.algorithm_end(parameters.info);
+    algorithm_formatter.end();
+    return output;
 }
 
 #endif
-
