@@ -184,7 +184,6 @@ std::vector<std::shared_ptr<const Column>> PricingSolver::solve_pricing(
     stablesolver::stable::LocalSearchParameters mwis_parameters;
     mwis_parameters.maximum_number_of_nodes = 1000;
     mwis_parameters.verbosity_level = 0;
-    std::mt19937_64 generator(0);
     auto output_mwis = stablesolver::stable::local_search(
             mwis_instance,
             mwis_parameters);

@@ -40,6 +40,12 @@ Compile:
 bazel build -- //...
 ```
 
+Download data:
+```shell
+python3 scripts/download_data.py
+python3 scripts/download_data.py --data verma2015
+```
+
 Examples:
 
 ```shell
