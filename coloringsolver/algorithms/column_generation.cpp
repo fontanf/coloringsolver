@@ -79,8 +79,6 @@ columngenerationsolver::Model get_model(const Instance& instance)
     columngenerationsolver::Model model;
 
     model.objective_sense = optimizationtools::ObjectiveDirection::Minimize;
-    model.column_lower_bound = 0;
-    model.column_upper_bound = 1;
 
     for (VertexId vertex_id = 0;
             vertex_id < instance.graph().number_of_vertices();
