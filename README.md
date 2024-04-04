@@ -10,8 +10,8 @@ A solver for the graph coloring problem.
 
 * Greedy algorithms, see "ColPack: Software for graph coloring and related problems in scientific computing" (Gebremedhin et al., 2013) for their descriptions:
   * Largest first `-a greedy --ordering largest-first`
-  * Incidence degree `-a greedy --ordering incidence-degree --reverse`
-  * Smallest last `-a greedy --ordering smallest-last --reverse`
+  * Incidence degree `-a greedy --ordering incidence-degree --reverse 1`
+  * Smallest last `-a greedy --ordering smallest-last --reverse 1`
   * Dynamic largest first `-a greedy --ordering dynamic-largest-first`
   * DSATUR `-a greedy-dsatur`
 
@@ -30,10 +30,6 @@ A solver for the graph coloring problem.
   * Limited discrepancy search `column-generation-heuristic-limited-discrepancy-search`
 
 ## Usage (command line)
-
-Download and uncompress the instances in the `data/` folder:
-
-https://drive.google.com/file/d/1ZT2dSIleWN__MZIscsc3kAqGRVU91CDw/view?usp=sharing
 
 Compile:
 ```shell
