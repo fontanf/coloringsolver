@@ -13,10 +13,11 @@ parser.add_argument(
 args = parser.parse_args()
 
 
+data_dir = os.environ['COLORING_DATA']
 main = os.path.join(
-        "bazel-bin",
-        "coloringsolver",
-        "main")
+        "install",
+        "bin",
+        "coloringsolver")
 
 
 greedy_data = [
@@ -39,7 +40,7 @@ if args.tests is None or "greedy-largest-first" in args.tests:
 
     for instance, instance_format in greedy_data:
         instance_path = os.path.join(
-                "data",
+                data_dir,
                 instance)
         json_output_path = os.path.join(
                 args.directory,
@@ -71,7 +72,7 @@ if args.tests is None or "greedy-incidence-degree" in args.tests:
 
     for instance, instance_format in greedy_data:
         instance_path = os.path.join(
-                "data",
+                data_dir,
                 instance)
         json_output_path = os.path.join(
                 args.directory,
@@ -104,7 +105,7 @@ if args.tests is None or "greedy-smallest-last" in args.tests:
 
     for instance, instance_format in greedy_data:
         instance_path = os.path.join(
-                "data",
+                data_dir,
                 instance)
         json_output_path = os.path.join(
                 args.directory,
@@ -137,7 +138,7 @@ if args.tests is None or "greedy-dynamic-largest-first" in args.tests:
 
     for instance, instance_format in greedy_data:
         instance_path = os.path.join(
-                "data",
+                data_dir,
                 instance)
         json_output_path = os.path.join(
                 args.directory,
