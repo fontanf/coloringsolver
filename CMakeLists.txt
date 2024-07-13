@@ -5,6 +5,9 @@ project(ColoringSolver LANGUAGES CXX)
 option(COLORINGSOLVER_USE_CBC "Use CBC" ON)
 option(COLORINGSOLVER_USE_CPLEX "Use CPLEX" OFF)
 
+# Avoid FetchContent warning.
+cmake_policy(SET CMP0135 NEW)
+
 # Require C++14.
 set(CMAKE_CXX_STANDARD 14)
 
