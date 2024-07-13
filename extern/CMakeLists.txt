@@ -6,19 +6,18 @@ set(BOOST_INCLUDE_LIBRARIES thread filesystem system program_options dynamic_bit
 set(BOOST_ENABLE_CMAKE ON)
 include(FetchContent)
 FetchContent_Declare(
-  Boost
-  GIT_REPOSITORY https://github.com/boostorg/boost.git
-  GIT_TAG boost-1.84.0
-  GIT_SHALLOW TRUE
-)
+    Boost
+    URL https://github.com/boostorg/boost/releases/download/boost-1.84.0/boost-1.84.0.tar.xz
+    EXCLUDE_FROM_ALL)
 FetchContent_MakeAvailable(Boost)
 
 # Fetch fontanf/optimizationtools.
 FetchContent_Declare(
     optimizationtools
     GIT_REPOSITORY https://github.com/fontanf/optimizationtools.git
-    GIT_TAG 33a3966ece149d390ec7ce08699669b5267e64aa)
-    #SOURCE_DIR "${PROJECT_SOURCE_DIR}/../optimizationtools/")
+    GIT_TAG a0973a7dfa64b9d305f75879c80d252e714ce2cf
+    #SOURCE_DIR "${PROJECT_SOURCE_DIR}/../optimizationtools/"
+    EXCLUDE_FROM_ALL)
 FetchContent_MakeAvailable(optimizationtools)
 
 # Fetch fontanf/mathoptsolverscmake.
@@ -31,8 +30,9 @@ endif()
 FetchContent_Declare(
     mathoptsolverscmake
     GIT_REPOSITORY https://github.com/fontanf/mathoptsolverscmake.git
-    GIT_TAG 56190725f424249a3acd8fce3ff50e08fe675cc6)
-    #SOURCE_DIR "${PROJECT_SOURCE_DIR}/../mathoptsolverscmake/")
+    GIT_TAG 80cd13a843e2c10684abbfe76cf9aae0d71ff79d
+    #SOURCE_DIR "${PROJECT_SOURCE_DIR}/../mathoptsolverscmake/"
+    EXCLUDE_FROM_ALL)
 FetchContent_MakeAvailable(mathoptsolverscmake)
 
 # Fetch fontanf/stablesolver.
@@ -45,7 +45,7 @@ endif()
 FetchContent_Declare(
     stablesolver
     GIT_REPOSITORY https://github.com/fontanf/stablesolver.git
-    GIT_TAG 5c11e705937f2ac2e442ac17ae0e5d2c249cebc8)
+    GIT_TAG eb503db329480be65339da1d34edbf8e5bbf6185)
     #SOURCE_DIR "${PROJECT_SOURCE_DIR}/../stablesolver/")
 FetchContent_MakeAvailable(stablesolver)
 
@@ -53,6 +53,7 @@ FetchContent_MakeAvailable(stablesolver)
 FetchContent_Declare(
     columngenerationsolver
     GIT_REPOSITORY https://github.com/fontanf/columngenerationsolver.git
-    GIT_TAG d54fb377843092dc4090999b435c48feeb016083)
-    #SOURCE_DIR "${PROJECT_SOURCE_DIR}/../columngenerationsolver/")
+    GIT_TAG 9c57300135f8d1ec2a44de4aeb53e0056d24f2f3
+    #SOURCE_DIR "${PROJECT_SOURCE_DIR}/../columngenerationsolver/"
+    EXCLUDE_FROM_ALL)
 FetchContent_MakeAvailable(columngenerationsolver)
