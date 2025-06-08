@@ -15,7 +15,7 @@ FetchContent_MakeAvailable(Boost)
 FetchContent_Declare(
     optimizationtools
     GIT_REPOSITORY https://github.com/fontanf/optimizationtools.git
-    GIT_TAG a0973a7dfa64b9d305f75879c80d252e714ce2cf
+    GIT_TAG 65c8e11224aac1cf6e6e33c040b6b895341ad156
     #SOURCE_DIR "${PROJECT_SOURCE_DIR}/../optimizationtools/"
     EXCLUDE_FROM_ALL)
 FetchContent_MakeAvailable(optimizationtools)
@@ -45,8 +45,9 @@ endif()
 FetchContent_Declare(
     stablesolver
     GIT_REPOSITORY https://github.com/fontanf/stablesolver.git
-    GIT_TAG eb503db329480be65339da1d34edbf8e5bbf6185)
-    #SOURCE_DIR "${PROJECT_SOURCE_DIR}/../stablesolver/")
+    GIT_TAG 3c374c789c766111ac953e2a46d21881f5841cd0
+    #SOURCE_DIR "${PROJECT_SOURCE_DIR}/../stablesolver/"
+    EXCLUDE_FROM_ALL)
 FetchContent_MakeAvailable(stablesolver)
 
 # Fetch fontanf/columngenerationsolver.
