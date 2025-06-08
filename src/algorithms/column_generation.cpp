@@ -57,7 +57,7 @@ public:
     virtual std::vector<std::shared_ptr<const Column>> initialize_pricing(
             const std::vector<std::pair<std::shared_ptr<const Column>, Value>>& fixed_columns);
 
-    virtual std::vector<std::shared_ptr<const Column>> solve_pricing(
+    virtual columngenerationsolver::PricingSolver::PricingOutput solve_pricing(
             const std::vector<Value>& duals);
 
 private:
@@ -136,10 +136,12 @@ std::vector<std::shared_ptr<const Column>> PricingSolver::initialize_pricing(
     return {};
 }
 
-std::vector<std::shared_ptr<const Column>> PricingSolver::solve_pricing(
+columngenerationsolver::PricingSolver::PricingOutput PricingSolver::solve_pricing(
             const std::vector<Value>& duals)
 {
-    std::vector<std::shared_ptr<const Column>> columns;
+    PricingOutput output;
+    Value reduced_cost_bound = 0.0;
+
     stablesolver::stable::Weight mult = 10000;
 
     // Build subproblem instance.
@@ -200,8 +202,9 @@ std::vector<std::shared_ptr<const Column>> PricingSolver::solve_pricing(
     }
     column.objective_coefficient = 1;
 
-    columns.push_back(std::shared_ptr<const Column>(new Column(column)));
-    return columns;
+    output.columns.push_back(std::shared_ptr<const columngenerationsolver::Column>(new columngenerationsolver::Column(column)));
+    output.overcost = instance_.graph().highest_degree() * std::min(0.0, columngenerationsolver::compute_reduced_cost(*output.columns.front(), duals));
+    return output;
 }
 
 const Output coloringsolver::column_generation_heuristic_greedy(
@@ -217,8 +220,8 @@ const Output coloringsolver::column_generation_heuristic_greedy(
     columngenerationsolver::GreedyParameters cgsg_parameters;
     cgsg_parameters.verbosity_level = 0;
     cgsg_parameters.timer = parameters.timer;
-    cgsg_parameters.column_generation_parameters.linear_programming_solver
-        = columngenerationsolver::s2lps(parameters.linear_programming_solver);
+    cgsg_parameters.column_generation_parameters.solver_name
+        = parameters.linear_programming_solver;
     // Self-ajusting Wentges smoothing and automatic directional smoothing do
     // not work well on the Graph Coloring Problem as shown in "Automation and
     // Combination of Linear-Programming Based Stabilization Techniques in
@@ -257,8 +260,8 @@ const Output coloringsolver::column_generation_heuristic_limited_discrepancy_sea
     cgslds_parameters.verbosity_level = 1;
     cgslds_parameters.timer = parameters.timer;
     cgslds_parameters.internal_diving = 1;
-    cgslds_parameters.column_generation_parameters.linear_programming_solver
-        = columngenerationsolver::s2lps(parameters.linear_programming_solver);
+    cgslds_parameters.column_generation_parameters.solver_name
+        = parameters.linear_programming_solver;
     cgslds_parameters.new_solution_callback = [&instance, &algorithm_formatter](
                 const columngenerationsolver::Output& cgs_output)
         {
@@ -298,8 +301,8 @@ const Output coloringsolver::column_generation_heuristic_heuristic_tree_search(
 
     columngenerationsolver::Model model = get_model(instance);
     columngenerationsolver::HeuristicTreeSearchParameters cgshts_parameters;
-    cgshts_parameters.column_generation_parameters.linear_programming_solver
-        = columngenerationsolver::s2lps(parameters.linear_programming_solver);
+    cgshts_parameters.column_generation_parameters.solver_name
+        = parameters.linear_programming_solver;
     cgshts_parameters.new_solution_callback = [&instance, &algorithm_formatter](
                 const columngenerationsolver::Output& cgs_output)
         {

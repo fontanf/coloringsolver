@@ -121,7 +121,7 @@ Output run(
         read_args(parameters, vm);
         if (vm.count("linear-programming-solver")) {
             parameters.linear_programming_solver
-                = vm["linear-programming-solver"].as<std::string>();
+                = vm["linear-programming-solver"].as<columngenerationsolver::SolverName>();
         }
         return column_generation_heuristic_greedy(instance, parameters);
     } else if (algorithm == "column-generation-limited-discrepancy-search") {
@@ -129,7 +129,7 @@ Output run(
         read_args(parameters, vm);
         if (vm.count("linear-programming-solver")) {
             parameters.linear_programming_solver
-                = vm["linear-programming-solver"].as<std::string>();
+                = vm["linear-programming-solver"].as<columngenerationsolver::SolverName>();
         }
         return column_generation_heuristic_limited_discrepancy_search(instance, parameters);
 
@@ -162,7 +162,7 @@ int main(int argc, char *argv[])
         ("reverse,", po::value<bool>(), "set reverse")
         ("maximum-number-of-iterations,", po::value<int>(), "set the maximum number of iterations")
         ("maximum-number-of-iterations-without-improvement,", po::value<int>(), "set the maximum number of iterations without improvement")
-        ("linear-programming-solver", po::value<std::string>(), "set linear programming solver")
+        ("linear-programming-solver", po::value<columngenerationsolver::SolverName>(), "set linear programming solver")
         ;
     po::variables_map vm;
     po::store(po::parse_command_line(argc, argv, desc), vm);
