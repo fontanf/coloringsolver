@@ -2,13 +2,15 @@
 
 #include "coloringsolver/solution.hpp"
 
+#include "columngenerationsolver/commons.hpp"
+
 namespace coloringsolver
 {
 
 struct ColumnGenerationParameters: Parameters
 {
     /** Linear programming solver. */
-    std::string linear_programming_solver = "CLP";
+    columngenerationsolver::SolverName linear_programming_solver = columngenerationsolver::SolverName::CLP;
 };
 
 const Output column_generation_heuristic_greedy(

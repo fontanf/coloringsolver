@@ -30,7 +30,7 @@ endif()
 FetchContent_Declare(
     mathoptsolverscmake
     GIT_REPOSITORY https://github.com/fontanf/mathoptsolverscmake.git
-    GIT_TAG 80cd13a843e2c10684abbfe76cf9aae0d71ff79d
+    GIT_TAG 4472814a28a40f4d861ccd757e140835c3a31bd0
     #SOURCE_DIR "${PROJECT_SOURCE_DIR}/../mathoptsolverscmake/"
     EXCLUDE_FROM_ALL)
 FetchContent_MakeAvailable(mathoptsolverscmake)
@@ -53,7 +53,7 @@ FetchContent_MakeAvailable(stablesolver)
 FetchContent_Declare(
     columngenerationsolver
     GIT_REPOSITORY https://github.com/fontanf/columngenerationsolver.git
-    GIT_TAG 9c57300135f8d1ec2a44de4aeb53e0056d24f2f3
+    GIT_TAG c661bbd0f05e32161b07db2a28484dbb12d60c10
     #SOURCE_DIR "${PROJECT_SOURCE_DIR}/../columngenerationsolver/"
     EXCLUDE_FROM_ALL)
 FetchContent_MakeAvailable(columngenerationsolver)
