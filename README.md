@@ -47,7 +47,7 @@ python3 scripts/download_data.py --data verma2015
 Examples:
 
 ```shell
-./bazel-bin/coloringsolver/main -v 1 -i "data/dimacs1992/1-FullIns_3.col" -a greedy-dsatur -c solution.txt
+./install/bin/coloringsolver --verbosity-level 1  --input "data/dimacs1992/1-FullIns_3.col"  --algorithm greedy-dsatur  --certificate solution.txt
 ```
 ```
 ====================================
@@ -89,7 +89,7 @@ Number of colors:     4
 ```
 
 ```shell
-./bazel-bin/coloringsolver/main -v 1 -i "data/dimacs1992/r1000.5.col" -a "local-search-row-weighting-2 --iterations 50000"
+./install/bin/coloringsolver  --verbosity-level 1  --input "data/dimacs1992/r1000.5.col"  --algorithm local-search-row-weighting-2 --maximum-number-of-iterations 50000
 ```
 ```
 ====================================
@@ -153,51 +153,3 @@ Number of conflicts:  0
 Feasible:             1
 Number of colors:     234
 ```
-
-Benchmarks:
-```shell
-python3 ../optimizationtools/optimizationtools/bench_run.py -f "row['Dataset'] == 'dimacs1992'" --algorithms "greedy --ordering largest-first"
-python3 ../optimizationtools/optimizationtools/bench_run.py -f "row['Dataset'] == 'dimacs1992'" --algorithms "greedy --ordering largest-first --reverse"
-python3 ../optimizationtools/optimizationtools/bench_run.py -f "row['Dataset'] == 'dimacs1992'" --algorithms "greedy --ordering incidence-degree"
-python3 ../optimizationtools/optimizationtools/bench_run.py -f "row['Dataset'] == 'dimacs1992'" --algorithms "greedy --ordering incidence-degree --reverse"
-python3 ../optimizationtools/optimizationtools/bench_run.py -f "row['Dataset'] == 'dimacs1992'" --algorithms "greedy --ordering smallest-last"
-python3 ../optimizationtools/optimizationtools/bench_run.py -f "row['Dataset'] == 'dimacs1992'" --algorithms "greedy --ordering smallest-last --reverse"
-python3 ../optimizationtools/optimizationtools/bench_run.py -f "row['Dataset'] == 'dimacs1992'" --algorithms "greedy --ordering dynamic-largest-first"
-python3 ../optimizationtools/optimizationtools/bench_run.py -f "row['Dataset'] == 'dimacs1992'" --algorithms "greedy --ordering dynamic-largest-first --reverse"
-python3 ../optimizationtools/optimizationtools/bench_run.py -f "row['Dataset'] == 'dimacs1992'" --algorithms "greedy-dsatur"
-python3 ../optimizationtools/optimizationtools/bench_run.py -f "row['Dataset'] == 'dimacs1992'" --algorithms "local-search-row-weighting --iterations-without-improvement 1000"
-python3 ../optimizationtools/optimizationtools/bench_run.py -f "row['Dataset'] == 'dimacs1992'" --algorithms "local-search-row-weighting --iterations-without-improvement 10000"
-python3 ../optimizationtools/optimizationtools/bench_run.py -f "row['Dataset'] == 'dimacs1992'" --algorithms "local-search-row-weighting --iterations-without-improvement 100000"
-python3 ../optimizationtools/optimizationtools/bench_process.py -f "row['Dataset'] == 'dimacs1992'" --benchmark heuristicshort --timelimit 0.25 --labels "greedy --ordering largest-first" "greedy --ordering largest-first --reverse" "greedy --ordering incidence-degree" "greedy --ordering incidence-degree --reverse" "greedy --ordering smallest-last" "greedy --ordering smallest-last --reverse" "greedy --ordering dynamic-largest-first" "greedy --ordering dynamic-largest-first --reverse" -o heuristicshort1
-python3 ../optimizationtools/optimizationtools/bench_process.py -f "row['Dataset'] == 'dimacs1992'" --benchmark heuristicshort --timelimit 2 --labels "greedy --ordering largest-first" "greedy --ordering incidence-degree --reverse" "greedy --ordering smallest-last --reverse" "greedy --ordering dynamic-largest-first" "greedy-dsatur" "local-search-row-weighting --iterations-without-improvement 1000" "local-search-row-weighting --iterations-without-improvement 10000" -o heuristicshort2
-python3 ../optimizationtools/optimizationtools/bench_process.py -f "row['Dataset'] == 'dimacs1992'" --benchmark heuristicshort --timelimit 6 --labels "greedy-dsatur" "local-search-row-weighting --iterations-without-improvement 1000" "local-search-row-weighting --iterations-without-improvement 10000" "local-search-row-weighting --iterations-without-improvement 100000" -o heuristicshort3
-```
-
-![heuristicshort1](img/heuristicshort1.png?raw=true "heuristicshort1")
-
-![heuristicshort2](img/heuristicshort2.png?raw=true "heuristicshort2")
-
-![heuristicshort3](img/heuristicshort3.png?raw=true "heuristicshort3")
-
-```shell
-python3 ../optimizationtools/optimizationtools/bench_run.py -l "localsearch_rowweighting_10000" -a "localsearch_rowweighting -w 10000"
-python3 ../optimizationtools/optimizationtools/bench_process.py --benchmark heuristicshort -l "localsearch_rowweighting_10000" -f "row['Dataset'] == 'graphcoloring'" -t 3
-python3 ../optimizationtools/optimizationtools/bench_process.py --benchmark heuristicshort -l "localsearch_rowweighting_10000" -f "row['Dataset'] == 'gebremedhin2013'" -t 10
-python3 ../optimizationtools/optimizationtools/bench_process.py --benchmark heuristicshort -l "localsearch_rowweighting_10000" -f "row['Dataset'] == 'rossi2014'" -t 60
-python3 ../optimizationtools/optimizationtools/bench_process.py --benchmark heuristicshort -l "localsearch_rowweighting_10000" -f "'verma2015' in row['Dataset']" -t 60
-python3 ../optimizationtools/optimizationtools/bench_process.py --benchmark heuristicshort -l "localsearch_rowweighting_10000" -f "'cgshop2022' in row['Dataset']" -t 120
-```
-
-```shell
-python3 ../optimizationtools/optimizationtools/bench_run.py --timelimit 3600 --algorithms "milp_assignment_cplex"
-python3 ../optimizationtools/optimizationtools/bench_run.py --timelimit 3600 --algorithms "milp_representatives_cplex"
-python3 ../optimizationtools/optimizationtools/bench_run.py --timelimit 3600 --algorithms "milp_partialordering_cplex"
-python3 ../optimizationtools/optimizationtools/bench_run.py --timelimit 3600 --algorithms "milp_partialordering2_cplex"
-python3 ../optimizationtools/optimizationtools/bench_process.py --benchmark exact --timelimit 3600 --labels "milp_assignment_cplex" "milp_representatives_cplex" "milp_partialordering_cplex" "milp_partialordering2_cplex"
-```
-
-```shell
-python3 ../optimizationtools/optimizationtools/bench_run.py --timelimit 3600 --algorithms "localsearch_rowweighting"
-python3 ../optimizationtools/optimizationtools/bench_process.py --benchmark heuristiclong --timelimit 3600 --labels "milp_assignment_cplex" "milp_representatives_cplex" "milp_partialordering_cplex" "milp_partialordering2_cplex" "localsearch_rowweighting"
-```
-
