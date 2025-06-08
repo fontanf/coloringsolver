@@ -25,7 +25,8 @@ target_sources(ColoringSolver_local_search_row_weighting PRIVATE
 target_include_directories(ColoringSolver_local_search_row_weighting PUBLIC
     ${PROJECT_SOURCE_DIR}/include)
 target_link_libraries(ColoringSolver_local_search_row_weighting PUBLIC
-    ColoringSolver_coloring)
+    ColoringSolver_coloring
+    ColoringSolver_greedy)
 add_library(ColoringSolver::local_search_row_weighting ALIAS ColoringSolver_local_search_row_weighting)
 
 add_library(ColoringSolver_column_generation)
