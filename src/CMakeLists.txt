@@ -10,6 +10,8 @@ target_link_libraries(ColoringSolver_coloring PUBLIC
     OptimizationTools::containers
     OptimizationTools::graph)
 add_library(ColoringSolver::coloring ALIAS ColoringSolver_coloring)
+set_target_properties(ColoringSolver_coloring PROPERTIES OUTPUT_NAME "coloringsolver_coloring")
+install(TARGETS ColoringSolver_coloring)
 
 add_subdirectory(algorithms)
 
