@@ -17,6 +17,9 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 # Set MSVC_RUNTIME_LIBRARY.
 set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 
+# Update RPATH.
+set(CMAKE_INSTALL_RPATH "$ORIGIN/../lib")
+
 # Add sub-directories.
 add_subdirectory(extern)
 add_subdirectory(src)
