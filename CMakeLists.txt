@@ -2,6 +2,10 @@ cmake_minimum_required(VERSION 3.15.0)
 
 project(ColoringSolver LANGUAGES CXX)
 
+# Build options.
+option(COLORINGSOLVER_BUILD_MAIN "Build main" ON)
+option(COLORINGSOLVER_BUILD_TEST "Build the unit tests" ON)
+
 option(COLORINGSOLVER_USE_CBC "Use CBC" ON)
 option(COLORINGSOLVER_USE_CPLEX "Use CPLEX" OFF)
 
@@ -23,4 +27,6 @@ set(CMAKE_INSTALL_RPATH "$ORIGIN/../lib")
 # Add sub-directories.
 add_subdirectory(extern)
 add_subdirectory(src)
-add_subdirectory(test)
+if(COLORINGSOLVER_BUILD_TEST)
+    add_subdirectory(test)
+endif()
