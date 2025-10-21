@@ -1,0 +1,11 @@
+Path,Format,Options,Dataset,Number of vertices,Number of edges,Density,Mean degree,Best known solution value,Best known bound,Certificate path
+gebremedhin2013/msdoor.mtx,matrixmarket,,gebremedhin2013,415863,9912536,0,24,27,21,certificates/gebremedhin2013/gebremedhin2013/msdoor.mtx_solution.txt
+gebremedhin2013/ldoor.mtx,matrixmarket,,gebremedhin2013,952203,22785136,0,24,28,21,certificates/gebremedhin2013/gebremedhin2013/ldoor.mtx_solution.txt
+gebremedhin2013/shipsec1.mtx,matrixmarket,,gebremedhin2013,140874,3836265,0,27,28,24,certificates/gebremedhin2013/gebremedhin2013/shipsec1.mtx_solution.txt
+gebremedhin2013/shipsec5.mtx,matrixmarket,,gebremedhin2013,179860,4966618,0,28,28,24,certificates/gebremedhin2013/gebremedhin2013/shipsec5.mtx_solution.txt
+gebremedhin2013/pkustk11.mtx,matrixmarket,,gebremedhin2013,87804,2565054,0.001,29,36,36,certificates/gebremedhin2013/gebremedhin2013/pkustk11.mtx_solution.txt
+gebremedhin2013/ct20stif.mtx,matrixmarket,,gebremedhin2013,52329,1323067,0.001,25,47,47,certificates/gebremedhin2013/gebremedhin2013/ct20stif.mtx_solution.txt
+gebremedhin2013/pwtk.mtx,matrixmarket,,gebremedhin2013,217918,5708253,0,26,27,24,certificates/gebremedhin2013/gebremedhin2013/pwtk.mtx_solution.txt
+gebremedhin2013/pkustk13.mtx,matrixmarket,,gebremedhin2013,94893,3260967,0.001,34,36,36,certificates/gebremedhin2013/gebremedhin2013/pkustk13.mtx_solution.txt
+gebremedhin2013/nasasrb.mtx,matrixmarket,,gebremedhin2013,54870,1311227,0.001,24,25,24,certificates/gebremedhin2013/gebremedhin2013/nasasrb.mtx_solution.txt
+gebremedhin2013/bmw3_2.mtx,matrixmarket,,gebremedhin2013,227362,5530634,0,24,36,36,certificates/gebremedhin2013/gebremedhin2013/bmw3_2.mtx_solution.txt

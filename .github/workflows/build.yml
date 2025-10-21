@@ -38,9 +38,11 @@ jobs:
       if: ${{ (matrix.os == 'macos-13') || (matrix.os == 'macos-latest') }}
     - name: Build
       run: |
-        cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+        cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DCOLORINGSOLVER_USE_HIGHS=ON
         cmake --build build --config Release --parallel
         cmake --install build --config Release --prefix install
+    - name: Run unit tests
+      run: ctest --test-dir build/test --parallel
     - name: Run tests
       run: python3 -u scripts/run_tests.py test_results
     - name: Checkout main branch
@@ -50,7 +52,7 @@ jobs:
         git checkout master
     - name: Build
       run: |
-        cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+        cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DCOLORINGSOLVER_USE_HIGHS=ON
         cmake --build build --config Release --parallel
         cmake --install build --config Release --prefix install
     - name: Run tests
