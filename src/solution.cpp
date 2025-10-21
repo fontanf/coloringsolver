@@ -29,9 +29,7 @@ Solution::Solution(
                 "Unable to open file \"" + certificate_path + "\".");
     }
 
-    ColorId number_of_colors;
     ColorId color_id;
-    file >> number_of_colors;
     for (VertexId vertex_id = 0;
             vertex_id < instance.graph().number_of_vertices();
             ++vertex_id) {

@@ -16,10 +16,9 @@ A solver for the graph coloring problem.
   * DSATUR `-a greedy-dsatur`
 
 * MILP (CPLEX), see "New Integer Linear Programming Models for the Vertex Coloring Problem" (Jabrayilov et Mutzel, 2018) for model descriptions:
-  * Assignment-based ILP model `-a milp-assignment-cplex`
-  * Representatives ILP model `-a milp-representatives-cplex`
-  * Partial-ordering based ILP model `-a milp-partial-ordering-cplex`
-  * Partial-ordering based ILP model 2 `-a milp-partial-ordering-2-cplex`
+  * Assignment-based ILP model `-a milp-assignment --break-symmetries 1 --solver highs`
+  * Representatives ILP model `-a milp-representatives --solver highs`
+  * Partial-ordering based ILP model `-a milp-partial-ordering --hybrid 1 --solver highs`
 
 * Row weighting local search
   * Penalize conflicting edges `-a "local-search-row-weighting --iterations 100000 --iterations-without-improvement 10000"`

@@ -6,8 +6,10 @@ project(ColoringSolver LANGUAGES CXX)
 option(COLORINGSOLVER_BUILD_MAIN "Build main" ON)
 option(COLORINGSOLVER_BUILD_TEST "Build the unit tests" ON)
 
-option(COLORINGSOLVER_USE_CBC "Use CBC" ON)
-option(COLORINGSOLVER_USE_CPLEX "Use CPLEX" OFF)
+option(COLORINGSOLVER_USE_CLP "Use Clp" OFF)
+option(COLORINGSOLVER_USE_CBC "Use Cbc" OFF)
+option(COLORINGSOLVER_USE_HIGHS "Use HiGHS" ON)
+option(COLORINGSOLVER_USE_XPRESS "Use FICO Xpress" OFF)
 
 # Avoid FetchContent warning.
 cmake_policy(SET CMP0135 NEW)
@@ -27,6 +29,4 @@ set(CMAKE_INSTALL_RPATH "$ORIGIN/../lib")
 # Add sub-directories.
 add_subdirectory(extern)
 add_subdirectory(src)
-if(COLORINGSOLVER_BUILD_TEST)
-    add_subdirectory(test)
-endif()
+add_subdirectory(test)

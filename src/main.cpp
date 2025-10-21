@@ -1,5 +1,5 @@
 #include "coloringsolver/algorithms/greedy.hpp"
-#include "coloringsolver/algorithms/milp_cplex.hpp"
+#include "coloringsolver/algorithms/milp.hpp"
 #include "coloringsolver/algorithms/local_search_row_weighting.hpp"
 #include "coloringsolver/algorithms/column_generation.hpp"
 
@@ -74,24 +74,49 @@ Output run(
         Parameters parameters;
         read_args(parameters, vm);
         return greedy_dsatur(instance, parameters);
-#if CPLEX_FOUND
-    } else if (algorithm == "milp-assignment-cplex") {
-        MilpAssignmentCplexParameters parameters;
-        read_args(parameters, vm);
-        return milp_assignment_cplex(instance, parameters);
-    } else if (algorithm == "milp-representatives-cplex") {
-        MilpRepresentativesCplexParameters parameters;
-        read_args(parameters, vm);
-        return milp_representatives_cplex(instance, parameters);
-    } else if (algorithm == "milp-partial-ordering-cplex") {
-        MilpPartialOrderingCplexParameters parameters;
-        read_args(parameters, vm);
-        return milp_partialordering_cplex(instance, parameters);
-    } else if (algorithm == "MilpPartialOrdering2CplexParameters") {
-        MilpCplexParameters parameters;
-        read_args(parameters, vm);
-        return milp_partialordering2_cplex(instance, parameters);
+    } else if (algorithm == "milp-assignment") {
+#ifdef XPRESS_FOUND
+        XPRSinit(NULL);
 #endif
+        MilpAssignmentParameters parameters;
+        read_args(parameters, vm);
+        if (vm.count("solver"))
+            parameters.solver = vm["solver"].as<mathoptsolverscmake::SolverName>();
+        if (vm.count("break-symmetries"))
+            parameters.break_symmetries = vm["break-symmetries"].as<bool>();
+        auto output = milp_assignment(instance, parameters);
+#ifdef XPRESS_FOUND
+        XPRSfree();
+#endif
+        return output;
+    } else if (algorithm == "milp-representatives") {
+#ifdef XPRESS_FOUND
+        XPRSinit(NULL);
+#endif
+        MilpParameters parameters;
+        read_args(parameters, vm);
+        if (vm.count("solver"))
+            parameters.solver = vm["solver"].as<mathoptsolverscmake::SolverName>();
+        auto output = milp_representatives(instance, parameters);
+#ifdef XPRESS_FOUND
+        XPRSfree();
+#endif
+        return output;
+    } else if (algorithm == "milp-partial-ordering") {
+#ifdef XPRESS_FOUND
+        XPRSinit(NULL);
+#endif
+        MilpPartialOrderingParameters parameters;
+        read_args(parameters, vm);
+        if (vm.count("solver"))
+            parameters.solver = vm["solver"].as<mathoptsolverscmake::SolverName>();
+        if (vm.count("hybrid"))
+            parameters.hybrid = vm["hybrid"].as<bool>();
+        auto output = milp_partial_ordering(instance, parameters);
+#ifdef XPRESS_FOUND
+        XPRSfree();
+#endif
+        return output;
     } else if (algorithm == "local-search-row-weighting") {
         LocalSearchRowWeightingParameters parameters;
         read_args(parameters, vm);
@@ -158,11 +183,14 @@ int main(int argc, char *argv[])
         ("log,l", po::value<std::string>(), "set log file")
         ("log-to-stderr", "write log to stderr")
 
-        ("ordering,", po::value<Ordering>(), "set the ordering")
-        ("reverse,", po::value<bool>(), "set reverse")
-        ("maximum-number-of-iterations,", po::value<int>(), "set the maximum number of iterations")
-        ("maximum-number-of-iterations-without-improvement,", po::value<int>(), "set the maximum number of iterations without improvement")
-        ("linear-programming-solver", po::value<columngenerationsolver::SolverName>(), "set linear programming solver")
+        ("ordering,", po::value<Ordering>(), "set the ordering (greedy)")
+        ("reverse,", po::value<bool>(), "set reverse (greedy)")
+        ("solver,", po::value<mathoptsolverscmake::SolverName>(), "set solver (MILP)")
+        ("break-symmetries,", po::value<bool>(), "break symmetries (MILP assignment)")
+        ("hybrid,", po::value<bool>(), "use hybrid model (MILP partial ordering)")
+        ("maximum-number-of-iterations,", po::value<int>(), "set the maximum number of iterations (local search)")
+        ("maximum-number-of-iterations-without-improvement,", po::value<int>(), "set the maximum number of iterations without improvement (local search)")
+        ("linear-programming-solver", po::value<columngenerationsolver::SolverName>(), "set linear programming solver (column generation)")
         ;
     po::variables_map vm;
     po::store(po::parse_command_line(argc, argv, desc), vm);

@@ -9,19 +9,15 @@ add_library(ColoringSolver::greedy ALIAS ColoringSolver_greedy)
 set_target_properties(ColoringSolver_greedy PROPERTIES OUTPUT_NAME "coloringsolver_greedy")
 install(TARGETS ColoringSolver_greedy)
 
-if(COLORINGSOLVER_USE_CPLEX)
-    add_library(ColoringSolver_milp_cplex)
-    target_sources(ColoringSolver_milp_cplex PRIVATE
-        milp_cplex.cpp)
-    target_include_directories(ColoringSolver_milp_cplex PUBLIC
-        ${PROJECT_SOURCE_DIR}/include)
-    target_link_libraries(ColoringSolver_milp_cplex PUBLIC
-        ColoringSolver_coloring
-        MathOptSolversCMake::cplex)
-    add_library(ColoringSolver::milp_cplex ALIAS ColoringSolver_milp_cplex)
-    set_target_properties(ColoringSolver_milp_cplex PROPERTIES OUTPUT_NAME "coloringsolver_milp_cplex")
-    install(TARGETS ColoringSolver_milp_cplex)
-endif()
+add_library(ColoringSolver_milp)
+target_sources(ColoringSolver_milp PRIVATE
+    milp.cpp)
+target_include_directories(ColoringSolver_milp PUBLIC
+    ${PROJECT_SOURCE_DIR}/include)
+target_link_libraries(ColoringSolver_milp PUBLIC
+    ColoringSolver_coloring
+    MathOptSolversCMake::milp)
+add_library(ColoringSolver::milp ALIAS ColoringSolver_milp)
 
 add_library(ColoringSolver_local_search_row_weighting)
 target_sources(ColoringSolver_local_search_row_weighting PRIVATE
