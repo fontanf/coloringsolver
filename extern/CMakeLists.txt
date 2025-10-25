@@ -42,6 +42,8 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(mathoptsolverscmake)
 
 # Fetch fontanf/stablesolver.
+set(STABLESOLVER_BUILD_MAIN OFF)
+set(STABLESOLVER_BUILD_TEST OFF)
 if(COLORINGSOLVER_USE_CBC)
     set(STABLESOLVER_USE_CBC ON)
 endif()
@@ -60,6 +62,8 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(stablesolver)
 
 # Fetch fontanf/columngenerationsolver.
+set(COLUMNGENERATIONSOLVER_BUILD_EXAMPLES OFF)
+set(COLUMNGENERATIONSOLVER_BUILD_TEST OFF)
 if(COLORINGSOLVER_USE_CLP)
     set(COLUMNGENERATIONSOLVER_USE_CLP ON)
 endif()
