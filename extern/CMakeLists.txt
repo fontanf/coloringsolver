@@ -45,8 +45,11 @@ FetchContent_MakeAvailable(mathoptsolverscmake)
 if(COLORINGSOLVER_USE_CBC)
     set(STABLESOLVER_USE_CBC ON)
 endif()
-if(COLORINGSOLVER_USE_CPLEX)
-    set(STABLESOLVER_USE_CPLEX ON)
+if(COLORINGSOLVER_USE_HIGHS)
+    set(STABLESOLVER_USE_HIGHS ON)
+endif()
+if(COLORINGSOLVER_USE_XPRESS)
+    set(STABLESOLVER_USE_XPRESS ON)
 endif()
 FetchContent_Declare(
     stablesolver
