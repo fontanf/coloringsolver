@@ -15,14 +15,16 @@ install(TARGETS ColoringSolver_coloring)
 
 add_subdirectory(algorithms)
 
-add_executable(ColoringSolver_main)
-target_sources(ColoringSolver_main PRIVATE
-    main.cpp)
-target_link_libraries(ColoringSolver_main PUBLIC
-    ColoringSolver_greedy
-    ColoringSolver_milp
-    ColoringSolver_local_search_row_weighting
-    ColoringSolver_column_generation
-    Boost::program_options)
-set_target_properties(ColoringSolver_main PROPERTIES OUTPUT_NAME "coloringsolver")
-install(TARGETS ColoringSolver_main)
+if(COLORINGSOLVER_BUILD_MAIN)
+    add_executable(ColoringSolver_main)
+    target_sources(ColoringSolver_main PRIVATE
+        main.cpp)
+    target_link_libraries(ColoringSolver_main PUBLIC
+        ColoringSolver_greedy
+        ColoringSolver_milp
+        ColoringSolver_local_search_row_weighting
+        ColoringSolver_column_generation
+        Boost::program_options)
+    set_target_properties(ColoringSolver_main PROPERTIES OUTPUT_NAME "coloringsolver")
+    install(TARGETS ColoringSolver_main)
+endif()

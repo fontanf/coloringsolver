@@ -4,7 +4,7 @@ project(ColoringSolver LANGUAGES CXX)
 
 # Build options.
 option(COLORINGSOLVER_BUILD_MAIN "Build main" ON)
-option(COLORINGSOLVER_BUILD_TEST "Build the unit tests" ON)
+option(COLORINGSOLVER_BUILD_TEST "Build unit tests" ON)
 
 option(COLORINGSOLVER_USE_CLP "Use Clp" OFF)
 option(COLORINGSOLVER_USE_CBC "Use Cbc" OFF)
@@ -29,4 +29,6 @@ set(CMAKE_INSTALL_RPATH "$ORIGIN/../lib")
 # Add sub-directories.
 add_subdirectory(extern)
 add_subdirectory(src)
-add_subdirectory(test)
+if(COLORINGSOLVER_BUILD_TEST)
+    add_subdirectory(test)
+endif()
