@@ -9,7 +9,7 @@ option(COLORINGSOLVER_BUILD_TEST "Build unit tests" ON)
 # Solver options.
 option(COLORINGSOLVER_USE_CLP "Use Clp" OFF)
 option(COLORINGSOLVER_USE_CBC "Use Cbc" OFF)
-option(COLORINGSOLVER_USE_HIGHS "Use HiGHS" ON)
+option(COLORINGSOLVER_USE_HIGHS "Use HiGHS" OFF)
 option(COLORINGSOLVER_USE_XPRESS "Use FICO Xpress" OFF)
 
 # Avoid FetchContent warning.
