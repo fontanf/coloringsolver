@@ -1,8 +1,7 @@
 import argparse
 import gdown
-import os
-import shutil
 import pathlib
+import py7zr
 
 
 parser = argparse.ArgumentParser(description='')
@@ -15,13 +14,13 @@ args = parser.parse_args()
 
 
 if args.data is None:
-    gdown.download(id="1aZj423aiN_wYJkFLvLHYnFYDxeYFnEHZ", output="data.7z")
-    os.system("7z x data.7z")
+    gdown.download(id="1oEIzXq16K8BwvbQo3ZE4mojX_rEGkG0g", output="data.7z")
+    with py7zr.SevenZipFile("data.7z", mode="r") as z:
+        z.extractall(path="data")
     pathlib.Path("data.7z").unlink()
-    shutil.copytree("graph_coloring", "data", dirs_exist_ok=True)
 
 if args.data is not None and "verma2015" in args.data:
-    gdown.download(id="1yFyrbrX1V88DsiCN4SIKRTKun9t9RMgo", output="data.7z")
-    os.system("7z x data.7z")
+    gdown.download(id="1EeQ5PQ4Sjq_P4VmuApq9ROTmq7qzM41D", output="data.7z")
+    with py7zr.SevenZipFile("data.7z", mode="r") as z:
+        z.extractall(path="data")
     pathlib.Path("data.7z").unlink()
-    shutil.copytree("graph_coloring_verma2015", "data", dirs_exist_ok=True)

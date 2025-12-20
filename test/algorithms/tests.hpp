@@ -39,6 +39,21 @@ const Solution get_solution(
         const Instance& instance,
         const TestInstancePath& files);
 
+inline std::string make_gtest_name(std::string s)
+{
+    for (char& c: s)
+        if (!std::isalnum(static_cast<unsigned char>(c)))
+            c = '_';
+    if (s.empty() || std::isdigit(s[0]))
+        s = "P_" + s;
+    return s;
+}
+
+inline std::string get_test_name(const testing::TestParamInfo<TestParams>& info)
+{
+    return make_gtest_name(info.param.files.instance_path);
+}
+
 class ExactAlgorithmTest: public testing::TestWithParam<TestParams> { };
 
 }

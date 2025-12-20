@@ -28,7 +28,8 @@ INSTANTIATE_TEST_SUITE_P(
                     return milp_assignment(instance, milp_parameters);
                 }, {
                     get_test_instance_paths(get_path({"data", "test_milp_assignment.txt"})),
-                })));
+                })),
+        get_test_name);
 
 INSTANTIATE_TEST_SUITE_P(
         ColoringMilpAssignmentBreakSymmetries,
@@ -41,7 +42,8 @@ INSTANTIATE_TEST_SUITE_P(
                     return milp_assignment(instance, milp_parameters);
                 }, {
                     get_test_instance_paths(get_path({"data", "test_milp_assignment_break_symmetries.txt"})),
-                })));
+                })),
+        get_test_name);
 
 INSTANTIATE_TEST_SUITE_P(
         ColoringMilpRepresentatives,
@@ -53,7 +55,8 @@ INSTANTIATE_TEST_SUITE_P(
                     return milp_representatives(instance, milp_parameters);
                 }, {
                     get_test_instance_paths(get_path({"data", "test_milp_representatives.txt"})),
-                })));
+                })),
+        get_test_name);
 
 INSTANTIATE_TEST_SUITE_P(
         ColoringMilpPartialOrdering,
@@ -66,7 +69,8 @@ INSTANTIATE_TEST_SUITE_P(
                     return milp_partial_ordering(instance, milp_parameters);
                 }, {
                     get_test_instance_paths(get_path({"data", "test_milp_partial_ordering.txt"})),
-                })));
+                })),
+        get_test_name);
 
 INSTANTIATE_TEST_SUITE_P(
         ColoringMilpPartialOrderingHybrid,
@@ -79,4 +83,5 @@ INSTANTIATE_TEST_SUITE_P(
                     return milp_partial_ordering(instance, milp_parameters);
                 }, {
                     get_test_instance_paths(get_path({"data", "test_milp_partial_ordering_hybrid.txt"})),
-                })));
+                })),
+        get_test_name);

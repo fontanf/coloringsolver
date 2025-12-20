@@ -69,7 +69,7 @@ endif()
 FetchContent_Declare(
     stablesolver
     GIT_REPOSITORY https://github.com/fontanf/stablesolver.git
-    GIT_TAG 673f47a1daa32d5eb33a09083bb15a87b7c2fb65
+    GIT_TAG ba86b3fc199288f8182012ea49832d98de3a0ea9
     #SOURCE_DIR "${PROJECT_SOURCE_DIR}/../stablesolver/"
     EXCLUDE_FROM_ALL)
 FetchContent_MakeAvailable(stablesolver)
