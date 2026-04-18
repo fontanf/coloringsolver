@@ -49,7 +49,7 @@ endif()
 FetchContent_Declare(
     mathoptsolverscmake
     GIT_REPOSITORY https://github.com/fontanf/mathoptsolverscmake.git
-    GIT_TAG 59fd908038906df649e121f42652a0e8f99cbc67
+    GIT_TAG c312e55d551edd57e98edfd24d4e2330abdcbbd2
     #SOURCE_DIR "${PROJECT_SOURCE_DIR}/../mathoptsolverscmake/"
     EXCLUDE_FROM_ALL)
 FetchContent_MakeAvailable(mathoptsolverscmake)
@@ -69,7 +69,7 @@ endif()
 FetchContent_Declare(
     stablesolver
     GIT_REPOSITORY https://github.com/fontanf/stablesolver.git
-    GIT_TAG ba86b3fc199288f8182012ea49832d98de3a0ea9
+    GIT_TAG efab011b460c2675647fa1995011eb332ab9ec7d
     #SOURCE_DIR "${PROJECT_SOURCE_DIR}/../stablesolver/"
     EXCLUDE_FROM_ALL)
 FetchContent_MakeAvailable(stablesolver)

@@ -2,6 +2,16 @@
 
 #include "coloringsolver/algorithm_formatter.hpp"
 
+#ifdef CBC_FOUND
+#include "mathoptsolverscmake/mathopt_cbc.hpp"
+#endif
+#ifdef HIGHS_FOUND
+#include "mathoptsolverscmake/mathopt_highs.hpp"
+#endif
+#ifdef XPRESS_FOUND
+#include "mathoptsolverscmake/mathopt_xpress.hpp"
+#endif
+
 using namespace coloringsolver;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -14,7 +24,7 @@ namespace
 struct ModelAssignment
 {
     /** Model. */
-    mathoptsolverscmake::MilpModel model;
+    mathoptsolverscmake::MathOptModel model;
 
     /** x[v][c] = 1 iff vertex 'v' is assigned color 'c'. */
     std::vector<std::vector<int>> x;
@@ -412,7 +422,7 @@ namespace
 struct ModelRepresentatives
 {
     /** Model. */
-    mathoptsolverscmake::MilpModel model;
+    mathoptsolverscmake::MathOptModel model;
 
     /** x[u][v] = 1 iff vertex 'u' is represented by vertex 'v'. */
     std::vector<std::vector<int>> x;
@@ -767,7 +777,7 @@ namespace
 struct ModelPartialOrdering
 {
     /** Model. */
-    mathoptsolverscmake::MilpModel model;
+    mathoptsolverscmake::MathOptModel model;
 
     /**
      * x[v][c] == 1 iff vertex 'v' has color 'c'.
