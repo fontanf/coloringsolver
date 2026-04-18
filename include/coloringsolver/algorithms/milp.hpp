@@ -2,7 +2,7 @@
 
 #include "coloringsolver/solution.hpp"
 
-#include "mathoptsolverscmake/milp.hpp"
+#include "mathoptsolverscmake/mathopt.hpp"
 
 namespace coloringsolver
 {

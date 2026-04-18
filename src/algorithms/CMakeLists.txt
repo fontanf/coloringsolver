@@ -16,7 +16,7 @@ target_include_directories(ColoringSolver_milp PUBLIC
     ${PROJECT_SOURCE_DIR}/include)
 target_link_libraries(ColoringSolver_milp PUBLIC
     ColoringSolver_coloring
-    MathOptSolversCMake::milp)
+    MathOptSolversCMake::mathopt)
 add_library(ColoringSolver::milp ALIAS ColoringSolver_milp)
 
 add_library(ColoringSolver_local_search_row_weighting)
