@@ -452,6 +452,7 @@ ModelRepresentatives create_milp_model_representatives(
                 vertex_2_id < graph.number_of_vertices();
                 ++vertex_2_id) {
             model.x[vertex_id][vertex_2_id] = model.model.variables_lower_bounds.size();
+            model.model.variables_names.push_back("x_{" + std::to_string(vertex_id) + "," + std::to_string(vertex_2_id) + "}");
             model.model.variables_lower_bounds.push_back(0);
             model.model.variables_upper_bounds.push_back(1);
             model.model.variables_types.push_back(mathoptsolverscmake::VariableType::Binary);
@@ -505,6 +506,30 @@ ModelRepresentatives create_milp_model_representatives(
             model.model.elements_variables.push_back(model.x[vertex_id][vertex_id]);
             model.model.elements_coefficients.push_back(-1.0);
 
+            model.model.constraints_lower_bounds.push_back(-std::numeric_limits<double>::infinity());
+            model.model.constraints_upper_bounds.push_back(0);
+        }
+    }
+
+    // Handle isolated vertices: for each isolated vertex v and each potential
+    // representative u != v, enforce x[u][v] <= x[u][u]. For non-isolated v
+    // this is already implied by the edge constraints above, but isolated
+    // vertices never appear as edge endpoints so the link is missing.
+    for (VertexId vertex_id = 0;
+            vertex_id < graph.number_of_vertices();
+            ++vertex_id) {
+        if (graph.degree(vertex_id) > 0)
+            continue;
+        for (VertexId vertex_2_id = 0;
+                vertex_2_id < graph.number_of_vertices();
+                ++vertex_2_id) {
+            if (vertex_2_id == vertex_id)
+                continue;
+            model.model.constraints_starts.push_back(model.model.elements_variables.size());
+            model.model.elements_variables.push_back(model.x[vertex_2_id][vertex_id]);
+            model.model.elements_coefficients.push_back(1.0);
+            model.model.elements_variables.push_back(model.x[vertex_2_id][vertex_2_id]);
+            model.model.elements_coefficients.push_back(-1.0);
             model.model.constraints_lower_bounds.push_back(-std::numeric_limits<double>::infinity());
             model.model.constraints_upper_bounds.push_back(0);
         }
