@@ -2,6 +2,8 @@
 
 #include "coloringsolver/algorithm_formatter.hpp"
 
+#include "optimizationtools/containers/indexed_set.hpp"
+
 #ifdef CBC_FOUND
 #include "mathoptsolverscmake/mathopt_cbc.hpp"
 #endif
@@ -448,7 +450,6 @@ ModelRepresentatives create_milp_model_representatives(
         const Instance& instance)
 {
     const optimizationtools::AdjacencyListGraph& graph = get_adjacency_list_graph(instance);
-    optimizationtools::AdjacencyListGraph complementary_graph = graph.complementary();
 
     ModelRepresentatives model;
 
@@ -485,16 +486,24 @@ ModelRepresentatives create_milp_model_representatives(
     /////////////////
 
     // Constraints: every vertex must have a representative (possibly itself).
+    optimizationtools::IndexedSet neighbors(graph.number_of_vertices());
     for (VertexId vertex_id = 0;
             vertex_id < graph.number_of_vertices();
             ++vertex_id) {
+        neighbors.clear();
+        auto it = graph.neighbors_begin(vertex_id);
+        auto it_end = graph.neighbors_end(vertex_id);
+        for (; it != it_end; ++it)
+            neighbors.add(*it);
+
         model.model.constraints_starts.push_back(model.model.elements_variables.size());
 
         model.model.elements_variables.push_back(model.x[vertex_id][vertex_id]);
         model.model.elements_coefficients.push_back(1.0);
-        for (auto it = complementary_graph.neighbors_begin(vertex_id);
-                it != complementary_graph.neighbors_end(vertex_id);
-                ++it) {
+        // Non-neighbors of 'vertex_id' (the vertex itself excluded).
+        for (auto it = neighbors.out_begin(); it != neighbors.out_end(); ++it) {
+            if (*it == vertex_id)
+                continue;
             model.model.elements_variables.push_back(model.x[*it][vertex_id]);
             model.model.elements_coefficients.push_back(1.0);
         }
