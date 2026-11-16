@@ -27,4 +27,14 @@ if(COLORINGSOLVER_BUILD_MAIN)
         Boost::program_options)
     set_target_properties(ColoringSolver_main PROPERTIES OUTPUT_NAME "coloringsolver")
     install(TARGETS ColoringSolver_main)
+
+    add_executable(ColoringSolver_mps_writer_main)
+    target_sources(ColoringSolver_mps_writer_main PRIVATE
+        mps_writer_main.cpp)
+    target_link_libraries(ColoringSolver_mps_writer_main PUBLIC
+        ColoringSolver_milp
+        OptimizationTools::graph
+        Boost::program_options)
+    set_target_properties(ColoringSolver_mps_writer_main PROPERTIES OUTPUT_NAME "coloringsolver_mps_writer")
+    install(TARGETS ColoringSolver_mps_writer_main)
 endif()

@@ -14,6 +14,10 @@
 #include "mathoptsolverscmake/mathopt_xpress.hpp"
 #endif
 
+#include <cstdio>
+#include <cstdlib>
+#include <fstream>
+
 using namespace coloringsolver;
 
 namespace
@@ -428,6 +432,76 @@ Output coloringsolver::milp_assignment(
 
     algorithm_formatter.end();
     return output;
+}
+
+void coloringsolver::write_mps(
+        const Instance& instance,
+        mathoptsolverscmake::SolverName solver,
+        const std::string& output_path)
+{
+    MilpAssignmentParameters parameters;
+    parameters.break_symmetries = false;
+    ModelAssignment milp_model = create_milp_model_assignment(instance, parameters);
+
+    if (solver == mathoptsolverscmake::SolverName::Cbc) {
+#ifdef CBC_FOUND
+        OsiCbcSolverInterface osi_solver;
+        CbcModel cbc_model(osi_solver);
+        mathoptsolverscmake::load(cbc_model, milp_model.model);
+        // The Osi/CoinMpsIO writers do not reliably honor a plain
+        // (uncompressed) output path in this build: depending on the
+        // implementation, they either append an extension to the given
+        // file name, or gzip-compress the output (appending ".gz"), or
+        // both. Write the file and then normalize whatever was produced
+        // back to the exact requested 'output_path'.
+        cbc_model.solver()->writeMpsNative(
+                output_path.c_str(),
+                NULL,
+                NULL);
+        std::string gz_path = output_path + ".gz";
+        std::ifstream gz_file(gz_path, std::ios::binary);
+        if (gz_file.good()) {
+            gz_file.close();
+            std::string command = "gzip -d -f \"" + gz_path + "\"";
+            if (std::system(command.c_str()) != 0) {
+                throw std::runtime_error(
+                        "write_mps: failed to decompress \"" + gz_path + "\".");
+            }
+        } else {
+            std::string mps_path = output_path + ".mps";
+            std::ifstream mps_file(mps_path);
+            if (mps_file.good()) {
+                mps_file.close();
+                std::rename(mps_path.c_str(), output_path.c_str());
+            }
+        }
+#else
+        throw std::invalid_argument("write_mps: Cbc is not available.");
+#endif
+
+    } else if (solver == mathoptsolverscmake::SolverName::Highs) {
+#ifdef HIGHS_FOUND
+        Highs highs;
+        mathoptsolverscmake::load(highs, milp_model.model);
+        highs.writeModel(output_path);
+#else
+        throw std::invalid_argument("write_mps: HiGHS is not available.");
+#endif
+
+    } else if (solver == mathoptsolverscmake::SolverName::Xpress) {
+#ifdef XPRESS_FOUND
+        XPRSprob xpress_model;
+        XPRScreateprob(&xpress_model);
+        mathoptsolverscmake::load(xpress_model, milp_model.model);
+        mathoptsolverscmake::write_mps(xpress_model, output_path);
+        XPRSdestroyprob(xpress_model);
+#else
+        throw std::invalid_argument("write_mps: Xpress is not available.");
+#endif
+
+    } else {
+        throw std::invalid_argument("write_mps: unknown solver.");
+    }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
