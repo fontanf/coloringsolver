@@ -1,32 +1,92 @@
 #include "coloringsolver/instance.hpp"
 
-#include "optimizationtools/graph/clique_graph.hpp"
-
 #include <iomanip>
 
 using namespace coloringsolver;
 
-Instance::Instance(
+namespace
+{
+
+optimizationtools::Graph read_graph(
         const std::string& instance_path,
         const std::string& format)
 {
     if (format == "cliquegraph") {
         optimizationtools::CliqueGraphBuilder graph_builder;
         graph_builder.read(instance_path, format);
-        graph_ = std::shared_ptr<const optimizationtools::AbstractGraph>(
+        return std::shared_ptr<const optimizationtools::CliqueGraph>(
                 new optimizationtools::CliqueGraph(graph_builder.build()));
     } else {
         optimizationtools::AdjacencyListGraphBuilder graph_builder;
         graph_builder.read(instance_path, format);
-        graph_ = std::shared_ptr<const optimizationtools::AbstractGraph>(
+        return std::shared_ptr<const optimizationtools::AdjacencyListGraph>(
                 new optimizationtools::AdjacencyListGraph(graph_builder.build()));
-        adjacency_list_graph_ = static_cast<const optimizationtools::AdjacencyListGraph*>(graph_.get());
     }
 }
 
-Instance::Instance(const std::shared_ptr<const optimizationtools::AbstractGraph>& abstract_graph):
-    graph_(abstract_graph),
-    adjacency_list_graph_(dynamic_cast<const optimizationtools::AdjacencyListGraph*>(graph_.get())) { }
+template <typename Graph>
+void format_edges(
+        const Graph& graph,
+        std::ostream& os)
+{
+    for (VertexId vertex_id = 0;
+            vertex_id < graph.number_of_vertices();
+            ++vertex_id) {
+        auto it = graph.neighbors_begin(vertex_id);
+        auto it_end = graph.neighbors_end(vertex_id);
+        for (; it != it_end; ++it) {
+            if (vertex_id < *it) {
+                os
+                    << std::setw(12) << vertex_id
+                    << std::setw(12) << *it
+                    << std::endl;
+            }
+        }
+    }
+}
+
+template <typename Graph>
+std::vector<VertexId> compute_core(
+        const Graph& graph,
+        ColorId k)
+{
+    std::vector<VertexId> removed_vertices;
+    std::vector<VertexPos> vertex_degrees(graph.number_of_vertices(), -1);
+    std::vector<VertexId> vertex_queue;
+    for (VertexId vertex_id = 0;
+            vertex_id < graph.number_of_vertices();
+            ++vertex_id) {
+        vertex_degrees[vertex_id] = graph.degree(vertex_id);
+        if (vertex_degrees[vertex_id] < k)
+            vertex_queue.push_back(vertex_id);
+    }
+    while (!vertex_queue.empty()) {
+        VertexId vertex_id = vertex_queue.back();
+        removed_vertices.push_back(vertex_id);
+        vertex_queue.pop_back();
+        for (auto it = graph.neighbors_begin(vertex_id);
+                it != graph.neighbors_end(vertex_id);
+                ++it) {
+            if (vertex_degrees[*it] < k)
+                continue;
+            vertex_degrees[*it]--;
+            if (vertex_degrees[*it] < k)
+                vertex_queue.push_back(*it);
+        }
+    }
+    //std::cout << "k " << k << " removed_vertices.size() " << removed_vertices.size() << std::endl;
+    return removed_vertices;
+}
+
+}
+
+Instance::Instance(
+        const std::string& instance_path,
+        const std::string& format):
+    graph_(read_graph(instance_path, format)) { }
+
+Instance::Instance(const optimizationtools::Graph& graph):
+    graph_(graph) { }
 
 std::ostream& Instance::format(
         std::ostream& os,
@@ -73,20 +133,7 @@ std::ostream& Instance::format(
             << std::setw(12) << "--------"
             << std::setw(12) << "--------"
             << std::endl;
-        for (VertexId vertex_id = 0;
-                vertex_id < graph().number_of_vertices();
-                ++vertex_id) {
-            auto it = graph().neighbors_begin(vertex_id);
-            auto it_end = graph().neighbors_end(vertex_id);
-            for (; it != it_end; ++it) {
-                if (vertex_id < *it) {
-                    os
-                        << std::setw(12) << vertex_id
-                        << std::setw(12) << *it
-                        << std::endl;
-                }
-            }
-        }
+        FUNCTION_WITH_GRAPH(format_edges, graph(), os);
     }
 
     return os;
@@ -94,30 +141,5 @@ std::ostream& Instance::format(
 
 std::vector<VertexId> Instance::compute_core(ColorId k) const
 {
-    std::vector<VertexId> removed_vertices;
-    std::vector<VertexPos> vertex_degrees(graph().number_of_vertices(), -1);
-    std::vector<VertexId> vertex_queue;
-    for (VertexId vertex_id = 0;
-            vertex_id < graph().number_of_vertices();
-            ++vertex_id) {
-        vertex_degrees[vertex_id] = graph().degree(vertex_id);
-        if (vertex_degrees[vertex_id] < k)
-            vertex_queue.push_back(vertex_id);
-    }
-    while (!vertex_queue.empty()) {
-        VertexId vertex_id = vertex_queue.back();
-        removed_vertices.push_back(vertex_id);
-        vertex_queue.pop_back();
-        for (auto it = graph().neighbors_begin(vertex_id);
-                it != graph().neighbors_end(vertex_id);
-                ++it) {
-            if (vertex_degrees[*it] < k)
-                continue;
-            vertex_degrees[*it]--;
-            if (vertex_degrees[*it] < k)
-                vertex_queue.push_back(*it);
-        }
-    }
-    //std::cout << "k " << k << " removed_vertices.size() " << removed_vertices.size() << std::endl;
-    return removed_vertices;
+    return FUNCTION_WITH_GRAPH(::compute_core, graph(), k);
 }

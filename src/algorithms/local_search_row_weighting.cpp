@@ -277,7 +277,12 @@ const LocalSearchRowWeightingOutput coloringsolver::local_search_row_weighting(
 ////////////////////////// localsearch_rowweighting_2 //////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
-const LocalSearchRowWeighting2Output coloringsolver::local_search_row_weighting_2(
+namespace coloringsolver
+{
+
+template <typename Graph>
+const LocalSearchRowWeighting2Output local_search_row_weighting_2(
+        const Graph& graph,
         const Instance& instance,
         std::mt19937_64& generator,
         const LocalSearchRowWeighting2Parameters& parameters)
@@ -287,7 +292,6 @@ const LocalSearchRowWeighting2Output coloringsolver::local_search_row_weighting_
     algorithm_formatter.start("Row weighting local search 2");
     algorithm_formatter.print_header();
 
-    const optimizationtools::AbstractGraph& graph = instance.graph();
 
     // Compute initial greedy solution.
     // Get initial solution.
@@ -563,4 +567,19 @@ const LocalSearchRowWeighting2Output coloringsolver::local_search_row_weighting_
 
     algorithm_formatter.end();
     return output;
+}
+
+}
+
+const LocalSearchRowWeighting2Output coloringsolver::local_search_row_weighting_2(
+        const Instance& instance,
+        std::mt19937_64& generator,
+        const LocalSearchRowWeighting2Parameters& parameters)
+{
+    return FUNCTION_WITH_GRAPH(
+            local_search_row_weighting_2,
+            instance.graph(),
+            instance,
+            generator,
+            parameters);
 }

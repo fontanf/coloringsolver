@@ -173,6 +173,7 @@ int main(int argc, char *argv[])
         ("algorithm,a", po::value<std::string>()->required(), "set algorithm")
         ("input,i", po::value<std::string>()->required(), "set input file (required)")
         ("format,f", po::value<std::string>(), "set input file format (default: standard)")
+        ("graph,", po::value<std::string>(), "set graph type: adjacency-list, adjacency-matrix or clique-graph (default: clique-graph for the 'cliquegraph' format, adjacency-list otherwise; adjacency-list for the MILP models and 'local-search-row-weighting')")
         ("output,o", po::value<std::string>(), "set JSON output file")
         ("initial-solution,", po::value<std::string>(), "")
         ("certificate,c", po::value<std::string>(), "set certificate file")
@@ -206,9 +207,30 @@ int main(int argc, char *argv[])
     }
 
     // Build instance.
-    const Instance instance(
+    Instance instance_read(
             vm["input"].as<std::string>(),
             (vm.count("format")? vm["format"].as<std::string>(): "dimacs"));
+
+    // Convert the graph if necessary.
+    std::string algorithm = vm["algorithm"].as<std::string>();
+    bool adjacency_list_graph_required = (
+            algorithm == "milp-assignment"
+            || algorithm == "milp-representatives"
+            || algorithm == "milp-partial-ordering"
+            || algorithm == "local-search-row-weighting");
+    std::string graph_type = (vm.count("graph"))?
+        vm["graph"].as<std::string>():
+        (adjacency_list_graph_required)? "adjacency-list":
+        (instance_read.graph().clique_graph() != nullptr)? "clique-graph":
+        "adjacency-list";
+    const optimizationtools::Graph& graph = instance_read.graph();
+    const Instance instance =
+        (graph_type == "adjacency-list")? Instance(graph.to_adjacency_list_graph()):
+        (graph_type == "adjacency-matrix")? Instance(graph.to_adjacency_matrix_graph()):
+        (graph_type == "clique-graph" && graph.clique_graph() != nullptr)? instance_read:
+        throw std::invalid_argument(
+                "Graph type \"" + graph_type + "\" is unknown or can't be "
+                "built from an instance in this format.");
 
     // Run.
     Output output = run(instance, vm);

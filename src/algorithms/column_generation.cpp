@@ -162,22 +162,26 @@ columngenerationsolver::PricingSolver::PricingOutput PricingSolver::solve_pricin
         mwis_instance_builder.add_vertex(weight);
     }
     // Add edges.
-    for (stablesolver::stable::VertexId mwis_vertex_id_1 = 0;
-            mwis_vertex_id_1 < (stablesolver::stable::VertexId)mwis2coloring_.size();
-            ++mwis_vertex_id_1) {
-        VertexId vertex_id_1 = mwis2coloring_[mwis_vertex_id_1];
-        for (auto it = instance_.graph().neighbors_begin(vertex_id_1);
-                it != instance_.graph().neighbors_end(vertex_id_1); ++it) {
-            VertexId vertex_id_2 = *it;
-            stablesolver::stable::VertexId mwis_vertex_id_2 = coloring2mwis_[vertex_id_2];
-            if (mwis_vertex_id_2 != -1
-                    && mwis_vertex_id_2 > mwis_vertex_id_1) {
-                mwis_instance_builder.add_edge(
-                        mwis_vertex_id_1,
-                        mwis_vertex_id_2);
+    auto add_edges = [this, &mwis_instance_builder](const auto& graph)
+    {
+        for (stablesolver::stable::VertexId mwis_vertex_id_1 = 0;
+                mwis_vertex_id_1 < (stablesolver::stable::VertexId)mwis2coloring_.size();
+                ++mwis_vertex_id_1) {
+            VertexId vertex_id_1 = mwis2coloring_[mwis_vertex_id_1];
+            for (auto it = graph.neighbors_begin(vertex_id_1);
+                    it != graph.neighbors_end(vertex_id_1); ++it) {
+                VertexId vertex_id_2 = *it;
+                stablesolver::stable::VertexId mwis_vertex_id_2 = coloring2mwis_[vertex_id_2];
+                if (mwis_vertex_id_2 != -1
+                        && mwis_vertex_id_2 > mwis_vertex_id_1) {
+                    mwis_instance_builder.add_edge(
+                            mwis_vertex_id_1,
+                            mwis_vertex_id_2);
+                }
             }
         }
-    }
+    };
+    FUNCTION_WITH_GRAPH_0(add_edges, instance_.graph());
     stablesolver::stable::Instance mwis_instance = mwis_instance_builder.build();
 
     // Solve subproblem instance.

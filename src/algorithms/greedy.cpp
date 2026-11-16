@@ -53,9 +53,9 @@ std::ostream& coloringsolver::operator<<(
     return os;
 }
 
-std::vector<VertexId> largestfirst(const Instance& instance)
+template <typename Graph>
+std::vector<VertexId> largestfirst(const Graph& graph)
 {
-    const optimizationtools::AbstractGraph& graph = instance.graph();
     VertexId n = graph.number_of_vertices();
 
     std::vector<VertexId> ordered_vertices(n);
@@ -74,9 +74,9 @@ std::vector<VertexId> largestfirst(const Instance& instance)
     return ordered_vertices;
 }
 
-std::vector<VertexId> incidencedegree(const Instance& instance)
+template <typename Graph>
+std::vector<VertexId> incidencedegree(const Graph& graph)
 {
-    const optimizationtools::AbstractGraph& graph = instance.graph();
     VertexId n = graph.number_of_vertices();
 
     std::vector<VertexId> ordered_vertices(n);
@@ -122,9 +122,9 @@ std::vector<VertexId> incidencedegree(const Instance& instance)
     return ordered_vertices;
 }
 
-std::vector<VertexId> smallestlast(const Instance& instance)
+template <typename Graph>
+std::vector<VertexId> smallestlast(const Graph& graph)
 {
-    const optimizationtools::AbstractGraph& graph = instance.graph();
     VertexId n = graph.number_of_vertices();
 
     std::vector<VertexId> ordered_vertices(n);
@@ -166,9 +166,9 @@ std::vector<VertexId> smallestlast(const Instance& instance)
     return ordered_vertices;
 }
 
-std::vector<VertexId> dynamiclargestfirst(const Instance& instance)
+template <typename Graph>
+std::vector<VertexId> dynamiclargestfirst(const Graph& graph)
 {
-    const optimizationtools::AbstractGraph& graph = instance.graph();
     VertexId n = graph.number_of_vertices();
 
     std::vector<VertexId> ordered_vertices(n);
@@ -207,7 +207,12 @@ std::vector<VertexId> dynamiclargestfirst(const Instance& instance)
     return ordered_vertices;
 }
 
-const Output coloringsolver::greedy(
+namespace coloringsolver
+{
+
+template <typename Graph>
+const Output greedy(
+        const Graph& graph,
         const Instance& instance,
         const GreedyParameters& parameters)
 {
@@ -216,7 +221,6 @@ const Output coloringsolver::greedy(
     algorithm_formatter.start("Greedy");
     algorithm_formatter.print_header();
 
-    const optimizationtools::AbstractGraph& graph = instance.graph();
     VertexId n = graph.number_of_vertices();
     Solution solution(instance);
 
@@ -227,16 +231,16 @@ const Output coloringsolver::greedy(
         std::iota(ordered_vertices.begin(), ordered_vertices.end(), 0);
         break;
     } case Ordering::LargestFirst: {
-        ordered_vertices = largestfirst(instance);
+        ordered_vertices = largestfirst(graph);
         break;
     } case Ordering::IncidenceDegree: {
-        ordered_vertices = incidencedegree(instance);
+        ordered_vertices = incidencedegree(graph);
         break;
     } case Ordering::SmallestLast: {
-        ordered_vertices = smallestlast(instance);
+        ordered_vertices = smallestlast(graph);
         break;
     } case Ordering::DynamicLargestFirst: {
-        ordered_vertices = dynamiclargestfirst(instance);
+        ordered_vertices = dynamiclargestfirst(graph);
         break;
     } default: {
     }
@@ -291,7 +295,25 @@ const Output coloringsolver::greedy(
     return output;
 }
 
-const Output coloringsolver::greedy_dsatur(
+}
+
+const Output coloringsolver::greedy(
+        const Instance& instance,
+        const GreedyParameters& parameters)
+{
+    return FUNCTION_WITH_GRAPH(
+            greedy,
+            instance.graph(),
+            instance,
+            parameters);
+}
+
+namespace coloringsolver
+{
+
+template <typename Graph>
+const Output greedy_dsatur(
+        const Graph& graph,
         const Instance& instance,
         const Parameters& parameters)
 {
@@ -300,7 +322,6 @@ const Output coloringsolver::greedy_dsatur(
     algorithm_formatter.start("DSATUR");
     algorithm_formatter.print_header();
 
-    const optimizationtools::AbstractGraph& graph = instance.graph();
     VertexId n = graph.number_of_vertices();
     Solution solution(instance);
 
@@ -363,4 +384,17 @@ const Output coloringsolver::greedy_dsatur(
 
     algorithm_formatter.end();
     return output;
+}
+
+}
+
+const Output coloringsolver::greedy_dsatur(
+        const Instance& instance,
+        const Parameters& parameters)
+{
+    return FUNCTION_WITH_GRAPH(
+            greedy_dsatur,
+            instance.graph(),
+            instance,
+            parameters);
 }

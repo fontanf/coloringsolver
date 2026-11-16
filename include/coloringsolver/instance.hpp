@@ -1,7 +1,6 @@
 #pragma once
 
-#include "optimizationtools/graph/abstract_graph.hpp"
-#include "optimizationtools/graph/adjacency_list_graph.hpp"
+#include "optimizationtools/graph/graph.hpp"
 
 #include <memory>
 
@@ -29,10 +28,15 @@ public:
      * Constructors and destructor
      */
 
-    /** Create an instance from an AbstrctGraph. */
-    Instance(const std::shared_ptr<const optimizationtools::AbstractGraph>& abstract_graph);
+    /** Create an instance from a graph. */
+    Instance(const optimizationtools::Graph& graph);
 
-    /** Create an instance from a file. */
+    /**
+     * Create an instance from a file.
+     *
+     * The graph is a CliqueGraph for the 'cliquegraph' format, an
+     * AdjacencyListGraph otherwise.
+     */
     Instance(
             const std::string& instance_path,
             const std::string& format);
@@ -42,10 +46,14 @@ public:
      */
 
     /** Get graph. */
-    inline const optimizationtools::AbstractGraph& graph() const { return *graph_; }
+    inline const optimizationtools::Graph& graph() const { return graph_; }
 
-    /** Get the adjacency list graph. */
-    inline const optimizationtools::AdjacencyListGraph* adjacency_list_graph() const { return adjacency_list_graph_; }
+    /**
+     * Get the adjacency list graph.
+     *
+     * 'nullptr' if the graph is not an AdjacencyListGraph.
+     */
+    inline const optimizationtools::AdjacencyListGraph* adjacency_list_graph() const { return graph_.adjacency_list_graph(); }
 
     /**
      * Compute the core of the instance when looking for a coloration using 'k'
@@ -73,14 +81,7 @@ private:
      */
 
     /** Graph. */
-    std::shared_ptr<const optimizationtools::AbstractGraph> graph_ = nullptr;
-
-    /**
-     * Adjacency list graph.
-     *
-     * 'nullptr' if 'graph_' is not an AdjacencyList graph.
-     */
-    const optimizationtools::AdjacencyListGraph* adjacency_list_graph_ = nullptr;
+    optimizationtools::Graph graph_;
 
 };
 

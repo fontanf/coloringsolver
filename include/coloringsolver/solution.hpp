@@ -135,7 +135,7 @@ void Solution::set(
         ColorId color_id,
         bool check)
 {
-    const optimizationtools::AbstractGraph& graph = instance().graph();
+    const optimizationtools::Graph& graph = instance().graph();
 
     // Checks.
     graph.check_vertex_index(vertex_id);
@@ -176,32 +176,36 @@ void Solution::set(
                 }
             }
         } else {
-            auto it = graph.neighbors_begin(vertex_id);
-            auto it_end = graph.neighbors_end(vertex_id);
-            for (; it != it_end; ++it) {
-                // Remove old conflicts.
-                if (contains(*it)
-                        && color(*it) == color(vertex_id)) {
-                    total_number_of_conflicts_--;
-                    number_of_conflicts_.set(
-                            vertex_id,
-                            number_of_conflicts_[vertex_id] - 1);
-                    number_of_conflicts_.set(
-                            *it,
-                            number_of_conflicts_[*it] - 1);
+            auto update_conflicts = [&](const auto& graph)
+            {
+                auto it = graph.neighbors_begin(vertex_id);
+                auto it_end = graph.neighbors_end(vertex_id);
+                for (; it != it_end; ++it) {
+                    // Remove old conflicts.
+                    if (contains(*it)
+                            && color(*it) == color(vertex_id)) {
+                        total_number_of_conflicts_--;
+                        number_of_conflicts_.set(
+                                vertex_id,
+                                number_of_conflicts_[vertex_id] - 1);
+                        number_of_conflicts_.set(
+                                *it,
+                                number_of_conflicts_[*it] - 1);
+                    }
+                    // Add new conflicts.
+                    if (color_id != -1
+                            && color(*it) == color_id) {
+                        total_number_of_conflicts_++;
+                        number_of_conflicts_.set(
+                                vertex_id,
+                                number_of_conflicts_[vertex_id] + 1);
+                        number_of_conflicts_.set(
+                                *it,
+                                number_of_conflicts_[*it] + 1);
+                    }
                 }
-                // Add new conflicts.
-                if (color_id != -1
-                        && color(*it) == color_id) {
-                    total_number_of_conflicts_++;
-                    number_of_conflicts_.set(
-                            vertex_id,
-                            number_of_conflicts_[vertex_id] + 1);
-                    number_of_conflicts_.set(
-                            *it,
-                            number_of_conflicts_[*it] + 1);
-                }
-            }
+            };
+            FUNCTION_WITH_GRAPH_0(update_conflicts, graph);
         }
     }
     // Update map_.
