@@ -14,6 +14,22 @@
 
 using namespace coloringsolver;
 
+namespace
+{
+
+/** Get the graph of an instance, which must be an AdjacencyListGraph. */
+const optimizationtools::AdjacencyListGraph& get_adjacency_list_graph(
+        const Instance& instance)
+{
+    if (instance.adjacency_list_graph() == nullptr) {
+        throw std::invalid_argument(
+                "The MILP models require an AdjacencyListGraph.");
+    }
+    return *instance.adjacency_list_graph();
+}
+
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////// Assignment-based ILP model //////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
@@ -37,7 +53,7 @@ ModelAssignment create_milp_model_assignment(
         const Instance& instance,
         const MilpAssignmentParameters& parameters)
 {
-    const optimizationtools::AdjacencyListGraph& graph = *instance.adjacency_list_graph();
+    const optimizationtools::AdjacencyListGraph& graph = get_adjacency_list_graph(instance);
 
     ModelAssignment model;
 
@@ -168,7 +184,7 @@ Solution retrieve_solution(
         const ModelAssignment& model,
         const std::vector<double>& milp_solution)
 {
-    const optimizationtools::AdjacencyListGraph& graph = *instance.adjacency_list_graph();
+    const optimizationtools::AdjacencyListGraph& graph = get_adjacency_list_graph(instance);
     ColorId upper_bound = graph.highest_degree() + 1;
 
     Solution solution(instance);
@@ -431,7 +447,7 @@ struct ModelRepresentatives
 ModelRepresentatives create_milp_model_representatives(
         const Instance& instance)
 {
-    const optimizationtools::AdjacencyListGraph& graph = *instance.adjacency_list_graph();
+    const optimizationtools::AdjacencyListGraph& graph = get_adjacency_list_graph(instance);
     optimizationtools::AdjacencyListGraph complementary_graph = graph.complementary();
 
     ModelRepresentatives model;
@@ -543,7 +559,7 @@ Solution retrieve_solution(
         const ModelRepresentatives& model,
         const std::vector<double>& milp_solution)
 {
-    const optimizationtools::AdjacencyListGraph& graph = *instance.adjacency_list_graph();
+    const optimizationtools::AdjacencyListGraph& graph = get_adjacency_list_graph(instance);
 
     Solution solution(instance);
     for (VertexId vertex_id = 0;
@@ -822,7 +838,7 @@ ModelPartialOrdering create_milp_model_partial_ordering(
         const Instance& instance,
         const MilpPartialOrderingParameters& parameters)
 {
-    const optimizationtools::AdjacencyListGraph& graph = *instance.adjacency_list_graph();
+    const optimizationtools::AdjacencyListGraph& graph = get_adjacency_list_graph(instance);
 
     ModelPartialOrdering model;
 
@@ -1014,7 +1030,7 @@ Solution retrieve_solution(
         const ModelPartialOrdering& model,
         const std::vector<double>& milp_solution)
 {
-    const optimizationtools::AdjacencyListGraph& graph = *instance.adjacency_list_graph();
+    const optimizationtools::AdjacencyListGraph& graph = get_adjacency_list_graph(instance);
     ColorId upper_bound = graph.highest_degree() + 1;
 
     Solution solution(instance);
