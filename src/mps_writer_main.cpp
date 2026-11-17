@@ -17,7 +17,6 @@ int main(int argc, char *argv[])
         ("input,i", po::value<std::string>()->required(), "set input file (required)")
         ("format,f", po::value<std::string>(), "set input file format (default: dimacs)")
         ("remove-duplicate-edges", "remove duplicate edges from the graph")
-        ("solver,", po::value<mathoptsolverscmake::SolverName>()->default_value(mathoptsolverscmake::SolverName::Highs), "set solver")
         ("output,o", po::value<std::string>()->required(), "set output MPS file (required)")
         ;
     po::variables_map vm;
@@ -49,8 +48,7 @@ int main(int argc, char *argv[])
                 graph_builder.build()));
 
     // Write the MPS file.
-    mathoptsolverscmake::SolverName solver = vm["solver"].as<mathoptsolverscmake::SolverName>();
-    write_mps(instance, solver, vm["output"].as<std::string>());
+    write_mps(instance, vm["output"].as<std::string>());
 
     return 0;
 }
