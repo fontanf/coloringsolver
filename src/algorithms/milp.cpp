@@ -262,8 +262,10 @@ CbcEventHandler::CbcAction EventHandlerAssignment::event(CbcEvent which_event)
     if (!output_.solution.feasible()
             || output_.solution.number_of_colors() > milp_objective_value) {
         std::vector<double> milp_solution = mathoptsolverscmake::get_solution(cbc_model);
-        Solution solution = retrieve_solution(instance_, milp_model_, milp_solution);
-        algorithm_formatter_.update_solution(solution, "node " + std::to_string(number_of_nodes));
+        if (!milp_solution.empty()) {
+            Solution solution = retrieve_solution(instance_, milp_model_, milp_solution);
+            algorithm_formatter_.update_solution(solution, "node " + std::to_string(number_of_nodes));
+        }
     }
 
     // Retrieve bound.
@@ -659,8 +661,10 @@ CbcEventHandler::CbcAction EventHandlerRepresentatives::event(CbcEvent which_eve
     if (!output_.solution.feasible()
             || output_.solution.number_of_colors() > milp_objective_value) {
         std::vector<double> milp_solution = mathoptsolverscmake::get_solution(cbc_model);
-        Solution solution = retrieve_solution(instance_, milp_model_, milp_solution);
-        algorithm_formatter_.update_solution(solution, "node " + std::to_string(number_of_nodes));
+        if (!milp_solution.empty()) {
+            Solution solution = retrieve_solution(instance_, milp_model_, milp_solution);
+            algorithm_formatter_.update_solution(solution, "node " + std::to_string(number_of_nodes));
+        }
     }
 
     // Retrieve bound.
@@ -1123,8 +1127,10 @@ CbcEventHandler::CbcAction EventHandlerPartialOrdering::event(CbcEvent which_eve
     if (!output_.solution.feasible()
             || output_.solution.number_of_colors() > milp_objective_value) {
         std::vector<double> milp_solution = mathoptsolverscmake::get_solution(cbc_model);
-        Solution solution = retrieve_solution(instance_, milp_model_, milp_solution);
-        algorithm_formatter_.update_solution(solution, "node " + std::to_string(number_of_nodes));
+        if (!milp_solution.empty()) {
+            Solution solution = retrieve_solution(instance_, milp_model_, milp_solution);
+            algorithm_formatter_.update_solution(solution, "node " + std::to_string(number_of_nodes));
+        }
     }
 
     // Retrieve bound.
